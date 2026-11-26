@@ -5,7 +5,7 @@ This file records the actual implementation state and remaining experiments.
 
 | Track | State | Remaining work |
 | :--- | :--- | :--- |
-| Runner | CPU worker, timeout, reduced environment, static checks, multi-seed/stress checks, mutation and timing validation; Rust supervisory CLI | Validate Rust build in CI; supply external isolation for adversarial execution |
+| Runner | CPU worker, timeout, reduced environment, static checks, multi-seed/stress checks, mutation and timing validation; Rust supervisory CLI verified in CI | Supply external isolation for adversarial execution |
 | Kernels | 30 NumPy operators; 11 Triton baseline entries and native PyTorch references; CUDA validation CLI | Execute Triton fp32/bf16 checks and event timing on a compatible CUDA host |
 | Training | CPU fixtures, bounded search/repair, single-process on-policy update/checkpoint implementation | Full model validation, CUDA-kernel grading, held-out ablations; distributed/LoRA and resume not implemented |
 | Evaluation | Strict trace ingestion, grouped summaries, seed intervals, profiler CSV import, plots, offline viewer | Use actual independent GPU runs for performance and learning claims |
@@ -26,6 +26,10 @@ This file records the actual implementation state and remaining experiments.
 - Native PyTorch references pass 50 numerical comparisons on CPU across canonical
   and stress cases in fp32/bf16. Triton compilation and GPU performance remain
   unverified locally. Cost models are analytical estimates, not measured HBM data.
+- All 67 local Python tests passed. The initial implementation commit
+  `5f9299075b869873b8a5d7365d0a98ef7f318bc0` passed
+  [GitHub CI](https://github.com/Eljo-M/kernelbench-rl/actions/runs/45870454904),
+  including Python tests, operator verification, report generation and Rust tests.
 
 ## Next experiment
 

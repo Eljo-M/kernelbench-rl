@@ -21,7 +21,7 @@ recognized by reporting includes:
 | `method` | Explicit experimental arm, such as `base`, `best_of_8`, or `grpo` |
 | `seed` | Integer or string identifying an independent run seed |
 | `fixture` | Boolean identifying synthetic test data |
-| `source_code` / `candidate_source` | Kernel source displayed in the viewer |
+| `source_code` / `candidate_source` / `source` | Kernel source displayed in the viewer |
 | `nsight` | Optional profiler metadata displayed in the full record |
 
 Reports never infer the method from a run ID. Synthetic fixtures must be
