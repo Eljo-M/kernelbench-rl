@@ -69,8 +69,7 @@ def _torch_scale_mask(x, mask, scale):
     xf = x.float()
     mf = mask.float()
     sf = scale.float() if hasattr(scale, "float") else float(scale)
-    neg = torch.tensor(-1e9, device=x.device, dtype=torch.float32)
-    return torch.where(mf > 0.5, xf * sf, neg).to(x.dtype)
+    return torch.where(mf > 0.5, xf * sf, -1e9).to(x.dtype)
 
 
 def _torch_l2_normalize(x, eps: float = 1e-12):
@@ -96,7 +95,7 @@ def _torch_causal_masked_softmax(scores):
     torch = _require_torch()
     s = scores.shape[-1]
     causal = torch.triu(torch.ones((s, s), device=scores.device, dtype=torch.bool), diagonal=1)
-    masked = torch.where(causal, torch.tensor(-1e9, device=scores.device, dtype=torch.float32), scores.float())
+    masked = torch.where(causal, -1e9, scores.float())
     return _stable_softmax_torch(masked).to(scores.dtype)
 
 
@@ -172,7 +171,7 @@ def _torch_block_sparse_attn(q, k, v, block_size: int = 32):
     q_idx = torch.arange(s, device=q.device)[:, None]
     k_idx = torch.arange(s, device=q.device)[None, :]
     allowed = (k_idx <= q_idx) & ((k_idx // block_size) >= (q_idx // block_size) - 1)
-    masked = torch.where(allowed, scores, torch.tensor(-1e9, device=q.device, dtype=torch.float32))
+    masked = torch.where(allowed, scores, -1e9)
     probs = _stable_softmax_torch(masked)
     return torch.matmul(probs, vf).to(q.dtype)
 
@@ -212,15 +211,17 @@ def _torch_paged_kv_gather_attn(q, k_pool, v_pool, block_tables):
 def _torch_selective_scan_ssm(u, delta, a_log, b_proj, c_proj):
     torch = _require_torch()
     uf, dtf, bf, cf = u.float(), delta.float(), b_proj.float(), c_proj.float()
-    bsz, seqlen, dim = uf.shape
     a = -torch.exp(a_log.float())
-    h = torch.zeros((bsz, dim), device=u.device, dtype=torch.float32)
-    ys = torch.empty((bsz, seqlen, dim), device=u.device, dtype=torch.float32)
-    for t in range(seqlen):
-        dt = dtf[:, t, :]
-        h = torch.exp(dt * a[None, :]) * h + dt * bf[:, t, :] * uf[:, t, :]
-        ys[:, t, :] = h * cf[:, t, :]
-    return ys.to(u.dtype)
+    # h[t] = exp(s[t]) * sum_{j<=t}(b[j] * exp(-s[j])).
+    # Separate signed terms in log space to avoid overflow/underflow, and use
+    # prefix operators instead of unrolling 256 Python iterations in compile.
+    s = torch.cumsum(dtf * a[None, None, :], dim=1)
+    b = dtf * bf * uf
+    log_term = torch.log(torch.abs(b)) - s
+    positive = torch.logcumsumexp(torch.where(b > 0, log_term, -float("inf")), dim=1)
+    negative = torch.logcumsumexp(torch.where(b < 0, log_term, -float("inf")), dim=1)
+    h = torch.exp(s + positive) - torch.exp(s + negative)
+    return (h * cf).to(u.dtype)
 
 
 def _torch_topk_moe_router(x, router_w, expert_w, k: int = 2):

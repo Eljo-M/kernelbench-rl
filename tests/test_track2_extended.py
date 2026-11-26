@@ -23,6 +23,21 @@ except ImportError:
 
 
 class TestTrack2Extended19Ops(unittest.TestCase):
+    @unittest.skipUnless(HAS_TORCH, "PyTorch required")
+    def test_signed_scan_prefix_form_handles_zero_and_mixed_inputs(self):
+        rng = np.random.default_rng(9)
+        u = rng.standard_normal((2, 33, 7), dtype=np.float32)
+        dt = rng.uniform(0, 0.1, u.shape).astype(np.float32)
+        alog = rng.standard_normal(7, dtype=np.float32)
+        b = rng.standard_normal(u.shape, dtype=np.float32)
+        c = rng.standard_normal(u.shape, dtype=np.float32)
+        spec = OP_REGISTRY["selective_scan_ssm_256"]
+        for data in ((u, dt, alog, b, c), (u*0, dt*0, alog, b, c)):
+            expected = spec.reference_fn(*data)
+            actual = TORCH_EXTENDED[spec.name](*(torch.from_numpy(a) for a in data)).numpy()
+            self.assertTrue(np.all(np.isfinite(actual)))
+            self.assertTrue(np.allclose(actual, expected, rtol=spec.rtol, atol=spec.atol))
+
     def test_exact_19_remaining_ops_covered_with_zero_overlap(self):
         existing = set(TRITON_BASELINES.keys())
         ext_triton = set(TRITON_EXTENDED.keys())
