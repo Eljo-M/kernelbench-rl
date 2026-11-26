@@ -26,11 +26,14 @@ qlora = [
     "accelerate>=0.34",
 ]
 gpu = [
-    "torch>=2.4",
-    "triton>=3.0",
-    "transformers>=4.45",
-    "vllm>=0.6",
+    "torch>=2.6",
+    "triton>=3.0; sys_platform != 'win32'",
+    "triton-windows>=3.6,<3.7; sys_platform == 'win32'",
+    "transformers>=4.57,<5",
     "accelerate>=0.34",
+]
+serving = [
+    "vllm>=0.6; sys_platform == 'linux'",
 ]
 dev = [
     "pytest>=8.0",

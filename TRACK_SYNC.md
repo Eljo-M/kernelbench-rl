@@ -6,9 +6,9 @@ This file records the actual implementation state and remaining experiments.
 | Track | State | Remaining work |
 | :--- | :--- | :--- |
 | Runner | CPU worker, timeout, reduced environment, static checks, multi-seed/stress checks, mutation and timing validation; Rust supervisory CLI verified in CI | Supply external isolation for adversarial execution |
-| Kernels | 30 NumPy operators; 11 integrated GPU baselines plus 19 extension implementations; all 30 PyTorch references checked on CPU | Validate the 19 extensions on CUDA before integrating their dictionaries |
-| Training | Real 0.49B full-parameter run completed; GPU grading; 7B QLoRA and checkpoint resume implemented | Complete held-out evaluation and free T4 training; distributed training is outside the verified scope |
-| Evaluation | Strict trace ingestion, grouped summaries, seed intervals, profiler CSV import, plots, offline viewer | Use actual independent GPU runs for performance and learning claims |
+| Kernels | All 30 Triton baselines integrated; final canonical/stress CUDA suite 180/180 PASS in fp32/bf16 on three seeds | Windows SSM compiled comparison unavailable; 29 comparable operators |
+| Training | Real 0.49B full-parameter run and held-out evaluation completed; exact checkpoint resume verified; free 7B QLoRA has performed verified updates | Finish T4 held-out evaluation; FSDP/multi-node training not implemented |
+| Evaluation | Strict ingestion, grouped summaries, plots, offline viewer, profiler import and paired held-out report | Three held-out workloads per model limit generalization claims |
 
 ## 2026-11-26 integration
 
@@ -31,18 +31,18 @@ This file records the actual implementation state and remaining experiments.
   [GitHub CI](https://github.com/Eljo-M/kernelbench-rl/actions/runs/45870454904),
   including Python tests, operator verification, report generation and Rust tests.
 
-## Next experiment
+## Current experiment
 
-Run `python -m kernels.validate_cuda` in the environment described in
-[kernels/README.md](kernels/README.md). Keep the resulting JSONL with GPU/dtype/seed
-metadata, investigate every failure, and only then connect CUDA grading to the
-training loop. Compare held-out base pass@1, best-of-group search and a trained
-checkpoint using the same operators, seeds and budgets. Do not infer gains from
-fixtures or a checkpoint file.
+Finish the fresh free-T4 study and collect the checkpoint and held-out records.
+The corrected worker passed a real T4 preflight. The initial attempt produced
+no updates because child processes lacked the Linux driver environment; the
+failed recovery also stopped before any update after a probability mismatch.
+Both attempts remain separate from fresh training results. Only final test-phase
+records enter comparisons, with equal pass@1 budgets for base and trained models.
 
 ## Free-resource experiments
 
-- RTX 5060 Laptop: 66/66 baseline checks passed for 11 operators, fp32/bf16 and
+- RTX 5060 Laptop: final 180/180 baseline checks passed for 30 operators, fp32/bf16 and
   seeds 42/43/44. CUDA graph timings and dispatch-sensitive event timings are
   retained separately under `experiments/rtx5060`.
 - Free Colab T4: 33/33 fp32 baseline checks passed for the same 11 operators and
@@ -51,9 +51,12 @@ fixtures or a checkpoint file.
   one optimizer update. The full-model weight change was verified; all 16
   generated training candidates failed. This establishes an execution run,
   not a learned kernel-quality gain. Checkpoints are stored locally and excluded
-  from Git. Held-out base/search/trained comparisons remain required.
+  from Git. Held-out base pass@1, best-of-8 and trained checkpoint each passed
+  0/3; the result shows no quality improvement. The real checkpoint restored
+  model weights, optimizer and RNG with a matching trainable-weight checksum.
 - The 7B NF4/rank-8 QLoRA run uses a free T4 with 5,046,272 trainable adapter
-  parameters. Completion and quality results have not yet been verified.
+  parameters. Fresh training has performed two finite, nonzero adapter updates;
+  completion and held-out quality results have not yet been verified.
 - Commit `3e9de7c9bf1cd83a523282e26e41feaf4505c66b` passed
   [CI](https://github.com/Eljo-M/kernelbench-rl/actions/runs/45877414778), including
   actual Torch backward, optimizer and checkpoint tests.

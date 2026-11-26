@@ -1,0 +1,39 @@
+{
+  "started_utc": "2026-11-26T19:17:35.980257+00:00",
+  "source_commit": "03468e3c717e8b8d90b40766e3eff80eff9403b3",
+  "model_id": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "model_revision": "ea3f2471cf1b1f0db85067f1ef93848e38e88c25",
+  "dtype": "fp32",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "config_hash": "b06d4b72437f6cb2",
+  "generation_engine": "hf_eager",
+  "train_ops": [
+    "rmsnorm_2048",
+    "layernorm_2048",
+    "swiglu_4096",
+    "fused_add_rmsnorm_2048",
+    "fused_softmax_2048",
+    "log_softmax_2048",
+    "rope_fwd_128",
+    "matmul_bias_gelu_512"
+  ],
+  "heldout_ops": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "best_of_k": 8,
+  "sampling": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_new_tokens": 1024
+  },
+  "checkpoint_step": 8,
+  "checkpoint_weights_sha256": "14e3f9d1c22f78473f97a59f94366d197e4c1ed32e285bc4088e5030ef4a0a00",
+  "completed_utc": "2026-11-26T19:27:59.177781+00:00",
+  "seconds": 623.1560000000172,
+  "peak_allocated_bytes": 3963600384
+}

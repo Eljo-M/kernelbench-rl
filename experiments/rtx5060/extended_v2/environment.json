@@ -1,0 +1,50 @@
+{
+  "started_utc": "2026-11-26T19:00:48.794396+00:00",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "timing_mode": "cuda_graph",
+  "warmup": 10,
+  "iterations": 50,
+  "operators": [
+    "block_sparse_attn_256",
+    "causal_masked_softmax_1024",
+    "cosine_similarity_1024",
+    "fp8_e4m3_simulated_scaled_gemm_512",
+    "fused_bias_gelu_4096",
+    "fused_bias_silu_4096",
+    "fused_cross_entropy_4096",
+    "fused_dropout_residual_2048",
+    "fused_scale_mask_2048",
+    "geglu_4096",
+    "gqa_decode_attn_kv512",
+    "group_norm_64x32",
+    "int4_groupwise_dequant_gemm_512",
+    "l2_normalize_2048",
+    "matmul_bias_silu_512",
+    "matmul_residual_add_512",
+    "paged_kv_gather_attn_256",
+    "selective_scan_ssm_256",
+    "topk_moe_router_dispatch_64"
+  ],
+  "base_commit": "380212ffbc2b2540ac62b296f63124132d786bfa",
+  "source_sha256": {
+    "kernels\\op_registry.py": "45d03e277f0c58583a79e4b210103d769b5497f85f8d447a281a774ff15004e4",
+    "kernels\\torch_extended.py": "0c748c31053de2f042b9d9895c4010cd5a632d49c6f78cde35d850e37d827dc6",
+    "kernels\\torch_references.py": "06daae55420f8711cda632d22dcabb53afa24ce14cde9d622c46738ea35bde4b",
+    "kernels\\triton_baselines.py": "d954e6b5ca6a32338e584d50e30ed071a927a244f0726cf6dc6f5094ba7cec23",
+    "kernels\\triton_extended.py": "1aceeb42d24eb2b3ad364df674723dea556a3dbbd9e8580d509362ef153f7db7",
+    "kernels\\validate_cuda.py": "ec411b7429d5526c259364f5e86da9168052287fb2e6bba17ee4818e5ad24956",
+    "kernels\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "completed_utc": "2026-11-26T19:02:04.521626+00:00",
+  "records": 114,
+  "passed": 114,
+  "expected_records": 114
+}

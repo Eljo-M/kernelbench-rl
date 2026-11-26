@@ -1,0 +1,46 @@
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:21<01:05, 21.94s/it]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:44<00:44, 22.26s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [01:04<00:21, 21.04s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:08<00:00, 14.39s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:08<00:00, 17.05s/it]
+{"event": "model_ready", "training_mode": "qlora_7b_nf4", "trainable_parameters": 5046272, "gpu": "Tesla T4", "compute_dtype": "torch.float16"}
+{"event": "step_start", "step": 1, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 1, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 2, "op_name": "layernorm_2048"}
+{"event": "step_complete", "step": 2, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 3, "op_name": "swiglu_4096"}
+{"event": "step_complete", "step": 3, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 4, "op_name": "fused_add_rmsnorm_2048"}
+{"event": "step_complete", "step": 4, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 5, "op_name": "fused_softmax_2048"}
+{"event": "step_complete", "step": 5, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 6, "op_name": "log_softmax_2048"}
+{"event": "step_complete", "step": 6, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 7, "op_name": "rope_fwd_128"}
+{"event": "step_complete", "step": 7, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 8, "op_name": "matmul_bias_gelu_512"}
+{"event": "step_complete", "step": 8, "statuses": ["RUNTIME_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{
+  "started_utc": "2026-11-26T18:39:05.756051+00:00",
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "source_commit": "3e9de7c9bf1cd83a523282e26e41feaf4505c66b",
+  "config_hash": "5ec1b65de79cdea6",
+  "torch": "2.6.0+cu124",
+  "triton": "3.2.0",
+  "cuda": "12.4",
+  "gpu": "Tesla T4",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "training_mode": "qlora_7b_nf4",
+  "compute_dtype": "fp16",
+  "training_performed": false,
+  "completed_utc": "2026-11-26T18:59:41.471354+00:00",
+  "steps": 8,
+  "optimizer_steps": 0,
+  "trainable_weights_sha256": "",
+  "seconds": 1235.659511544,
+  "peak_allocated_bytes": 8830465536,
+  "peak_reserved_bytes": 11590959104
+}

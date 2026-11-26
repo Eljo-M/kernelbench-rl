@@ -5,7 +5,7 @@
 finiteness, and the positive analytical workload cost models. It does not compile
 or run Triton.
 
-Eleven registry entries have Triton baseline source and native PyTorch references.
+All 30 registry entries have Triton baseline source and native PyTorch references.
 `tests/test_torch_references.py` checks their canonical and stress cases on CPU in
 fp32 and bf16 when PyTorch is installed. Integer quantization inputs keep their
 integer dtype. The bf16 NumPy oracle receives the same rounded inputs as PyTorch.
@@ -37,14 +37,19 @@ sizes. This is an idealized traffic lower bound, not measured DRAM traffic.
 
 The current validation covers registered canonical/stress inputs. It is not a
 general tensor shape/device validator for arbitrary callers. Live Triton numerical
-execution is recorded for all 11 baseline entries in fp32/bf16 across three input
-seeds: 66/66 checks passed on the laptop. Raw records and per-op comparisons are
-bundled under `experiments/rtx5060/cuda_graph`. `--timing-mode events` retains
+execution is recorded for all 30 baseline entries in fp32/bf16 across three input
+seeds: 180/180 checks passed on the laptop. Raw records and per-op comparisons are
+bundled under `experiments/rtx5060/full30`. The SSM reference's Windows Inductor
+compilation is unavailable; compiled speedup summaries cover 29 operators.
+`--timing-mode events` retains
 the separate dispatch-sensitive timing path. Graph timings report steady-state
 device execution, excluding host dispatch and JIT compilation.
 
 Generated candidates use `sandbox_runner.gpu_verifier.verify_candidate_gpu`,
 which imports a real source file in a child process, checks canonical, stress and
 independent-seed inputs, rejects input mutation, and applies a wall-clock timeout.
+The GPU-specific source policy requires a reachable Triton load/store kernel and
+rejects host Torch arithmetic, reference fallbacks and output memoization. A
+source-policy checksum accompanies generated-candidate records.
 The child uses the same graph timing procedure. This is a trusted development
 boundary; execute adversarial code in a separately isolated environment.

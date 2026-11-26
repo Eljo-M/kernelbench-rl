@@ -65,6 +65,20 @@ python -m eval.benchmark_report --input traces.jsonl --out eval/out \
 
 Both parameters must be positive. No GPU peak or bandwidth is guessed.
 
+## Paired held-out model comparison
+
+```bash
+python -m eval.compare_heldout --run-dir experiments/laptop_fullparam --out eval/out/heldout
+```
+
+Repeat `--run-dir` for independent runs. Each directory supplies `config.json`,
+`heldout_environment.json` and raw `heldout.jsonl`. The reporter checks config,
+model revision, precision, hardware, per-operator seeds and complete final
+coverage. Selection, fixture and oracle records are excluded. It writes Markdown,
+strict JSON and a PNG, preserving failures in the denominator and separating
+models, GPU types and precisions. Three held-out workloads do not support a broad
+generalization claim. Best-of-K and pass@1 have different search budgets.
+
 ## Nsight Compute CSV
 
 ```bash

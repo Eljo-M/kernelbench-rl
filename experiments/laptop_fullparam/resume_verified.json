@@ -1,0 +1,8 @@
+{
+  "checkpoint_step": 8,
+  "optimizer_steps": 1,
+  "trainable_weights_sha256": "14e3f9d1c22f78473f97a59f94366d197e4c1ed32e285bc4088e5030ef4a0a00",
+  "restored_model_checksum_verified": true,
+  "restored_optimizer_and_rng": true,
+  "additional_training_steps": 0
+}

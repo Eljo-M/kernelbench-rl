@@ -1,0 +1,34 @@
+{
+  "started_utc": "2026-11-26T19:12:44.598328+00:00",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "timing_mode": "cuda_graph",
+  "warmup": 10,
+  "iterations": 50,
+  "operators": 30,
+  "dtype": [
+    "fp32",
+    "bf16"
+  ],
+  "source_sha256": {
+    "kernels\\extended_stress.py": "a8ce9502db21d3cf0ed0799f92c6da14eff1acd132f53974a4eb84d6977c7004",
+    "kernels\\op_registry.py": "cc745c35ee2e181b05cf6ab93b451d840fb2463092aa22d93941c0c85a21d631",
+    "kernels\\torch_extended.py": "0c748c31053de2f042b9d9895c4010cd5a632d49c6f78cde35d850e37d827dc6",
+    "kernels\\torch_references.py": "c7071daa061c9914218716c2ce07ebd4df022f33611969ea9d7c91d510342468",
+    "kernels\\triton_baselines.py": "7ea2efa41d421eddf4041187033d14ddba081193cf3eaa65a25f367e7c2e359b",
+    "kernels\\triton_extended.py": "1aceeb42d24eb2b3ad364df674723dea556a3dbbd9e8580d509362ef153f7db7",
+    "kernels\\validate_cuda.py": "ec411b7429d5526c259364f5e86da9168052287fb2e6bba17ee4818e5ad24956",
+    "kernels\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "completed_utc": "2026-11-26T19:14:08.423251+00:00",
+  "records": 180,
+  "passed": 180,
+  "expected_records": 180
+}

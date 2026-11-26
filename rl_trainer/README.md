@@ -11,7 +11,8 @@ writes strict JSONL with source hashes, seeds and group advantages, and explicit
 records that no weights were updated. The `.config.json` sibling records the run
 configuration. This mode needs only the ordinary development dependencies.
 
-Search against an already-running vLLM server:
+Search against an already-running vLLM server (the optional `serving` extra
+installs vLLM on Linux; GPU grading itself does not require a serving engine):
 
 ```bash
 python -m rl_trainer.train_grpo --mode search --base-url http://localhost:8000/v1 \
@@ -98,3 +99,9 @@ held-out test seed. Selection records carry `eval_phase: selection_val`; only
 `heldout_test` rows belong in final comparison metrics. The train/held-out split
 contains RMSNorm shape generalization and two unseen operation types. Three
 held-out workloads are a small experiment, not a broad generalization claim.
+
+The [free-T4 notebook](../notebooks/free_t4.ipynb) defaults to a real worker
+preflight. Full model download, training, evaluation and export are explicit
+configuration options. It uses public weights and a separate torch 2.6/cu124,
+Triton 3.2 environment. The [experiment index](../experiments/README.md) identifies
+completed runs, intermediate failures and the authoritative benchmark suite.

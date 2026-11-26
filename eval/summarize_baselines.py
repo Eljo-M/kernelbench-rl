@@ -52,6 +52,7 @@ def write_comparison(path: Path, out: Path) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
     ops = sorted({r["op_name"] for r in results})
     dtypes = sorted({r["dtype"] for r in results})
     fig, axes = plt.subplots(1, 2, figsize=(14, max(5, len(ops) * .42)), sharey=True, dpi=180)
@@ -68,6 +69,9 @@ def write_comparison(path: Path, out: Path) -> None:
             ax.barh(positions, values, height=width * .9, label=dtype, color=colors[index % len(colors)], xerr=errors, capsize=2)
         ax.axvline(1, color="#64748b", linestyle="--", linewidth=1)
         ax.set_xscale("log")
+        ax.xaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5), numticks=8))
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
+        ax.xaxis.set_minor_formatter(NullFormatter())
         ax.set_xlabel(f"Geometric mean speedup vs {'eager PyTorch' if baseline == 'eager' else 'torch.compile'} (×)")
         ax.grid(axis="x", alpha=.15)
         ax.legend(frameon=False)
