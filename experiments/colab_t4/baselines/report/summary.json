@@ -1,0 +1,117 @@
+{
+  "overall": {
+    "n": 33,
+    "compile_pct": 100.0,
+    "correct_pct": 100.0,
+    "fast_1x_pct": 90.9,
+    "fast_compile_pct": 27.3,
+    "compile_baseline_n": 33,
+    "timed_correct_n": 33,
+    "geomean_speedup": 2.8558,
+    "speedup_ci95": {
+      "estimate": 2.8558,
+      "low": 2.798,
+      "high": 2.9009,
+      "seeds": 3,
+      "confidence": 0.95,
+      "method": "seed-cluster percentile bootstrap",
+      "resamples": 2000
+    },
+    "failure_counts": {},
+    "development_n": 0,
+    "fixture_n": 0
+  },
+  "groups": [
+    {
+      "method": "triton_baseline",
+      "backend": "triton",
+      "level": 1,
+      "fixture": false,
+      "dtype": "fp32",
+      "gpu_model": "Tesla T4",
+      "timing_mode": "cuda_graph",
+      "n": 15,
+      "compile_pct": 100.0,
+      "correct_pct": 100.0,
+      "fast_1x_pct": 100.0,
+      "fast_compile_pct": 46.7,
+      "compile_baseline_n": 15,
+      "timed_correct_n": 15,
+      "geomean_speedup": 3.7379,
+      "speedup_ci95": {
+        "estimate": 3.7379,
+        "low": 3.7007,
+        "high": 3.8076,
+        "seeds": 3,
+        "confidence": 0.95,
+        "method": "seed-cluster percentile bootstrap",
+        "resamples": 2000
+      },
+      "failure_counts": {},
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "triton_baseline",
+      "backend": "triton",
+      "level": 2,
+      "fixture": false,
+      "dtype": "fp32",
+      "gpu_model": "Tesla T4",
+      "timing_mode": "cuda_graph",
+      "n": 15,
+      "compile_pct": 100.0,
+      "correct_pct": 100.0,
+      "fast_1x_pct": 100.0,
+      "fast_compile_pct": 13.3,
+      "compile_baseline_n": 15,
+      "timed_correct_n": 15,
+      "geomean_speedup": 2.843,
+      "speedup_ci95": {
+        "estimate": 2.843,
+        "low": 2.6778,
+        "high": 2.979,
+        "seeds": 3,
+        "confidence": 0.95,
+        "method": "seed-cluster percentile bootstrap",
+        "resamples": 2000
+      },
+      "failure_counts": {},
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "triton_baseline",
+      "backend": "triton",
+      "level": 3,
+      "fixture": false,
+      "dtype": "fp32",
+      "gpu_model": "Tesla T4",
+      "timing_mode": "cuda_graph",
+      "n": 3,
+      "compile_pct": 100.0,
+      "correct_pct": 100.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": 0.0,
+      "compile_baseline_n": 3,
+      "timed_correct_n": 3,
+      "geomean_speedup": 0.7602,
+      "speedup_ci95": {
+        "estimate": 0.7602,
+        "low": 0.7468,
+        "high": 0.7828,
+        "seeds": 3,
+        "confidence": 0.95,
+        "method": "seed-cluster percentile bootstrap",
+        "resamples": 2000
+      },
+      "failure_counts": {},
+      "development_n": 0,
+      "fixture_n": 0
+    }
+  ],
+  "hardware_roof": {
+    "peak_tflops": null,
+    "bandwidth_gbps": null
+  }
+}

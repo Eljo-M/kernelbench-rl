@@ -18,6 +18,17 @@ jobs:
       - run: python3 -m kernels.op_registry --verify
       - run: python3 eval/benchmark_report.py --input eval/sample_traces.jsonl --out /tmp/kb_out
 
+  torch-training-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -e ".[dev,training]"
+      - run: python -m unittest tests.test_live_run_audit tests.test_portability_fixes tests.test_rl_gpu_bridge tests.test_qlora_grpo -v
+
   rust-sandbox-check:
     runs-on: ubuntu-latest
     steps:

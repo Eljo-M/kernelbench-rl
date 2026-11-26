@@ -1,9 +1,10 @@
 # Execution-feedback training
 
-The current target is `numpy_dev`. These CPU development measurements are useful
-for checking rollout plumbing and reward optimization; they are not GPU kernel
-speedup evidence. Full CUDA/Triton grading, FSDP, LoRA and multi-node training are
-not implemented in this trainer.
+The original `train_grpo` entrypoint supports `numpy_dev` development experiments.
+The separate `gpu_train_grpo` bridge adds real CUDA candidate grading,
+full-parameter small-model training and optional 7B QLoRA with resume. FSDP and
+multi-node training are not implemented. CPU development timings are not GPU
+speedup evidence.
 
 `python -m rl_trainer.train_grpo --dry-run` grades four fixed RMSNorm fixtures,
 writes strict JSONL with source hashes, seeds and group advantages, and explicitly
@@ -55,3 +56,39 @@ same operators, seeds and verifier settings before reporting gains.
 
 `launch_cloud_gpu.sh` defaults to CPU fixtures. It runs on an existing node and
 does not provision resources, install dependencies, or download weights.
+
+## CUDA bridge and free-resource experiments
+
+`gpu_train_grpo` preserves the original entrypoint and adds configuration-driven
+CUDA grading with raw completion tokens (including EOS), old/reference logps,
+clipped GRPO, finite-gradient checks, weight-delta/checksum evidence and resume:
+
+```bash
+python -m rl_trainer.gpu_train_grpo --config experiments/laptop_fullparam/config.json
+python -m rl_trainer.evaluate_heldout --config experiments/laptop_fullparam/config.json \
+  --checkpoint-dir checkpoints/qwen05b_fp32_adafactor --out experiments/laptop_fullparam/heldout.jsonl
+```
+
+Download the public model weights first and set `model_name_or_path` to that local
+directory. Record its immutable Hugging Face revision in `model_revision`.
+`ExperimentConfig` validates the JSON configuration. The laptop experiment uses
+the 0.49B model in FP32 with Adafactor to fit the available memory while updating
+the full model. Optional BF16/FP16 CPU-master AdamW retains FP32 master weights
+and optimizer moments in RAM. These are distinct optimizer configurations.
+
+`ExperimentConfig.preset_t4_7b_qlora()` configures a 7B NF4 base with rank-8 LoRA,
+FP16 compute, adapter-only AdamW and a shared frozen-base reference. It saves
+adapter weights, not a full-parameter 7B checkpoint. The free T4 environment uses
+torch 2.6/cu124 and Triton 3.2 for sm75 compatibility. LoRA dependencies are in the
+`qlora` extra; no resource provisioning or billing is performed by these tools.
+
+Resume by setting `resume_from` to the existing checkpoint directory in the same
+configuration and increasing `max_steps`. Optimizer, RNG, step count and model or
+adapter weights are restored. Incompatible configuration hashes are rejected.
+
+Held-out generation loads each model sequentially and frees it before grading.
+Best-of-K selects on a separate validation seed, then regrades the winner on the
+held-out test seed. Selection records carry `eval_phase: selection_val`; only
+`heldout_test` rows belong in final comparison metrics. The train/held-out split
+contains RMSNorm shape generalization and two unseen operation types. Three
+held-out workloads are a small experiment, not a broad generalization claim.

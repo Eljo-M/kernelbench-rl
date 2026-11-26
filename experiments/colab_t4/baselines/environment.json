@@ -1,0 +1,18 @@
+{
+  "torch": "2.6.0+cu124",
+  "triton": "3.2.0",
+  "gpu": "Tesla T4",
+  "cuda": "12.4",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "source_commit": "76d7b18de4208f4ab66b2e56c9a6ba5949e86a9a",
+  "timing_mode": "cuda_graph",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "dtype": "fp32",
+  "records": 33,
+  "passed": 33,
+  "completed_utc": "2026-11-26T18:29:59.273745+00:00"
+}

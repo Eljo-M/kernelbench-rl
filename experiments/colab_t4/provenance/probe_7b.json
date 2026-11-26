@@ -1,0 +1,11 @@
+{
+  "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "quantization": "NF4 double quantized 4bit",
+  "torch": "2.6.0+cu124",
+  "gpu": "Tesla T4",
+  "cuda": "12.4",
+  "peak_allocated_bytes": 7071596544,
+  "seconds": 78.49449062347412,
+  "completion": "```python\ndef add_numbers(a, b):\n    return a + b\n```",
+  "training_performed": false
+}
