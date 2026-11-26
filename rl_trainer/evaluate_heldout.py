@@ -36,18 +36,57 @@ def generate_cached_completions(
     method_budgets: Sequence[tuple[str, int]],
     generate_fn: Callable[[str, int, int], list[str]],
     chat_template_applied: bool = False,
+    cache_path: Path | None = None,
+    model_identity: str = "",
+    prompt_formatter: Callable[[str], str] | None = None,
 ) -> dict[str, list[tuple[str, int, str, list[str]]]]:
     """Generate and cache all completions for one model before unloading it from VRAM."""
+    saved = {}
+    if cache_path is not None and cache_path.exists():
+        for line in cache_path.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row.get("config_hash") != cfg.config_hash() or row.get("model_identity") != model_identity:
+                raise ValueError(f"Incompatible generation cache: {cache_path}")
+            key = (row["method"], row["op_name"], row["sample_k"])
+            if key in saved:
+                raise ValueError(f"Duplicate generation cache entry: {key}")
+            saved[key] = row
     cached: dict[str, list[tuple[str, int, str, list[str]]]] = {}
     for method_name, num_samples in method_budgets:
         entries: list[tuple[str, int, str, list[str]]] = []
         for idx, op_name in enumerate(cfg.heldout_ops):
             prompt = build_prompt(op_name, backend=cfg.backend)
             eval_seed = cfg.seed + cfg.heldout_seed_offset + idx
-            completions = generate_fn(prompt, num_samples, eval_seed)
+            prompt_sha = sha256_text(prompt_formatter(prompt) if prompt_formatter else prompt)
+            if cache_path is None:
+                completions = generate_fn(prompt, num_samples, eval_seed)
+            else:
+                completions = []
+                for sample_k in range(num_samples):
+                    key = (method_name, op_name, sample_k)
+                    row = saved.get(key)
+                    if row is not None:
+                        if row["prompt_sha256"] != prompt_sha or row["generation_seed"] != eval_seed + sample_k:
+                            raise ValueError(f"Prompt/seed changed for cached completion {key}")
+                        completion = row["raw_completion"]
+                    else:
+                        generated = generate_fn(prompt, 1, eval_seed + sample_k)
+                        if len(generated) != 1 or not isinstance(generated[0], str):
+                            raise ValueError("Sequential sampler must return one text completion")
+                        completion = generated[0]
+                        row = dict(method=method_name, op_name=op_name, sample_k=sample_k,
+                            config_hash=cfg.config_hash(), model_identity=model_identity,
+                            prompt_sha256=prompt_sha, generation_seed=eval_seed + sample_k,
+                            raw_completion=completion)
+                        cache_path.parent.mkdir(parents=True, exist_ok=True)
+                        with cache_path.open("a", encoding="utf-8") as fh:
+                            fh.write(json.dumps(row, allow_nan=False) + "\n")
+                    completions.append(completion)
+                    print(json.dumps({"event": "heldout_generation", "method": method_name,
+                        "op_name": op_name, "sample_k": sample_k, "cached": key in saved}), flush=True)
             if len(completions) != num_samples:
                 raise ValueError(f"{method_name} returned {len(completions)} samples for {op_name}, expected {num_samples}")
-            entries.append((op_name, eval_seed, sha256_text(prompt), [extract_python_source(c) for c in completions]))
+            entries.append((op_name, eval_seed, prompt_sha, [extract_python_source(c) for c in completions]))
         cached[method_name] = entries
     return cached
 
@@ -297,6 +336,7 @@ def _generate_and_unload_hf_model(
     method_budgets: Sequence[tuple[str, int]],
     *,
     checkpoint_dir: str = "",
+    cache_path: Path | None = None,
 ) -> tuple[dict[str, list[tuple[str, int, str, list[str]]]], bool]:
     """Load ONE model, generate & cache all requested completions, then completely unload VRAM."""
     import torch  # type: ignore
@@ -308,15 +348,34 @@ def _generate_and_unload_hf_model(
     dtype_map = {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}
     model_dtype = dtype_map[cfg.dtype] if device == "cuda" else torch.float32
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.model_name_or_path, revision=cfg.model_revision)
+    tokenizer = AutoTokenizer.from_pretrained(cfg.model_name_or_path, revision=cfg.model_revision,
+                                            local_files_only=True, trust_remote_code=False)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     _, has_chat_template, _ = format_prompt_for_tokenizer("ping", tokenizer)
+    model_identity = "base:" + cfg.model_revision
+    if checkpoint_dir:
+        state = load_checkpoint(checkpoint_dir, expected_config_hash=cfg.config_hash(), restore_rng=False)
+        model_identity = f"checkpoint:{state.step}:{state.trainable_weights_sha256}"
+    formatter = lambda prompt: format_prompt_for_tokenizer(prompt, tokenizer)[0]
+    class CacheMiss(Exception):
+        pass
+    def missing(*args):
+        raise CacheMiss()
+    if cache_path is not None and cache_path.exists():
+        try:
+            cached = generate_cached_completions(cfg, method_budgets=method_budgets,
+                generate_fn=missing, cache_path=cache_path, model_identity=model_identity,
+                prompt_formatter=formatter, chat_template_applied=has_chat_template)
+            return cached, has_chat_template
+        except CacheMiss:
+            pass
 
     model: Any = None
+    base: Any = None
     try:
         if cfg.training_mode == "qlora_7b_nf4":
-            from peft import PeftModel  # type: ignore
+            from peft import PeftModel, prepare_model_for_kbit_training  # type: ignore
             from transformers import BitsAndBytesConfig  # type: ignore
 
             bnb_cfg = BitsAndBytesConfig(
@@ -329,8 +388,10 @@ def _generate_and_unload_hf_model(
                 cfg.model_name_or_path,
                 revision=cfg.model_revision,
                 quantization_config=bnb_cfg,
-                device_map="auto",
+                device_map={"": 0}, local_files_only=True, trust_remote_code=False,
             )
+            # Match the FP32 non-quantized weights used during QLoRA training.
+            base = prepare_model_for_kbit_training(base, use_gradient_checkpointing=False)
             if checkpoint_dir:
                 step_dir = resolve_checkpoint_dir(checkpoint_dir)
                 state = load_checkpoint(step_dir, expected_config_hash=cfg.config_hash(), restore_rng=False)
@@ -343,7 +404,8 @@ def _generate_and_unload_hf_model(
                 model = base
         else:
             model = AutoModelForCausalLM.from_pretrained(
-                cfg.model_name_or_path, revision=cfg.model_revision, torch_dtype=model_dtype
+                cfg.model_name_or_path, revision=cfg.model_revision, torch_dtype=model_dtype,
+                local_files_only=True, trust_remote_code=False,
             ).to(device)
             if checkpoint_dir:
                 load_checkpoint(
@@ -382,11 +444,14 @@ def _generate_and_unload_hf_model(
             method_budgets=method_budgets,
             generate_fn=_gen,
             chat_template_applied=has_chat_template,
+            cache_path=cache_path, model_identity=model_identity, prompt_formatter=formatter,
         )
         return cached, has_chat_template
     finally:
         # Unload model completely before loading next model or running GPU grading worker
         del model
+        if cfg.training_mode == "qlora_7b_nf4":
+            del base
         del tokenizer
         gc.collect()
         if torch.cuda.is_available():
@@ -406,6 +471,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", required=True, help="Output strict JSONL path.")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args(argv)
+    if Path(args.out).exists() and not args.overwrite:
+        raise FileExistsError(f"Output already exists: {args.out}")
 
     cfg = ExperimentConfig.from_json(Path(args.config))
     k_budget = cfg.heldout_best_of_k if args.best_of_k is None else args.best_of_k
@@ -414,6 +481,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     cached, applied_chat = _generate_and_unload_hf_model(
         cfg,
         [("base_pass1", 1), (f"base_best_of_{k_budget}", k_budget)],
+        cache_path=Path(args.out).with_suffix(".base.generations.jsonl"),
     )
     # Phase 2: Load trained -> generate & cache -> unload trained (never concurrent with base!)
     if args.checkpoint_dir:
@@ -421,6 +489,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             cfg,
             [("trained_checkpoint", 1)],
             checkpoint_dir=args.checkpoint_dir,
+            cache_path=Path(args.out).with_suffix(".trained.generations.jsonl"),
         )
         cached.update(trained_cached)
 

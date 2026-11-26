@@ -19,6 +19,18 @@ def trace(**changes):
 
 
 class TestEvaluation(unittest.TestCase):
+    def test_report_excludes_validation_candidates_used_for_selection(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "heldout.jsonl"
+            rows = [trace(eval_phase="selection_val", speedup_vs_eager=100),
+                    trace(eval_phase="heldout_test", speedup_vs_eager=2)]
+            path.write_text("".join(json.dumps(r)+"\n" for r in rows))
+            write_report(path, Path(td) / "report")
+            stats = json.loads((Path(td)/"report/summary.json").read_text())
+            self.assertEqual(stats["selection_records_excluded"], 1)
+            self.assertEqual(stats["overall"]["n"], 1)
+            self.assertEqual(stats["overall"]["geomean_speedup"], 2)
+
     def test_failed_cheating_and_untimed_records_do_not_inflate_speedup(self):
         stats = summarize_traces([trace(), trace(status="NUMERICAL_MISMATCH", correct=False, speedup_vs_eager=1000), trace(status="CHEAT", cheat_detected=True, speedup_vs_eager=1000), trace(candidate_ms=0, speedup_vs_eager=1000)])
         self.assertEqual(stats["timed_correct_n"], 1)

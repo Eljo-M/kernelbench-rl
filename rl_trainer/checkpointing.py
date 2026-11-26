@@ -7,6 +7,8 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+import tempfile
+import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -112,13 +114,40 @@ def verify_compatible_run_paths(
                 raise ValueError(
                     f"Output JSONL already exists: {output_jsonl}. Pass --resume-from or --overwrite."
                 )
-            first = json.loads(lines[0])
-            existing_hash = first.get("config_hash")
-            if existing_hash is not None and existing_hash != expected_config_hash:
-                raise ValueError(
-                    f"Refusing to append to incompatible JSONL {output_jsonl}: "
-                    f"existing config_hash={existing_hash!r} != {expected_config_hash!r}."
-                )
+            if any(json.loads(line).get("config_hash") != expected_config_hash for line in lines):
+                raise ValueError(f"Refusing to append to incompatible JSONL {output_jsonl}.")
+
+
+def reconcile_resume_log(output_jsonl: Path, checkpoint_step: int) -> Path | None:
+    """Archive rollouts after the restored checkpoint before replaying those steps.
+
+    A crash can leave logged steps beyond the last durable weights/optimizer.
+    Keeping them in the resumed stream would duplicate steps and mix policies.
+    The complete original log is retained before replacing the active file.
+    """
+    if not output_jsonl.exists():
+        return None
+    lines = output_jsonl.read_text(encoding="utf-8").splitlines(keepends=True)
+    keep = []
+    for line in lines:
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        step = row.get("step")
+        if isinstance(step, bool) or not isinstance(step, int) or step < 1:
+            raise ValueError("Resume logs require a positive integer step on every record")
+        if step <= checkpoint_step:
+            keep.append(line)
+    if len(keep) == sum(bool(line.strip()) for line in lines):
+        return None
+    archive = output_jsonl.with_name(output_jsonl.name + ".uncheckpointed-" + uuid.uuid4().hex + ".jsonl")
+    with archive.open("x", encoding="utf-8", newline="") as fh:
+        fh.writelines(lines)
+    temporary = output_jsonl.with_name(output_jsonl.name + ".resume-" + uuid.uuid4().hex + ".tmp")
+    with temporary.open("x", encoding="utf-8", newline="") as fh:
+        fh.writelines(keep)
+    temporary.replace(output_jsonl)
+    return archive
 
 
 def _load_adapter_weights_in_place(model: Any, adapter_path: Path, map_location: str) -> None:
@@ -165,7 +194,26 @@ def save_checkpoint(
     adapter_only: bool = False,
     save_rng: bool = True,
 ) -> Path:
-    """Atomically save checkpoint metadata, RNG state, optimizer state, and model/adapter weights."""
+    """Publish a complete checkpoint directory, then atomically replace its pointer."""
+    checkpoint_dir = Path(checkpoint_dir).resolve()
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    final_dir = checkpoint_dir / f"step_{state.step:05d}"
+    if final_dir.exists():
+        raise FileExistsError(f"Checkpoint already exists: {final_dir}; use a new run directory")
+    staging = Path(tempfile.mkdtemp(prefix=".pending-", dir=checkpoint_dir))
+    completed = _write_checkpoint_contents(staging, state, model=model, optimizer=optimizer,
+                                           adapter_only=adapter_only, save_rng=save_rng)
+    completed.replace(final_dir)
+    (staging / "latest.json").replace(checkpoint_dir / "latest.json")
+    staging.rmdir()
+    return final_dir
+
+
+def _write_checkpoint_contents(
+    checkpoint_dir: Path, state: CheckpointState, *, model: Any = None,
+    optimizer: Any = None, adapter_only: bool = False, save_rng: bool = True,
+) -> Path:
+    """Write into staging; incomplete directories are never advertised as latest."""
     step_dir = checkpoint_dir / f"step_{state.step:05d}"
     step_dir.mkdir(parents=True, exist_ok=True)
 

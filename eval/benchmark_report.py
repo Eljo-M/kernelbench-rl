@@ -199,12 +199,16 @@ def write_report(input_jsonl: Path, out_dir: Path, *, peak_tflops: float | None 
     if any(value is not None and (not math.isfinite(value) or value <= 0) for value in (peak_tflops, bandwidth_gbps)):
         raise ValueError("Hardware roof parameters must be finite and positive")
     rows = load_traces(Path(input_jsonl))
+    selection_n = sum(row.get("eval_phase") == "selection_val" for row in rows)
+    rows = [row for row in rows if row.get("eval_phase") != "selection_val"]
     stats = summarize_traces(rows)
     groups = grouped_summaries(rows)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     compile_value = f"{stats['fast_compile_pct']}% of {stats['compile_baseline_n']} comparable records" if stats['fast_compile_pct'] is not None else "Unavailable"
     lines = ["# KernelBench-RL Evaluation Summary", "", "This report describes the supplied records; it does not establish a controlled training ablation.", ""]
+    if selection_n:
+        lines.extend([f"Excluded {selection_n} validation records used to select best-of-K candidates; metrics below use final test records.", ""])
     if stats["fixture_n"]:
         lines.extend([f"**Synthetic fixtures: {stats['fixture_n']} records. These values are test data, not benchmark evidence.**", ""])
     if stats["development_n"]:
@@ -218,7 +222,7 @@ def write_report(input_jsonl: Path, out_dir: Path, *, peak_tflops: float | None 
         lines.append("| None | 0 |")
     lines.extend(["", "GPU throughput plots use only correct GPU records containing positive achieved_tflops and arithmetic_intensity. Hardware ceilings are drawn only when explicitly supplied. FLOP/byte estimates depend on the operator cost model.", ""])
     (out_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
-    (out_dir / "summary.json").write_text(json.dumps({"overall": stats, "groups": groups, "hardware_roof": {"peak_tflops": peak_tflops, "bandwidth_gbps": bandwidth_gbps}}, indent=2, allow_nan=False), encoding="utf-8")
+    (out_dir / "summary.json").write_text(json.dumps({"overall": stats, "groups": groups, "selection_records_excluded": selection_n, "hardware_roof": {"peak_tflops": peak_tflops, "bandwidth_gbps": bandwidth_gbps}}, indent=2, allow_nan=False), encoding="utf-8")
     _plots(rows, out_dir, peak_tflops, bandwidth_gbps)
     template = Path(__file__).with_name("report.html").read_text(encoding="utf-8")
     safe_json = json.dumps(rows, ensure_ascii=True, allow_nan=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")

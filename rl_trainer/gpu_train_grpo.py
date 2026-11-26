@@ -17,6 +17,7 @@ from rl_trainer.checkpointing import (
     compute_trainable_weights_sha256,
     compute_weight_l2_delta,
     load_checkpoint,
+    reconcile_resume_log,
     save_checkpoint,
     snapshot_trainable_params,
     verify_compatible_run_paths,
@@ -439,6 +440,9 @@ def run_gpu_training_loop(
         total_rollouts = state.total_rollouts
         optimizer_step_count = state.optimizer_step_count
         last_weights_sha = state.trainable_weights_sha256
+        archive = reconcile_resume_log(out_jsonl, state.step)
+        if archive is not None:
+            print(json.dumps({"event": "archived_uncheckpointed_log", "path": str(archive)}), flush=True)
     else:
         start_step = 1
         op_cursor = 0

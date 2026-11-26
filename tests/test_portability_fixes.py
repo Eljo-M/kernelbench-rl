@@ -3,9 +3,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from rl_trainer.evaluate_heldout import evaluate_heldout_methods
+from rl_trainer.evaluate_heldout import evaluate_heldout_methods, generate_cached_completions
 from rl_trainer.experiment_config import ExperimentConfig
 from rl_trainer.gpu_train_grpo import compute_clipped_grpo_loss_torch
+from rl_trainer.checkpointing import (CheckpointState, save_checkpoint, reconcile_resume_log,
+                                     verify_compatible_run_paths)
 
 try:
     import torch  # type: ignore
@@ -25,6 +27,64 @@ BAD_RMSNORM_NP = "import numpy as np\ndef kernel_forward(x, w, eps=1e-6): return
 
 
 class TestPortabilityFixes(unittest.TestCase):
+    def test_interrupted_generation_resumes_only_missing_samples_and_validates_identity(self):
+        cfg = ExperimentConfig(backend="numpy_dev", dtype="fp32",
+            train_ops=["rmsnorm_2048"], heldout_ops=["rmsnorm_4096"])
+        with tempfile.TemporaryDirectory() as td:
+            cache = Path(td)/"generations.jsonl"
+            first_calls = []
+            def interrupted(prompt, n, seed):
+                first_calls.append(seed)
+                if len(first_calls) == 3:
+                    raise RuntimeError("disconnected")
+                return [str(seed)]
+            kwargs = dict(method_budgets=[("base_best_of_4", 4)], cache_path=cache,
+                          model_identity="base", prompt_formatter=lambda p: "formatted:"+p)
+            with self.assertRaisesRegex(RuntimeError, "disconnected"):
+                generate_cached_completions(cfg, generate_fn=interrupted, **kwargs)
+            resumed_calls = []
+            def resumed(prompt, n, seed):
+                resumed_calls.append(seed)
+                return [str(seed)]
+            result = generate_cached_completions(cfg, generate_fn=resumed, **kwargs)
+            self.assertEqual(resumed_calls, [50044, 50045])
+            self.assertEqual(result["base_best_of_4"][0][3], ["50042", "50043", "50044", "50045"])
+            self.assertEqual(len(cache.read_text().splitlines()), 4)
+            with self.assertRaises(ValueError):
+                generate_cached_completions(cfg, generate_fn=resumed, **dict(kwargs, model_identity="different"))
+            with self.assertRaisesRegex(ValueError, "Prompt/seed"):
+                generate_cached_completions(cfg, generate_fn=resumed,
+                    **dict(kwargs, prompt_formatter=lambda p: "changed:"+p))
+
+    def test_failed_checkpoint_never_replaces_latest_or_exposes_partial_weights(self):
+        class BrokenModel:
+            def save_pretrained(self, path):
+                Path(path).mkdir()
+                raise RuntimeError("interrupted weight write")
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            save_checkpoint(root, CheckpointState(1, 1, 42, "hash", 0, 2), save_rng=False)
+            with self.assertRaisesRegex(RuntimeError, "interrupted"):
+                save_checkpoint(root, CheckpointState(2, 2, 42, "hash", 0, 4),
+                                model=BrokenModel(), adapter_only=True, save_rng=False)
+            self.assertEqual(json.loads((root/"latest.json").read_text())["step"], 1)
+            self.assertFalse((root/"step_00002").exists())
+            with self.assertRaises(FileExistsError):
+                save_checkpoint(root, CheckpointState(1, 1, 42, "hash", 0, 2), save_rng=False)
+
+    def test_resume_archives_uncheckpointed_steps_and_checks_every_config_hash(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td)/"rollouts.jsonl"
+            original = ''.join(json.dumps({"step": s, "config_hash": "hash"})+'\n' for s in (1, 2))
+            path.write_text(original)
+            archive = reconcile_resume_log(path, 1)
+            self.assertEqual(archive.read_text(), original)
+            self.assertEqual([json.loads(s)["step"] for s in path.read_text().splitlines()], [1])
+            self.assertIsNone(reconcile_resume_log(path, 1))
+            path.write_text(original + json.dumps({"step": 3, "config_hash": "other"})+'\n')
+            with self.assertRaises(ValueError):
+                verify_compatible_run_paths(Path(td)/"ckpt", path, "hash", is_resuming=True)
+
     def test_config_hash_changes_with_cpu_master_adamw_flag(self):
         c1 = ExperimentConfig(cpu_master_adamw=True)
         c2 = ExperimentConfig(cpu_master_adamw=False)

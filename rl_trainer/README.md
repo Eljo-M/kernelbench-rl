@@ -87,6 +87,12 @@ configuration and increasing `max_steps`. Optimizer, RNG, step count and model o
 adapter weights are restored. Incompatible configuration hashes are rejected.
 
 Held-out generation loads each model sequentially and frees it before grading.
+Each completion is saved immediately to an identity-checked generation cache;
+restarting the same command reuses completed samples and generates only missing
+ones. Configuration, checkpoint identity and the actual formatted prompt hash
+must match. Checkpoints become visible only after all weights and optimizer files
+have been written. Resume archives any logged steps beyond the restored checkpoint
+before replaying them, preserving the original log for audit.
 Best-of-K selects on a separate validation seed, then regrades the winner on the
 held-out test seed. Selection records carry `eval_phase: selection_val`; only
 `heldout_test` rows belong in final comparison metrics. The train/held-out split

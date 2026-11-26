@@ -1,0 +1,23 @@
+{
+  "started_utc": "2026-11-26T18:37:43.687121+00:00",
+  "model_id": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "model_revision": "ea3f2471cf1b1f0db85067f1ef93848e38e88c25",
+  "source_commit": "3e9de7c9bf1cd83a523282e26e41feaf4505c66b",
+  "config_hash": "b06d4b72437f6cb2",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "training_mode": "full_param_0.49b",
+  "dtype": "fp32",
+  "optimizer": "adafactor",
+  "training_performed": true,
+  "completed_utc": "2026-11-26T18:52:09.159124+00:00",
+  "steps": 8,
+  "optimizer_steps": 1,
+  "trainable_weights_sha256": "14e3f9d1c22f78473f97a59f94366d197e4c1ed32e285bc4088e5030ef4a0a00",
+  "seconds": 864.4529999999795,
+  "peak_allocated_bytes": 5633594880,
+  "peak_reserved_bytes": 6415187968
+}
