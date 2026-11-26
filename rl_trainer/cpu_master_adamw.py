@@ -84,7 +84,12 @@ class CpuMasterAdamW:
         if not saw_grad:
             return False, 0.0
 
-        torch.nn.utils.clip_grad_norm_(self.master_params, max_grad_norm)
+        grad_norm = torch.nn.utils.clip_grad_norm_(self.master_params, max_grad_norm)
+        if not bool(torch.isfinite(grad_norm)) or any(
+            p.grad is not None and not bool(torch.isfinite(p.grad).all()) for p in self.master_params
+        ):
+            self.zero_grad(set_to_none=True)
+            return False, 0.0
         before = [m.detach().clone() for m in self.master_params]
         self.optimizer.step()
 

@@ -1,0 +1,76 @@
+{
+  "is_fixture": false,
+  "is_readiness_probe": true,
+  "is_quality_experiment": false,
+  "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "seed": 142,
+  "operator": "matmul_bias_gelu_512",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "prompt_version": "contract_v2",
+  "prompt_tokens": 885,
+  "target_tokens": 761,
+  "prompt_sha256": "1ec382e237dcfc8b1f505c8da0131401f8580bdb5dec4dcd8aa56556aa177c82",
+  "target_source_sha256": "ef1fcf9751cd0c233c2cebdaeb01fb40d1880fd74901652fb004ba2dc5364678",
+  "chat_template_applied": true,
+  "full_sequence_tokens": 1646,
+  "dtype": "fp16",
+  "quantization": "NF4 double quantized decoder; fixed CPU fp32 vocabulary",
+  "finite_sft_loss": 0.34001997113227844,
+  "finite_gradients": true,
+  "nonzero_gradient_parameters": 112,
+  "grad_norm": 0.17126917839050293,
+  "parameter_update_verified": true,
+  "adapter_before_sha256": "5a2cfdb9e3e3f64fd276043f235c2ff852daefd82e2f9673aa3e8d2fbae3fc7e",
+  "adapter_after_sha256": "15e954c2d2af9c49b4ee0e54642e2f80732c240a0b8aeb55a5208ca33344d700",
+  "old_new_max_abs_logp_diff": 0.0,
+  "trainable_parameters": 5046272,
+  "frozen_base_integrity_verified": true,
+  "frozen_before": {
+    "sha256": "c46e9be313fee485da8e68afc6bb069c0e0654a38490b3023ac18ddb504b54ba",
+    "frozen_parameter_tensors": 339,
+    "bytes_hashed": 7623956480
+  },
+  "frozen_after": {
+    "sha256": "c46e9be313fee485da8e68afc6bb069c0e0654a38490b3023ac18ddb504b54ba",
+    "frozen_parameter_tensors": 339,
+    "bytes_hashed": 7623956480
+  },
+  "generated_tokens": 64,
+  "embedding_device": "cpu",
+  "lm_head_device": "cpu",
+  "adapter_devices": [
+    "cuda:0"
+  ],
+  "device_placement": {
+    "model.embed_tokens": "cpu",
+    "model.layers": "cuda:0",
+    "model.norm": "cuda:0",
+    "model.rotary_emb": "cuda:0",
+    "lm_head": "cpu",
+    "logits": "cpu",
+    "weight_staging": false
+  },
+  "memory": {
+    "cuda_free_bytes": 3082813440,
+    "cuda_total_bytes": 8546484224,
+    "cuda_allocated_bytes": 3419572224,
+    "cuda_reserved_bytes": 4162846720,
+    "peak_cuda_allocated_bytes": 4997825024,
+    "peak_cuda_reserved_bytes": 5309988864,
+    "ram_available_bytes": 3826581504,
+    "ram_total_bytes": 33413771264,
+    "process_rss_bytes": 9052028928
+  },
+  "elapsed_seconds": 80.75,
+  "success": true,
+  "runtime_versions": {
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6",
+    "accelerate": "1.16.0",
+    "bitsandbytes": "0.49.0",
+    "peft": "0.18.0"
+  },
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "checkpoint_saved": false,
+  "readiness_probe_weights_discarded": true
+}

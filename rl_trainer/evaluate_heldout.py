@@ -54,8 +54,10 @@ def generate_cached_completions(
     cached: dict[str, list[tuple[str, int, str, list[str]]]] = {}
     for method_name, num_samples in method_budgets:
         entries: list[tuple[str, int, str, list[str]]] = []
-        for idx, op_name in enumerate(cfg.heldout_ops):
-            prompt = build_prompt(op_name, backend=cfg.backend)
+        for idx, op_name in enumerate(cfg.heldout_ops + cfg.development_eval_ops):
+            if op_name in cfg.development_eval_ops and num_samples > 1:
+                continue  # Inspected regressions get pass@1 only; reserve search budget for fresh tests.
+            prompt = build_prompt(op_name, backend=cfg.backend, prompt_version=cfg.prompt_version, float_dtype=cfg.dtype)
             eval_seed = cfg.seed + cfg.heldout_seed_offset + idx
             prompt_sha = sha256_text(prompt_formatter(prompt) if prompt_formatter else prompt)
             if cache_path is None:
@@ -129,9 +131,11 @@ def grade_cached_heldout_completions(
         rec["chat_template_applied"] = bool(chat_template_applied)
         rec["prompt_sha256"] = p_sha
         rec["policy_updated"] = False
-        rec["split"] = "heldout"
-        rec["heldout"] = True
-        rec["eval_phase"] = eval_phase
+        development = rec["op_name"] in cfg.development_eval_ops
+        rec["split"] = "development" if development else "heldout"
+        rec["heldout"] = not development
+        rec["eval_phase"] = eval_phase.replace("heldout_test", "development_test").replace("selection_val", "development_selection") if development else eval_phase
+        rec["evaluation_cohort"] = "previously_inspected_development" if development else "fresh_heldout"
         rec["selection_method"] = sel_method
         rec["sample_k"] = int(k_idx)
         rec["budget_k"] = int(num_samples)
@@ -142,9 +146,9 @@ def grade_cached_heldout_completions(
         rec["config_hash"] = cfg.config_hash()
         rec["fixture"] = bool(is_fixture)
         rec["generation_engine"] = generation_engine
-        rec["checkpoint_identity"] = checkpoint_identity if rec.get("method") == "trained_checkpoint" else "base:" + cfg.model_revision
+        rec["checkpoint_identity"] = checkpoint_identity if rec.get("method") in {"trained_checkpoint", "sft_only_checkpoint"} else "base:" + cfg.model_revision
         print(json.dumps({"event": "heldout_grade", "method": rec.get("method"),
-                          "op_name": rec["op_name"], "phase": eval_phase, "status": rec["status"]}), flush=True)
+                          "op_name": rec["op_name"], "phase": rec["eval_phase"], "status": rec["status"]}), flush=True)
         return rec
 
     for method_name, op_entries in cached_by_method.items():
@@ -264,6 +268,8 @@ def grade_cached_heldout_completions(
                     cand_recs.append(rec)
                 final_heldout_recs.append(max(cand_recs, key=lambda r: float(r.get("reward", 0.0))))
 
+        development_recs = [r for r in final_heldout_recs if not r["heldout"]]
+        final_heldout_recs = [r for r in final_heldout_recs if r["heldout"]]
         n = len(final_heldout_recs)
         passed = sum(1 for r in final_heldout_recs if r.get("status") == "PASS")
         fast_eager = sum(1 for r in final_heldout_recs if r.get("status") == "PASS" and float(r.get("speedup_vs_eager", 0.0)) > 1.0)
@@ -278,6 +284,8 @@ def grade_cached_heldout_completions(
         geomean = math.exp(sum(math.log(s) for s in speedups) / len(speedups)) if speedups else 0.0
         summaries[method_name] = {
             "ops": float(n),
+            "development_passed": sum(r.get("status") == "PASS" for r in development_recs),
+            "development_total": len(development_recs),
             "selection_method": used_sel_method,
             "pass_rate": round(100.0 * passed / max(n, 1), 2),
             "fast_1x_rate": round(100.0 * fast_eager / max(n, 1), 2),
@@ -384,20 +392,8 @@ def _generate_and_unload_hf_model(
             from peft import PeftModel, prepare_model_for_kbit_training  # type: ignore
             from transformers import BitsAndBytesConfig  # type: ignore
 
-            bnb_cfg = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_compute_dtype=model_dtype,
-            )
-            base = AutoModelForCausalLM.from_pretrained(
-                cfg.model_name_or_path,
-                revision=cfg.model_revision,
-                quantization_config=bnb_cfg,
-                device_map={"": 0}, local_files_only=True, trust_remote_code=False,
-            )
-            # Match the FP32 non-quantized weights used during QLoRA training.
-            base = prepare_model_for_kbit_training(base, use_gradient_checkpointing=False)
+            from rl_trainer.model_loading import load_quantized_base
+            base = load_quantized_base(cfg, gradient_checkpointing=False)
             if checkpoint_dir:
                 step_dir = resolve_checkpoint_dir(checkpoint_dir)
                 state = load_checkpoint(step_dir, expected_config_hash=cfg.config_hash(), restore_rng=False)

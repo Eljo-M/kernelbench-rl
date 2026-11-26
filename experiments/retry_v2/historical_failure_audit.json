@@ -1,0 +1,114 @@
+{
+  "laptop_fullparam": {
+    "train.jsonl": {
+      "records": 16,
+      "statuses": {
+        "COMPILE_ERROR": 15,
+        "CHEAT": 1
+      },
+      "error_messages": {
+        "Candidate file load error (ModuleNotFoundError): No module named 'tl'": 1,
+        "Candidate file load error (ModuleNotFoundError): No module named 'cuda'": 1,
+        "Reference operator attribute access detected: .functional": 1,
+        "Candidate file load error (ModuleNotFoundError): No module named 'triton.jit'": 4,
+        "Candidate file load error (SyntaxError): invalid syntax (candidate_kernel.py, line 1)": 3,
+        "Candidate file load error (SyntaxError): unterminated string literal (detected at line 15) (candidate_kernel.py, line 15)": 1,
+        "Candidate file load error (SyntaxError): unmatched ')' (candidate_kernel.py, line 5)": 1,
+        "Candidate file load error (SyntaxError): invalid syntax (candidate_kernel.py, line 17)": 1,
+        "Candidate file load error (SyntaxError): unterminated string literal (detected at line 6) (candidate_kernel.py, line 6)": 1,
+        "Candidate file load error (SyntaxError): invalid syntax (candidate_kernel.py, line 5)": 1,
+        "canonical candidate error (NameError): name 'np' is not defined": 1
+      },
+      "token_limit_hits": 6,
+      "invalid_samples_with_nonzero_advantage": 2
+    },
+    "heldout.jsonl": {
+      "records": 33,
+      "statuses": {
+        "CHEAT": 21,
+        "COMPILE_ERROR": 12
+      },
+      "error_messages": {
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Candidate must define at least one real `@triton.jit` kernel.; Host function '_ref_rmsnorm' performs forbidden host tensor arithmetic (Mult).; Host function '_ref_rmsnorm' performs forbidden host tensor arithmetic (Div).; Host function 'kernel_forward' calls disallowed tensor method 'x.astype()'.": 2,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden import 'triton.jit'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'tensordot'.; Disallowed torch attribute 'randn'.; Candidate must define at least one real `@triton.jit` kernel.": 2,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden from-import 'lib.tir'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'einsum'.; Candidate must define at least one real `@triton.jit` kernel.; Candidate must define a top-level host entrypoint `def kernel_forward(...)`.": 2,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden import 'triton.jit'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'tensor'.; Candidate must define at least one real `@triton.jit` kernel.; Host function 'kernel_forward' performs forbidden host tensor arithmetic (Add).": 1,
+        "GPU source policy: Forbidden from-import 'fractions'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Candidate classes and class-held caches are outside the supported source policy.; Disallowed torch attribute 'float32_cast'.; Disallowed torch attribute 'sqrt'.; Disallowed torch attribute 'jit'.": 1,
+        "invalid syntax (<unknown>, line 13)": 2,
+        "invalid syntax. Perhaps you forgot a comma? (<unknown>, line 29)": 1,
+        "GPU source policy: Forbidden import 'torch.nn'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Relative imports are forbidden in candidate kernels.; Disallowed torch attribute 'randn'.; Candidate must define at least one real `@triton.jit` kernel.; Host function 'kernel_forward' calls disallowed tensor method 'x.float()'.": 1,
+        "GPU source policy: Forbidden from-import 'torch.cuda'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden import 'tl'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Candidate must define at least one real `@triton.jit` kernel.; Host function '_ref_rmsnorm' performs forbidden host tensor arithmetic (Mult).; Host function '_ref_rmsnorm' performs forbidden host tensor arithmetic (Div).": 1,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'clamp'.; Candidate must define at least one real `@triton.jit` kernel.; Host function '_ref_rmsnorm' performs forbidden host tensor arithmetic (Mult).; Host function '_ref_rmsnorm' performs forbidden host tensor arithmetic (Div).": 1,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden from-import 'lib.tir'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'randn'.; Candidate must define at least one real `@triton.jit` kernel.; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 1,
+        "invalid syntax (<unknown>, line 45)": 2,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden import 'torch.jit'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Candidate must define at least one real `@triton.jit` kernel.; Host function 'kernel_forward' performs forbidden host tensor arithmetic (Mult).; Host function 'kernel_forward' calls disallowed tensor method 'qweight.astype()'.": 1,
+        "GPU source policy: Forbidden import 'torch.nn'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Relative imports are forbidden in candidate kernels.; Disallowed torch attribute 'randn'.; Candidate must define at least one real `@triton.jit` kernel.; Host function 'kernel_forward' calls disallowed tensor method 'x.sum()'.": 1,
+        "invalid syntax. Perhaps you forgot a comma? (<unknown>, line 9)": 1,
+        "GPU source policy: Forbidden import 'numpy'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'jit'.; Candidate must define at least one real `@triton.jit` kernel.; Host function 'kernel_forward' performs forbidden host tensor arithmetic (Mult).; Host function 'kernel_forward' performs forbidden host matrix multiplication (@).": 1,
+        "Reference fallback import detected: torch.nn.functional": 1,
+        "GPU source policy: Forbidden import 'tl'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Candidate must define at least one real `@triton.jit` kernel.; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 1,
+        "Reference operator fallback detected: .softmax()": 1,
+        "invalid syntax (<unknown>, line 28)": 2,
+        "unindent does not match any outer indentation level (<unknown>, line 13)": 1,
+        "invalid syntax. Maybe you meant '==' or ':=' instead of '='? (<unknown>, line 33)": 1,
+        "GPU source policy: Forbidden import 'torch.triton'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden from-import 'typing'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'randn'.; Disallowed torch attribute 'cat'.; Candidate must define at least one real `@triton.jit` kernel.": 1,
+        "Forbidden import detected: os": 1,
+        "invalid syntax (<unknown>, line 18)": 1,
+        "invalid syntax (<unknown>, line 51)": 1,
+        "GPU source policy: Forbidden from-import 'torch.jit'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Forbidden import 'torch_tensorcore'. Only ['__future__', 'math', 'torch', 'triton', 'triton.language'] are allowed.; Disallowed torch attribute 'Int64List'.; Candidate must define at least one real `@triton.jit` kernel.; Candidate must define a top-level host entrypoint `def kernel_forward(...)`.": 1
+      }
+    }
+  },
+  "colab_t4/qlora7b_fresh": {
+    "train.jsonl": {
+      "records": 16,
+      "statuses": {
+        "CHEAT": 8,
+        "COMPILE_ERROR": 7,
+        "RUNTIME_ERROR": 1
+      },
+      "error_messages": {
+        "GPU source policy: Candidate must define a top-level host entrypoint `def kernel_forward(...)`.; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 4,
+        "GPU source policy: Host function 'kernel_forward' calls disallowed tensor method 'x.new_empty_like()'.; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 1,
+        "invalid syntax (<unknown>, line 46)": 1,
+        "invalid syntax (<unknown>, line 39)": 1,
+        "GPU source policy: Host function '_stable_sigmoid' performs forbidden unary tensor op.; Host function 'kernel_forward' calls disallowed triton.current_context().; Host function 'kernel_forward' calls disallowed triton.program_launch().; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 1,
+        "invalid syntax (<unknown>, line 1)": 1,
+        "canonical candidate error (CompilationError): at 13:8:\n    X,\n    Residual,\n    Weight,\n    RMSOut,\n    Out,\n    N,\n    C,\n    eps,\n):\n    pid = tl.program_id(0)\n    offset = pid * C\n    x = tl.load(X + offset, masked=True)\n        ^": 1,
+        "GPU source policy: Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 2,
+        "canonical candidate error (NameError): name 'torch' is not defined": 1,
+        "invalid syntax. Maybe you meant '==' or ':=' instead of '='? (<unknown>, line 25)": 1,
+        "Candidate file load error (TypeError): autotune() missing 1 required positional argument: 'key'": 1,
+        "canonical candidate error (AttributeError): module 'triton.language' has no attribute 'meshgrid'": 1
+      },
+      "token_limit_hits": 1,
+      "invalid_samples_with_nonzero_advantage": 8
+    },
+    "heldout.jsonl": {
+      "records": 33,
+      "statuses": {
+        "COMPILE_ERROR": 17,
+        "CHEAT": 16
+      },
+      "error_messages": {
+        "cannot assign to expression here. Maybe you meant '==' instead of '='? (<unknown>, line 8)": 4,
+        "canonical candidate error (NameError): name 'torch' is not defined": 4,
+        "Reference operator fallback detected: .softmax()": 5,
+        "invalid syntax (<unknown>, line 13)": 1,
+        "GPU source policy: Host function 'kernel_forward' calls disallowed tensor method 'x.clone()'.": 1,
+        "GPU source policy: Host function 'kernel_forward' calls disallowed tensor method 'x.new_empty_like()'.; Host function 'kernel_forward' calls disallowed chained tensor method '.ptr()'.": 1,
+        "invalid syntax (<unknown>, line 10)": 1,
+        "GPU source policy: Candidate must define a top-level host entrypoint `def kernel_forward(...)`.; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 4,
+        "GPU source policy: Candidate must define at least one real `@triton.jit` kernel.; Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 2,
+        "GPU source policy: Host function 'kernel_forward' performs forbidden host tensor arithmetic (Mult).; Host function 'kernel_forward' calls disallowed tensor method 'x.contiguous_memory_format()'.; Host function 'kernel_forward' calls disallowed tensor method 'qweight.contiguous_memory_format()'.": 1,
+        "GPU source policy: Host `kernel_forward` does not launch a valid load/store Triton kernel (dummy/no-op or missing launch).": 1,
+        "GPU source policy: Disallowed torch attribute 'as_strided'.; Disallowed torch attribute 'tensor'.; Host function 'kernel_forward' calls disallowed host op 'torch.as_strided()'.; Host function 'kernel_forward' accesses disallowed torch.as_strided.; Host function 'kernel_forward' calls disallowed host op 'torch.tensor()'.": 1,
+        "invalid syntax (<unknown>, line 1)": 2,
+        "invalid syntax (<unknown>, line 38)": 2,
+        "invalid syntax (<unknown>, line 7)": 1,
+        "unindent does not match any outer indentation level (<unknown>, line 10)": 1,
+        "unexpected indent (<unknown>, line 41)": 1
+      }
+    }
+  }
+}

@@ -14,6 +14,7 @@ Uses:
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 from rl_trainer.checkpointing import CheckpointState
@@ -77,26 +78,12 @@ def run_qlora_7b_grpo(cfg: ExperimentConfig, *, overwrite: bool = False) -> Chec
     torch.manual_seed(cfg.seed)
     compute_dtype = torch.float16 if cfg.dtype == "fp16" else (torch.bfloat16 if cfg.dtype == "bf16" else torch.float32)
 
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=compute_dtype,
-    )
-
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name_or_path, revision=cfg.model_revision, local_files_only=True, trust_remote_code=False)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    base_model = AutoModelForCausalLM.from_pretrained(
-        cfg.model_name_or_path,
-        revision=cfg.model_revision,
-        quantization_config=bnb_config,
-        device_map={"": 0}, local_files_only=True, trust_remote_code=False,
-    )
-    base_model = prepare_model_for_kbit_training(
-        base_model, use_gradient_checkpointing=cfg.gradient_checkpointing
-    )
+    from rl_trainer.model_loading import load_quantized_base
+    base_model = load_quantized_base(cfg, gradient_checkpointing=cfg.gradient_checkpointing)
 
     lora_cfg = LoraConfig(
         r=cfg.lora_r,
@@ -182,18 +169,36 @@ def run_qlora_7b_grpo(cfg: ExperimentConfig, *, overwrite: bool = False) -> Chec
             kl_coef=cfg.kl_coef,
             max_grad_norm=cfg.max_grad_norm,
             device=device,
+            old_logp_tolerance=cfg.onpolicy_logp_tolerance,
         )
         _release_cuda_memory(torch)
         return metrics
 
-    return run_gpu_training_loop(
-        cfg,
-        sample_fn=_sample,
-        update_fn=_update,
-        before_grade_hook=_before_grade,
-        model=policy,
-        optimizer=optimizer,
-        adapter_only=True,
-        overwrite=overwrite,
-        is_fixture=False,
-    )
+    verification = None
+    if cfg.sft_epochs > 0:
+        from rl_trainer.frozen_base_integrity import FrozenBaseVerification
+        verification = FrozenBaseVerification(
+            policy, Path(cfg.output_jsonl).parent / "frozen_base_verified.json",
+            config_hash=cfg.config_hash(), is_resuming=bool(cfg.resume_from),
+            model_identity={"model_name_or_path": cfg.model_name_or_path,
+                            "model_revision": cfg.model_revision, "training_mode": cfg.training_mode},
+        )
+    training_completed = False
+    try:
+        state = run_gpu_training_loop(
+            cfg,
+            sample_fn=_sample,
+            update_fn=_update,
+            before_grade_hook=_before_grade,
+            model=policy,
+            optimizer=optimizer,
+            adapter_only=True,
+            overwrite=overwrite,
+            is_fixture=False,
+            tokenizer=tokenizer,
+        )
+        training_completed = True
+        return state
+    finally:
+        if verification is not None:
+            verification.finish(training_completed=training_completed)

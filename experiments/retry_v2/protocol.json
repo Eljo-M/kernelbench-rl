@@ -1,0 +1,51 @@
+{
+  "registered_utc": "2026-11-26T23:42:31.846929+00:00",
+  "goal": "Test supervised training-only bootstrap plus corrected GRPO on genuine GPU-generated kernels",
+  "fresh_heldout_ops": [
+    "l2_normalize_2048",
+    "fused_bias_silu_4096",
+    "matmul_residual_add_512"
+  ],
+  "development_regressions": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "development_note": "Original failures have been inspected. These workloads are separately labeled development tests and excluded from fresh held-out denominators.",
+  "training_source": "Verified handwritten sources for the eight configured train_ops only; no held-out/development source in targets",
+  "prompt": "contract_v2, same template and contract for base/SFT/trained",
+  "sampling": "Raw on-policy temperature=1, top_p=1, top_k=0; 1536-token limit",
+  "schedule": "Four supervised epochs (32 example updates), then eight GRPO groups of two",
+  "training_reward": "All non-PASS candidates receive zero training reward; no update from differences between failure classes",
+  "inference_budgets": {
+    "base_pass1": 1,
+    "base_best_of_8_fresh_only": 8,
+    "sft_only_checkpoint": 1,
+    "trained_checkpoint": 1
+  },
+  "stopping_rule": "One frozen preregistered schedule per model. No changes from fresh-test outputs. Preserve failures and historical results.",
+  "resources": "Laptop RTX 5060 and free Colab T4 if quota available; no spending",
+  "config_hashes": {
+    "laptop": "76f5ae26c4334710",
+    "t4": "cb542be0d047cc08",
+    "laptop_7b": "aac728c27b3b726c"
+  },
+  "run_schedules": {
+    "laptop": {
+      "max_steps": 8,
+      "sft_epochs": 4,
+      "group_size": 2
+    },
+    "t4": {
+      "max_steps": 8,
+      "sft_epochs": 4,
+      "group_size": 2
+    },
+    "laptop_7b": {
+      "max_steps": 8,
+      "sft_epochs": 4,
+      "group_size": 2
+    }
+  },
+  "resource_update": "Free Colab T4 quota was refused on 2026-11-26. The 7B retry will use fixed CPU vocabulary computation and NF4 decoder/adapters on the laptop GPU. Actual readiness probe verified finite backward, base integrity, and 1646-token fit; it is not a quality result."
+}

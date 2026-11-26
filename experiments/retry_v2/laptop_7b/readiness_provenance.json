@@ -1,0 +1,7 @@
+{
+  "description": "Readiness probe only. Probe weights were discarded; quality study starts from the pinned base model.",
+  "original_result": "work/offload-7b-readiness-result.json",
+  "result_sha256": "4171460fa4e09989930750c84e770d828316e1837ce00ff78750a2bdb87f5991",
+  "probe_script_sha256": "d04945e02ecded0951341843a5bbf8604715759b16cfbdbfd05c60f66f321456",
+  "source_state": "Reviewed local retry source before the frozen study commit; not a held-out or quality result"
+}

@@ -136,7 +136,7 @@ def compute_selected_token_logps(
     else:
         comp_logits = out.logits[0, p_len - 1 : p_len - 1 + c_len, :]
 
-    target_ids = torch.tensor(comp_ids, dtype=torch.long, device=device)
+    target_ids = torch.tensor(comp_ids, dtype=torch.long, device=comp_logits.device)
     chunks = []
     step_sz = max(1, int(chunk_size))
     for start in range(0, c_len, step_sz):
@@ -269,6 +269,7 @@ def perform_verified_grpo_step(
     kl_coef: float,
     max_grad_norm: float,
     device: Any,
+    old_logp_tolerance: float | None = None,
 ) -> dict[str, Any]:
     """Execute one clipped GRPO backward + finite-grad-verified optimizer step (supports CpuMasterAdamW)."""
     import torch  # type: ignore
@@ -281,14 +282,20 @@ def perform_verified_grpo_step(
     total_loss = 0.0
     total_kl = 0.0
     skipped_non_finite_loss = False
+    max_old_new_diff = 0.0
 
     for smp, adv in zip(samples, advantages):
         if not smp.completion_ids or abs(adv) < 1e-8:
             continue
         assert smp.old_token_logps is not None and smp.ref_token_logps is not None
         new_lp = logp_fn(policy, smp.prompt_ids, smp.completion_ids)
-        old_lp = torch.tensor(smp.old_token_logps, dtype=torch.float32, device=device)
-        ref_lp = torch.tensor(smp.ref_token_logps, dtype=torch.float32, device=device)
+        old_lp = torch.tensor(smp.old_token_logps, dtype=torch.float32, device=new_lp.device)
+        ref_lp = torch.tensor(smp.ref_token_logps, dtype=torch.float32, device=new_lp.device)
+        diff = float((new_lp.detach() - old_lp).abs().max().cpu())
+        max_old_new_diff = max(max_old_new_diff, diff)
+        if old_logp_tolerance is not None and (not math.isfinite(diff) or diff > old_logp_tolerance):
+            optimizer.zero_grad(set_to_none=True)
+            raise ValueError(f"On-policy log-probability mismatch before update: {diff} > {old_logp_tolerance}")
         loss, kl = compute_clipped_grpo_loss_torch(new_lp, old_lp, ref_lp, adv, clip_eps, kl_coef)
         if not (bool(torch.isfinite(loss).all()) and bool(torch.isfinite(kl).all())):
             skipped_non_finite_loss = True
@@ -300,7 +307,7 @@ def perform_verified_grpo_step(
 
     if valid_terms == 0:
         optimizer.zero_grad(set_to_none=True)
-        sha_now = optimizer.master_weights_sha256() if is_cpu_master else compute_trainable_weights_sha256(trainable_params)
+        sha_now = compute_trainable_weights_sha256(trainable_params)
         return {
             "policy_updated": False,
             "skipped_non_finite_grad": False,
@@ -309,11 +316,13 @@ def perform_verified_grpo_step(
             "mean_kl": 0.0,
             "weight_l2_delta": 0.0,
             "trainable_weights_sha256": sha_now,
+            **({"optimizer_master_weights_sha256": optimizer.master_weights_sha256()} if is_cpu_master else {}),
         }
 
     if is_cpu_master:
         updated, delta = optimizer.copy_grads_and_step(max_grad_norm)
-        sha_after = optimizer.master_weights_sha256()
+        sha_after = compute_trainable_weights_sha256(trainable_params)
+        master_sha_after = optimizer.master_weights_sha256()
         if not updated:
             return {
                 "policy_updated": False,
@@ -323,6 +332,7 @@ def perform_verified_grpo_step(
                 "mean_kl": 0.0,
                 "weight_l2_delta": 0.0,
                 "trainable_weights_sha256": sha_after,
+                "optimizer_master_weights_sha256": master_sha_after,
             }
         return {
             "policy_updated": True,
@@ -332,6 +342,7 @@ def perform_verified_grpo_step(
             "mean_kl": total_kl / valid_terms,
             "weight_l2_delta": delta,
             "trainable_weights_sha256": sha_after,
+            "optimizer_master_weights_sha256": master_sha_after,
         }
 
     if not all_grads_finite(trainable_params):
@@ -346,7 +357,16 @@ def perform_verified_grpo_step(
             "trainable_weights_sha256": compute_trainable_weights_sha256(trainable_params),
         }
 
-    torch.nn.utils.clip_grad_norm_(trainable_params, max_grad_norm)
+    grad_norm = torch.nn.utils.clip_grad_norm_(trainable_params, max_grad_norm)
+    if not bool(torch.isfinite(grad_norm)) or not all_grads_finite(trainable_params):
+        optimizer.zero_grad(set_to_none=True)
+        return {
+            "policy_updated": False,
+            "skipped_non_finite_grad": True,
+            "skipped_non_finite_loss": skipped_non_finite_loss,
+            "policy_loss": 0.0, "mean_kl": 0.0, "weight_l2_delta": 0.0,
+            "trainable_weights_sha256": compute_trainable_weights_sha256(trainable_params),
+        }
     optimizer.step()
     optimizer.zero_grad(set_to_none=True)
     delta = compute_weight_l2_delta(before_snaps, trainable_params)
@@ -359,6 +379,7 @@ def perform_verified_grpo_step(
         "mean_kl": total_kl / valid_terms,
         "weight_l2_delta": delta,
         "trainable_weights_sha256": sha_after,
+        "old_new_max_abs_logp_diff": max_old_new_diff,
     }
 
 
@@ -388,7 +409,7 @@ def rollout_and_grade_on_policy(
     method: str = "grpo_train",
     is_fixture: bool = False,
 ) -> tuple[list[dict[str, Any]], list[SampledCandidate], list[float]]:
-    prompt = build_prompt(op_name, backend=cfg.backend)
+    prompt = build_prompt(op_name, backend=cfg.backend, prompt_version=cfg.prompt_version, float_dtype=cfg.dtype)
     samples = sample_fn(prompt, cfg.group_size, cfg.seed + step)
     if len(samples) != cfg.group_size:
         raise ValueError(f"Sampler returned {len(samples)} rollouts, expected group_size={cfg.group_size}")
@@ -436,6 +457,12 @@ def rollout_and_grade_on_policy(
         if after_grade_hook is not None:
             after_grade_hook()
 
+    if cfg.training_reward_mode == "correctness_gated":
+        for rec in records:
+            rec["verifier_reward"] = rec["reward"]
+            valid = rec.get("status") == "PASS" and rec.get("compiled") and rec.get("correct") and not rec.get("cheat_detected")
+            rec["reward"] = float(rec["reward"]) if valid else 0.0
+            rec["training_reward_mode"] = cfg.training_reward_mode
     rewards = [float(r.get("reward", 0.0)) for r in records]
     advantages = compute_grpo_advantages(rewards)
     for rec, adv in zip(records, advantages):
@@ -456,6 +483,7 @@ def run_gpu_training_loop(
     adapter_only: bool = False,
     overwrite: bool = False,
     is_fixture: bool = False,
+    tokenizer: Any = None,
 ) -> CheckpointState:
     cfg.validate(strict_on_policy_sampling=True)
     ckpt_dir = Path(cfg.checkpoint_dir)
@@ -487,16 +515,36 @@ def run_gpu_training_loop(
         total_rollouts = state.total_rollouts
         optimizer_step_count = state.optimizer_step_count
         last_weights_sha = state.trainable_weights_sha256
+        last_master_weights_sha = state.optimizer_master_weights_sha256
+        if isinstance(optimizer, CpuMasterAdamW):
+            last_master_weights_sha = optimizer.master_weights_sha256()
+            state.optimizer_master_weights_sha256 = last_master_weights_sha
+        sft_optimizer_steps = state.sft_optimizer_steps
         archive = reconcile_resume_log(out_jsonl, state.step)
         if archive is not None:
             print(json.dumps({"event": "archived_uncheckpointed_log", "path": str(archive)}), flush=True)
     else:
+        sft_optimizer_steps = 0
+        if cfg.sft_epochs:
+            if model is None or optimizer is None or tokenizer is None:
+                raise ValueError("Supervised warmup requires a real model, optimizer and tokenizer")
+            from rl_trainer.supervised_warmup import run_supervised_warmup
+            trainable = [p for p in model.parameters() if p.requires_grad]
+            warmup = run_supervised_warmup(model, tokenizer, cfg, optimizer,
+                device=next(model.parameters()).device, trainable_params=trainable)
+            sft_optimizer_steps = int(warmup["optimizer_step_count"])
+            summary_path = out_jsonl.parent / "sft_summary.json"
+            summary_path.write_text(json.dumps(warmup, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         start_step = 1
         op_cursor = 0
         best_mean_reward = float("-inf")
         total_rollouts = 0
         optimizer_step_count = 0
-        last_weights_sha = ""
+        last_weights_sha = compute_trainable_weights_sha256(trainable) if sft_optimizer_steps else ""
+        last_master_weights_sha = ""
+        if isinstance(optimizer, CpuMasterAdamW):
+            last_weights_sha = compute_trainable_weights_sha256(optimizer.model_params)
+            last_master_weights_sha = optimizer.master_weights_sha256()
         state = CheckpointState(
             step=0,
             op_cursor=0,
@@ -505,10 +553,15 @@ def run_gpu_training_loop(
             best_mean_reward=0.0,
             total_rollouts=0,
             optimizer_step_count=0,
-            trainable_weights_sha256="",
+            trainable_weights_sha256=last_weights_sha,
             training_mode=cfg.training_mode,
             is_fixture=is_fixture,
+            sft_optimizer_steps=sft_optimizer_steps,
+            optimizer_master_weights_sha256=last_master_weights_sha,
         )
+        if sft_optimizer_steps:
+            save_checkpoint(ckpt_dir / "sft_only", state, model=model, optimizer=optimizer,
+                            adapter_only=adapter_only, save_rng=True)
 
     for step in range(start_step, cfg.max_steps + 1):
         op_name = cfg.train_ops[op_cursor % len(cfg.train_ops)]
@@ -535,6 +588,8 @@ def run_gpu_training_loop(
                 optimizer_step_count += 1
             if update_metrics.get("trainable_weights_sha256"):
                 last_weights_sha = str(update_metrics["trainable_weights_sha256"])
+            if update_metrics.get("optimizer_master_weights_sha256"):
+                last_master_weights_sha = str(update_metrics["optimizer_master_weights_sha256"])
 
         mean_reward = sum(float(r["reward"]) for r in records) / max(len(records), 1)
         if mean_reward > best_mean_reward:
@@ -548,6 +603,9 @@ def run_gpu_training_loop(
             for rec in records:
                 rec["policy_updated"] = policy_updated
                 rec["optimizer_step_count"] = int(optimizer_step_count)
+                rec["sft_optimizer_steps"] = int(sft_optimizer_steps)
+                if last_master_weights_sha:
+                    rec["optimizer_master_weights_sha256"] = last_master_weights_sha
                 for mk, mv in update_metrics.items():
                     if mk in {"policy_updated", "optimizer_step_count"}:
                         continue
@@ -568,6 +626,8 @@ def run_gpu_training_loop(
             trainable_weights_sha256=last_weights_sha,
             training_mode=cfg.training_mode,
             is_fixture=is_fixture,
+            sft_optimizer_steps=sft_optimizer_steps,
+            optimizer_master_weights_sha256=last_master_weights_sha,
         )
         if step % cfg.checkpoint_every == 0 or step == cfg.max_steps:
             save_checkpoint(
@@ -708,6 +768,7 @@ def run_single_process_full_param_grpo(cfg: ExperimentConfig, *, overwrite: bool
             kl_coef=cfg.kl_coef,
             max_grad_norm=cfg.max_grad_norm,
             device=device,
+            old_logp_tolerance=cfg.onpolicy_logp_tolerance,
         )
         _release_cuda_memory(torch)
         return metrics
@@ -723,6 +784,7 @@ def run_single_process_full_param_grpo(cfg: ExperimentConfig, *, overwrite: bool
         adapter_only=False,
         overwrite=overwrite,
         is_fixture=False,
+        tokenizer=tokenizer,
     )
 
 

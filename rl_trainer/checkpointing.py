@@ -32,6 +32,8 @@ class CheckpointState:
     optimizer_state_file: str = ""
     rng_state_file: str = ""
     is_fixture: bool = False
+    sft_optimizer_steps: int = 0
+    optimizer_master_weights_sha256: str = ""
 
 
 def compute_trainable_weights_sha256(params: Iterable[Any]) -> str:
@@ -222,6 +224,7 @@ def _write_checkpoint_contents(
     opt_file = state.optimizer_state_file
     rng_file = state.rng_state_file
     weights_sha = state.trainable_weights_sha256
+    master_weights_sha = state.optimizer_master_weights_sha256
 
     if model is not None:
         if hasattr(model, "parameters"):
@@ -253,6 +256,10 @@ def _write_checkpoint_contents(
 
     if optimizer is not None:
         import torch  # type: ignore
+
+        master_checksum = getattr(optimizer, "master_weights_sha256", None)
+        if callable(master_checksum):
+            master_weights_sha = master_checksum()
 
         opt_path = step_dir / "optimizer_state.pt"
         torch.save(optimizer.state_dict(), opt_path)
@@ -293,6 +300,8 @@ def _write_checkpoint_contents(
         optimizer_state_file=opt_file,
         rng_state_file=rng_file,
         is_fixture=state.is_fixture,
+        sft_optimizer_steps=state.sft_optimizer_steps,
+        optimizer_master_weights_sha256=master_weights_sha,
     )
 
     meta_path = step_dir / "checkpoint_state.json"
@@ -357,6 +366,13 @@ def load_checkpoint(
         import torch  # type: ignore
 
         optimizer.load_state_dict(torch.load(step_dir / state.optimizer_state_file, map_location=map_location, weights_only=True))
+
+    if optimizer is not None and state.optimizer_master_weights_sha256:
+        master_checksum = getattr(optimizer, "master_weights_sha256", None)
+        if not callable(master_checksum):
+            raise ValueError("Checkpoint requires an optimizer with FP32 master-weight checksums")
+        if master_checksum() != state.optimizer_master_weights_sha256:
+            raise ValueError("Restored optimizer master weights do not match the checkpoint checksum")
 
     if model is not None and state.trainable_weights_sha256 and hasattr(model, "parameters"):
         actual_sha = compute_trainable_weights_sha256(model.parameters())

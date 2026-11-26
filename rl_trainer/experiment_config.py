@@ -79,6 +79,15 @@ class ExperimentConfig:
     checkpoint_dir: str = "checkpoints/qwen05b_grpo"
     resume_from: str = ""
     output_jsonl: str = "eval/results/grpo_rollouts.jsonl"
+    prompt_version: str = "contract_v1"
+    training_reward_mode: str = "legacy_shaped"
+    sft_epochs: int = 0
+    sft_learning_rate: float = 1e-4
+    sft_max_tokens: int = 4096
+    sft_output_jsonl: str = ""
+    onpolicy_logp_tolerance: float = 0.001
+    development_eval_ops: list[str] = field(default_factory=list)
+    qlora_cpu_offload: bool = False
 
     @classmethod
     def preset_t4_7b_qlora(cls, **overrides) -> "ExperimentConfig":
@@ -123,6 +132,20 @@ class ExperimentConfig:
         }
 
     def validate(self, *, strict_on_policy_sampling: bool = True) -> None:
+        if self.prompt_version not in {"contract_v1", "contract_v2"}:
+            raise ValueError("Unsupported prompt_version")
+        if self.training_reward_mode not in {"legacy_shaped", "correctness_gated"}:
+            raise ValueError("Unsupported training_reward_mode")
+        if isinstance(self.sft_epochs, bool) or not isinstance(self.sft_epochs, int) or self.sft_epochs < 0:
+            raise ValueError("sft_epochs must be a nonnegative integer")
+        if not math.isfinite(self.sft_learning_rate) or self.sft_learning_rate <= 0 or self.sft_max_tokens <= 0:
+            raise ValueError("Invalid supervised-warmup learning rate or token limit")
+        if not math.isfinite(self.onpolicy_logp_tolerance) or self.onpolicy_logp_tolerance <= 0:
+            raise ValueError("onpolicy_logp_tolerance must be finite and positive")
+        if self.qlora_cpu_offload and self.training_mode != "qlora_7b_nf4":
+            raise ValueError("QLoRA CPU placement applies only to qlora_7b_nf4")
+        if len(set(self.train_ops)) != len(self.train_ops) or len(set(self.heldout_ops + self.development_eval_ops)) != len(self.heldout_ops + self.development_eval_ops):
+            raise ValueError("Operator splits must not contain duplicates")
         if self.optimizer_name not in {"adamw", "adafactor"}:
             raise ValueError("optimizer_name must be adamw or adafactor")
         if self.optimizer_name == "adafactor" and (self.cpu_master_adamw or self.training_mode != "full_param_0.49b"):
@@ -136,13 +159,13 @@ class ExperimentConfig:
         if not self.train_ops or not self.heldout_ops:
             raise ValueError("train_ops and heldout_ops must both be non-empty.")
 
-        for op in self.train_ops + self.heldout_ops:
+        for op in self.train_ops + self.heldout_ops + self.development_eval_ops:
             if op not in OP_REGISTRY:
                 raise ValueError(f"Unknown operator '{op}' not in OP_REGISTRY.")
             if self.backend == "triton" and op not in TORCH_REFERENCES:
                 raise ValueError(f"Operator '{op}' has no native PyTorch reference for backend='triton'.")
 
-        overlap = sorted(set(self.train_ops) & set(self.heldout_ops))
+        overlap = sorted(set(self.train_ops) & set(self.heldout_ops + self.development_eval_ops))
         if overlap:
             raise ValueError(f"Data leakage: train_ops and heldout_ops overlap on {overlap}.")
 
@@ -192,6 +215,21 @@ class ExperimentConfig:
         key_fields = asdict(self)
         for key in ("max_steps", "checkpoint_every", "checkpoint_dir", "resume_from", "output_jsonl"):
             key_fields.pop(key)
+        # Keep historical, zero-warmup experiment identities stable. New active
+        # training phases and prompt/reward versions are always hashed.
+        if self.prompt_version == "contract_v1":
+            key_fields.pop("prompt_version")
+        if self.training_reward_mode == "legacy_shaped":
+            key_fields.pop("training_reward_mode")
+        if self.sft_epochs == 0:
+            for key in ("sft_epochs", "sft_learning_rate", "sft_max_tokens", "sft_output_jsonl"):
+                key_fields.pop(key)
+        if self.onpolicy_logp_tolerance == 0.001:
+            key_fields.pop("onpolicy_logp_tolerance")
+        if not self.development_eval_ops:
+            key_fields.pop("development_eval_ops")
+        if not self.qlora_cpu_offload:
+            key_fields.pop("qlora_cpu_offload")
         raw = json.dumps(key_fields, sort_keys=True, allow_nan=False).encode("utf-8")
         return hashlib.sha256(raw).hexdigest()[:16]
 

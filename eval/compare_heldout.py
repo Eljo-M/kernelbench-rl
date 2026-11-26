@@ -328,6 +328,7 @@ def _classify_exclusion(row: Mapping[str, Any]) -> str | None:
 def load_and_validate_run(run_dir: Path) -> dict[str, Any]:
     """Load, filter, validate, and summarize one held-out run directory."""
     _, env = _parse_environment(run_dir)
+    manifest = _load_strict_json(run_dir / "heldout_environment.json")
     raw_rows = _load_strict_jsonl(run_dir / "heldout.jsonl")
     if not raw_rows:
         raise HeldoutValidationError(f"heldout.jsonl in {run_dir} contains no records.")
@@ -354,6 +355,14 @@ def load_and_validate_run(run_dir: Path) -> dict[str, Any]:
             continue
 
         ctx = f"{run_dir / 'heldout.jsonl'} row #{idx}"
+        # Historical rows did not carry all cohort fields. When they are
+        # present they must agree, rather than promoting inspected development
+        # records merely because their phase was accidentally relabeled.
+        for field, expected in (("heldout", True), ("split", "heldout"),
+                                ("evaluation_cohort", "fresh_heldout")):
+            if field in row and (row[field] != expected or
+                                 (field == "heldout" and type(row[field]) is not bool)):
+                raise HeldoutValidationError(f"Contradictory {field} on final heldout_test row in {ctx}.")
         method = _require_non_empty_str(row, ("method",), context=ctx)
         if method not in canonical_methods:
             raise HeldoutValidationError(
@@ -377,8 +386,30 @@ def load_and_validate_run(run_dir: Path) -> dict[str, Any]:
             raise HeldoutValidationError(f"Duplicate run_id '{run_id}' among final rows in {run_dir}.")
         seen_run_ids.add(run_id)
 
+        if "policy_updated" in row and type(row["policy_updated"]) is not bool:
+            raise HeldoutValidationError(f"policy_updated must be bool in {ctx}.")
         if bool(row.get("policy_updated", False)):
             raise HeldoutValidationError(f"Held-out evaluation row must have policy_updated=False in {ctx}.")
+
+        expected_budget = env.heldout_best_of_k if method == best_method else 1
+        if "budget_k" in row and _require_int(row, "budget_k", context=ctx) != expected_budget:
+            raise HeldoutValidationError(f"Search budget mismatch in {ctx}.")
+        if "sample_k" in row:
+            sample_k = _require_int(row, "sample_k", context=ctx)
+            if not 0 <= sample_k < expected_budget:
+                raise HeldoutValidationError(f"sample_k outside declared search budget in {ctx}.")
+        expected_selection = "validation_seed_regrade" if method == best_method else "single_sample"
+        if "selection_method" in row and row["selection_method"] != expected_selection:
+            raise HeldoutValidationError(f"Selection method mismatch in {ctx}.")
+
+        if "checkpoint_identity" in row:
+            if method == "trained_checkpoint":
+                step = _require_int(manifest, "checkpoint_step", context="heldout environment")
+                expected_identity = f"checkpoint:{step}:{env.checkpoint_weights_sha}"
+            else:
+                expected_identity = "base:" + env.revision
+            if row["checkpoint_identity"] != expected_identity:
+                raise HeldoutValidationError(f"Checkpoint identity mismatch in {ctx}.")
 
         row_hash = _require_non_empty_str(row, ("config_hash",), context=ctx)
         if row_hash != env.config_hash:
@@ -433,6 +464,10 @@ def load_and_validate_run(run_dir: Path) -> dict[str, Any]:
             raise HeldoutValidationError(f"Fields 'compiled' and 'correct' must be booleans in {ctx}.")
         if (status == "PASS") != correct:
             raise HeldoutValidationError(f"Inconsistent status='{status}' and correct={correct} in {ctx}.")
+        if "cheat_detected" in row and type(row["cheat_detected"]) is not bool:
+            raise HeldoutValidationError(f"cheat_detected must be bool in {ctx}.")
+        if status == "PASS" and row.get("cheat_detected", False):
+            raise HeldoutValidationError(f"PASS row cannot have cheat_detected=True in {ctx}.")
 
         # Validate finite numeric metrics
         _require_finite_float(row, "speedup_vs_eager", context=ctx)

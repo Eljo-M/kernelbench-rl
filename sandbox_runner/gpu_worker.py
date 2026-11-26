@@ -19,6 +19,7 @@ import importlib.util
 import json
 import sys
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable
 
@@ -119,6 +120,55 @@ def _check_gpu_input_mutation(orig_tensors: tuple[Any, ...], after_tensors: tupl
         if not bool(torch_mod.equal(orig, after)):
             return True
     return False
+
+
+def _validate_candidate_output(output: Any, reference: Any, torch_mod: Any,
+                               rtol: float, atol: float) -> tuple[str, float]:
+    """Check storage contract and values outside any measured GPU interval."""
+    if not torch_mod.is_tensor(output):
+        return "candidate output is not a tensor", 0.0
+    if output.device != reference.device:
+        return f"output device {output.device} does not match {reference.device}", 0.0
+    if output.dtype != reference.dtype:
+        return f"output dtype {output.dtype} does not match {reference.dtype}", 0.0
+    if output.shape != reference.shape:
+        return f"output shape {output.shape} does not match {reference.shape}", 0.0
+    if not bool(torch_mod.isfinite(output).all()):
+        return "candidate output contains non-finite values", 0.0
+    actual = output.detach().float()
+    expected = reference.detach().float()
+    err = float((actual - expected).abs().max().item()) if output.numel() else 0.0
+    if not bool(torch_mod.allclose(actual, expected, rtol=rtol, atol=atol)):
+        return f"output exceeded numerical tolerance (max_abs_err={err:.3e})", err
+    return "", err
+
+
+def _benchmark_checked_candidate(torch_mod: Any, fn: Callable, inputs: tuple,
+                                 reference: Any, rtol: float, atol: float,
+                                 warmup: int, iters: int,
+                                 timer_fn: Callable = _time_cuda_graph) -> tuple[float, str, str, float]:
+    """Validate inputs and the final captured output after all timing replays.
+
+    The wrapper only retains an output handle. Clones, synchronization and
+    validation are outside the timer; CUDA graph/event measurement stays intact.
+    """
+    before = tuple(t.clone() for t in inputs)
+    latest_output = [None]
+
+    def tracked(*args):
+        output = fn(*args)
+        latest_output[0] = output
+        return output
+
+    measured_ms = timer_fn(torch_mod, tracked, inputs, warmup, iters)
+    if reference.device.type == "cuda":
+        torch_mod.cuda.synchronize(reference.device)
+    if _check_gpu_input_mutation(before, inputs, torch_mod):
+        return 0.0, "CHEAT", "candidate mutated input during timing", 0.0
+    error, max_abs_err = _validate_candidate_output(latest_output[0], reference, torch_mod, rtol, atol)
+    if error:
+        return 0.0, "NUMERICAL_MISMATCH", f"after timing: {error}", max_abs_err
+    return measured_ms, "PASS", "", max_abs_err
 
 
 def _convert_inputs_with_fp16(np_in: tuple[np.ndarray, ...], float_dtype: str, torch_mod: Any) -> tuple[Any, ...]:
@@ -254,6 +304,7 @@ def grade_candidate_in_worker(
         compiled_ok = False
         canonical_gpu_inputs: tuple[Any, ...] | None = None
         canonical_eager_np: np.ndarray | None = None
+        canonical_torch_output: Any = None
 
         prev_tf32 = torch.backends.cuda.matmul.allow_tf32
         if float_dtype == "fp32":
@@ -321,14 +372,15 @@ def grade_candidate_in_worker(
                     )
                     return rec, gpu_or_err
 
-                if not hasattr(cand_out, "detach") or not torch.isfinite(cand_out).all():
+                output_error, err_torch = _validate_candidate_output(cand_out, torch_ref_out, torch, rtol, atol)
+                if output_error:
                     rec = _make_error_record(
                         run_id,
                         spec,
                         "NUMERICAL_MISMATCH",
                         True,
-                        f"{case_label}: candidate output is not a finite tensor.",
-                        max_abs_err=0.0,
+                        f"{case_label} ({float_dtype}): {output_error}",
+                        max_abs_err=err_torch,
                     )
                     return rec, gpu_or_err
 
@@ -337,6 +389,7 @@ def grade_candidate_in_worker(
                 if case_label == "canonical":
                     canonical_gpu_inputs = gpu_in
                     canonical_eager_np = torch_ref_np
+                    canonical_torch_output = torch_ref_out
 
                 if cand_np.shape != np_ref.shape or cand_np.shape != torch_ref_np.shape:
                     rec = _make_error_record(
@@ -349,20 +402,8 @@ def grade_candidate_in_worker(
                     )
                     return rec, gpu_or_err
 
-                err_torch = float(np.max(np.abs(cand_np - torch_ref_np)))
                 err_numpy = float(np.max(np.abs(cand_np - np_ref)))
                 worst_err = max(worst_err, err_torch, err_numpy)
-
-                if not np.allclose(cand_np, torch_ref_np, rtol=rtol, atol=atol):
-                    rec = _make_error_record(
-                        run_id,
-                        spec,
-                        "NUMERICAL_MISMATCH",
-                        True,
-                        f"{case_label} ({float_dtype}) mismatch vs PyTorch ref: max_abs_err={err_torch:.3e} (rtol={rtol}, atol={atol})",
-                        max_abs_err=worst_err,
-                    )
-                    return rec, gpu_or_err
 
                 if not np.allclose(cand_np, np_ref, rtol=rtol, atol=atol):
                     rec = _make_error_record(
@@ -378,7 +419,17 @@ def grade_candidate_in_worker(
             assert canonical_gpu_inputs is not None and canonical_eager_np is not None
             with torch.no_grad():
                 eager_ms = _time_cuda_graph(torch, torch_ref_fn, canonical_gpu_inputs, warmup, iters)
-                cand_ms = _time_cuda_graph(torch, cand_fn, canonical_gpu_inputs, warmup, iters)
+                cand_ms, timing_status, timing_error, timing_abs_err = _benchmark_checked_candidate(
+                    torch, cand_fn, canonical_gpu_inputs, canonical_torch_output,
+                    rtol, atol, warmup, iters,
+                )
+                if timing_status != "PASS":
+                    rec = _make_error_record(run_id, spec, timing_status, True, timing_error,
+                                             max_abs_err=timing_abs_err)
+                    if timing_status == "CHEAT":
+                        rec = replace(rec, cheat_detected=True, reward=-1.0)
+                    return rec, gpu_or_err
+                worst_err = max(worst_err, timing_abs_err)
                 compile_ms, compile_note = benchmark_compiled_reference(
                     torch, torch_ref_fn, canonical_gpu_inputs, canonical_eager_np, rtol, atol, warmup, iters,
                     timer_fn=_time_cuda_graph,
