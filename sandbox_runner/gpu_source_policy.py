@@ -265,6 +265,10 @@ def check_gpu_source_policy(source_code: str) -> GpuSourcePolicyResult:
     shadowed = {arg.arg for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
                 for arg in node.args.args}
     for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            violations.append("Candidate classes and class-held caches are outside the supported source policy.")
+        if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Store):
+            violations.append("Attribute assignment can persist memoized outputs and is forbidden.")
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
             if node.id in FORBIDDEN_BUILTINS and node.id not in shadowed:
                 violations.append(f"Reference to forbidden builtin '{node.id}'.")
@@ -304,6 +308,9 @@ def check_gpu_source_policy(source_code: str) -> GpuSourcePolicyResult:
     host_calls: dict[str, set[str]] = {}
 
     def _inspect_host_fn(fn: ast.FunctionDef, inherited_torch_aliases: set[str], inherited_bad_syms: dict[str, str]) -> tuple[set[str], set[str]]:
+        if any(isinstance(default, (ast.Dict, ast.List, ast.Set, ast.Call))
+               for default in [*fn.args.defaults, *fn.args.kw_defaults] if default is not None):
+            violations.append(f"Host function '{fn.name}' has a persistent mutable/default-call argument.")
         local_torch = set(inherited_torch_aliases)
         local_bad = dict(inherited_bad_syms)
         launched: set[str] = set()
@@ -384,6 +391,8 @@ def check_gpu_source_policy(source_code: str) -> GpuSourcePolicyResult:
 
             # Walk expressions inside this statement (skipping nested FunctionDefs)
             for node in ast.walk(stmt):
+                if isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Store):
+                    violations.append(f"Host function '{fn.name}' performs a subscript write outside Triton.")
                 if node is not stmt and isinstance(node, ast.FunctionDef):
                     continue
                 if isinstance(node, ast.Attribute):

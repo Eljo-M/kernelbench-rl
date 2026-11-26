@@ -6,6 +6,12 @@ from sandbox_runner.gpu_source_policy import SECURITY_BOUNDARY_NOTE, check_gpu_s
 
 
 class TestGpuSourcePolicy(unittest.TestCase):
+    def test_rejects_persistent_function_attribute_and_default_argument_caches(self):
+        source = TRITON_BASELINES["rmsnorm_2048"]
+        self.assertFalse(check_gpu_source_policy(source + "\nkernel_forward.saved = {}\n").allowed)
+        self.assertFalse(check_gpu_source_policy(source +
+            "\ndef helper(x, cache={}):\n    cache[x.data_ptr()] = x\n    return x\n").allowed)
+
     def test_allows_pure_jit_math_helpers_with_a_real_launched_kernel(self):
         source = TRITON_BASELINES["rmsnorm_2048"]
         source += "\n@triton.jit\ndef helper(value):\n    return tl.sigmoid(value)\n"

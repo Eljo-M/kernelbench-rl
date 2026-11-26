@@ -101,6 +101,8 @@ def grade_cached_heldout_completions(
     overwrite: bool = False,
     chat_template_applied: bool = False,
     is_fixture: bool = False,
+    checkpoint_identity: str = "",
+    generation_engine: str = "external_callback",
 ) -> dict[str, dict[str, Any]]:
     """Grade cached completions with NO model loaded, using leak-free validation-seed Best-of-K by default."""
     cfg.validate(strict_on_policy_sampling=False)
@@ -139,6 +141,10 @@ def grade_cached_heldout_completions(
         rec["sampling_config"] = cfg.sampling_config_dict()
         rec["config_hash"] = cfg.config_hash()
         rec["fixture"] = bool(is_fixture)
+        rec["generation_engine"] = generation_engine
+        rec["checkpoint_identity"] = checkpoint_identity if rec.get("method") == "trained_checkpoint" else "base:" + cfg.model_revision
+        print(json.dumps({"event": "heldout_grade", "method": rec.get("method"),
+                          "op_name": rec["op_name"], "phase": eval_phase, "status": rec["status"]}), flush=True)
         return rec
 
     for method_name, op_entries in cached_by_method.items():
@@ -475,6 +481,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise FileExistsError(f"Output already exists: {args.out}")
 
     cfg = ExperimentConfig.from_json(Path(args.config))
+    checkpoint_identity = ""
+    if args.checkpoint_dir:
+        state = load_checkpoint(args.checkpoint_dir, expected_config_hash=cfg.config_hash(), restore_rng=False)
+        checkpoint_identity = f"checkpoint:{state.step}:{state.trainable_weights_sha256}"
     k_budget = cfg.heldout_best_of_k if args.best_of_k is None else args.best_of_k
 
     # Phase 1: Load base -> generate & cache -> unload base
@@ -502,6 +512,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         overwrite=args.overwrite,
         chat_template_applied=applied_chat,
         is_fixture=False,
+        checkpoint_identity=checkpoint_identity,
+        generation_engine="hf_eager",
     )
     print(json.dumps(summaries, indent=2, allow_nan=False))
     return 0
