@@ -105,3 +105,22 @@ preflight. Full model download, training, evaluation and export are explicit
 configuration options. It uses public weights and a separate torch 2.6/cu124,
 Triton 3.2 environment. The [experiment index](../experiments/README.md) identifies
 completed runs, intermediate failures and the authoritative benchmark suite.
+
+Teacher-forced old, reference and update scoring explicitly passes
+`use_cache=False`, while generation retains its configured KV cache. The helper
+supports PEFT wrappers and chunked differentiable selected-token probabilities.
+The historical runs record their original source commit; later scoring changes
+do not retroactively change those records.
+
+For a read-only 7B QLoRA check on a saved initial-policy sample:
+
+```bash
+python -m rl_trainer.diagnose_logps --config original/config.json --input original/train.jsonl \
+  --initial-checkpoint original/checkpoints --out new-logp-diagnostic.json
+```
+
+The diagnostic compares cache modes, repeated calls, eval/training forwards and
+stored probabilities, with gradients enabled for the training forward but no
+backward/update. It verifies unchanged trainable weights and records versions,
+trace and checkpoint identities. It never adjusts the recovery tolerance or
+changes raw traces. Recovery rejects mismatched probabilities before updating.

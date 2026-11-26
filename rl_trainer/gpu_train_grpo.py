@@ -55,6 +55,49 @@ def extract_python_source(raw_completion: str) -> str:
     return raw_completion.strip()
 
 
+def _forward_supports_kwarg(model_obj: Any, kwarg_name: str) -> bool:
+    """Detect whether `model_obj.forward` (unwrapping PEFT/base_model wrappers) accepts `kwarg_name`."""
+    seen: set[int] = set()
+    cur: Any = model_obj
+    saw_var_keyword = False
+
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        fwd = getattr(cur, "forward", None)
+        if callable(fwd):
+            try:
+                sig = inspect.signature(fwd)
+                params = sig.parameters
+                if kwarg_name in params:
+                    return True
+                has_var_kw = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values())
+                if has_var_kw:
+                    saw_var_keyword = True
+                else:
+                    return False
+            except (TypeError, ValueError):
+                pass
+
+        next_obj: Any = None
+        get_base = getattr(cur, "get_base_model", None)
+        if callable(get_base):
+            try:
+                cand = get_base()
+                if cand is not None and id(cand) not in seen:
+                    next_obj = cand
+            except Exception:
+                next_obj = None
+        if next_obj is None:
+            for attr in ("base_model", "model"):
+                cand = getattr(cur, attr, None)
+                if cand is not None and id(cand) not in seen and callable(getattr(cand, "forward", None)):
+                    next_obj = cand
+                    break
+        cur = next_obj
+
+    return saw_var_keyword
+
+
 def compute_selected_token_logps(
     model_obj: Any,
     prompt_ids: list[int],
@@ -62,8 +105,13 @@ def compute_selected_token_logps(
     device: Any,
     *,
     chunk_size: int = 32,
+    use_cache: bool | None = False,
 ) -> Any:
-    """Compute exact selected-token log-probs using `logits_to_keep` + chunked logsumexp."""
+    """Compute exact selected-token log-probs using `logits_to_keep` + chunked logsumexp.
+
+    Explicitly passes `use_cache=False` (by default) to teacher-forced forward calls when
+    supported, without mutating `model_obj.config.use_cache`.
+    """
     import torch  # type: ignore
 
     if not comp_ids:
@@ -73,20 +121,19 @@ def compute_selected_token_logps(
     p_len = len(prompt_ids)
     c_len = len(comp_ids)
 
-    supports_keep = False
-    try:
-        sig = inspect.signature(model_obj.forward)
-        supports_keep = "logits_to_keep" in sig.parameters
-        if not supports_keep and hasattr(model_obj, "get_base_model"):
-            supports_keep = "logits_to_keep" in inspect.signature(model_obj.get_base_model().forward).parameters
-    except (TypeError, ValueError):
-        supports_keep = False
+    supports_keep = _forward_supports_kwarg(model_obj, "logits_to_keep")
+    supports_use_cache = _forward_supports_kwarg(model_obj, "use_cache")
 
+    fwd_kwargs: dict[str, Any] = {}
     if supports_keep:
-        out = model_obj(full, logits_to_keep=c_len + 1)
+        fwd_kwargs["logits_to_keep"] = c_len + 1
+    if use_cache is not None and supports_use_cache:
+        fwd_kwargs["use_cache"] = bool(use_cache)
+
+    out = model_obj(full, **fwd_kwargs)
+    if supports_keep and out.logits.shape[1] == c_len + 1:
         comp_logits = out.logits[0, :-1, :]
     else:
-        out = model_obj(full)
         comp_logits = out.logits[0, p_len - 1 : p_len - 1 + c_len, :]
 
     target_ids = torch.tensor(comp_ids, dtype=torch.long, device=device)
