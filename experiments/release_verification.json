@@ -1,0 +1,109 @@
+{
+  "generated_utc": "2026-11-26T21:27:03.767726+00:00",
+  "resources": "local RTX 5060 Laptop and free Colab Tesla T4; no rented compute or paid model endpoints",
+  "local_tests": {
+    "passed": 134,
+    "command": "python -m unittest discover -s tests -v",
+    "log_sha256": "21a4073a3d5138cf5786944f56affdd6fb14c2f6c08ae2d7a8735c52dabae4c6"
+  },
+  "code_ci": {
+    "commit": "73a9220c5d3182ccc21f3e4cbcd0ec512aa1d48c",
+    "conclusion": "success",
+    "url": "https://github.com/Eljo-M/kernelbench-rl/actions/runs/45896849506"
+  },
+  "baseline_checks": {
+    "operators": 30,
+    "precisions": [
+      "fp32",
+      "bf16"
+    ],
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "passed": 180,
+    "total": 180,
+    "compiled_comparison_operators": 29
+  },
+  "heldout_runs": [
+    {
+      "name": "laptop_fullparam",
+      "model_id": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+      "dtype": "fp32",
+      "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "config_hash": "b06d4b72437f6cb2",
+      "methods": {
+        "base_pass1": {
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        },
+        "base_best_of_8": {
+          "passed": 0,
+          "total": 3,
+          "budget": 8
+        },
+        "trained_checkpoint": {
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        }
+      },
+      "excluded": {
+        "selection_val": 24,
+        "fixture": 0,
+        "oracle": 0,
+        "other_eval_phase": 0
+      }
+    },
+    {
+      "name": "qlora7b_fresh",
+      "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+      "dtype": "fp16",
+      "gpu": "Tesla T4",
+      "config_hash": "5ec1b65de79cdea6",
+      "methods": {
+        "base_pass1": {
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        },
+        "base_best_of_8": {
+          "passed": 0,
+          "total": 3,
+          "budget": 8
+        },
+        "trained_checkpoint": {
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        }
+      },
+      "excluded": {
+        "selection_val": 24,
+        "fixture": 0,
+        "oracle": 0,
+        "other_eval_phase": 0
+      }
+    }
+  ],
+  "files": {
+    "experiments/heldout_comparison/comparison.json": {
+      "sha256": "9eb8da420dc615fbb54e42ea1945a321beaac8e2e4f25f853168ab118973a11d",
+      "representation": "UTF-8 with LF newlines"
+    },
+    "experiments/heldout_comparison/comparison.png": {
+      "sha256": "2786b05134b602d4ac245540c41be1da5f9006468f241713ce015469eccbe218",
+      "representation": "binary bytes"
+    },
+    "experiments/rtx5060/full30/baselines.jsonl": {
+      "sha256": "f2271dbf599adde741d6269856f88b851699417eb356630a5d4bf87d4ae82931",
+      "representation": "UTF-8 with LF newlines"
+    },
+    "experiments/colab_t4/qlora7b_fresh/heldout.jsonl": {
+      "sha256": "f61ef1d518280aa4ca73fe56cf88436e2d06ec83d1212f5cd4054c5125965fd7",
+      "representation": "UTF-8 with LF newlines"
+    }
+  }
+}

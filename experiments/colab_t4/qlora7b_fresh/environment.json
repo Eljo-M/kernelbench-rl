@@ -1,0 +1,23 @@
+{
+  "started_utc": "2026-11-26T19:37:29.971707+00:00",
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "source_commit": "e72c42e794643ed4c198937e86427c3640b977c5",
+  "config_hash": "5ec1b65de79cdea6",
+  "torch": "2.6.0+cu124",
+  "triton": "3.2.0",
+  "cuda": "12.4",
+  "gpu": "Tesla T4",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "training_mode": "qlora_7b_nf4",
+  "compute_dtype": "fp16",
+  "training_performed": true,
+  "schedule": "fresh on-policy groups with immediate per-group updates",
+  "completed_utc": "2026-11-26T19:58:57.792918+00:00",
+  "steps": 8,
+  "optimizer_steps": 4,
+  "trainable_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46",
+  "seconds": 1287.7517439399999,
+  "peak_allocated_bytes": 10282289664,
+  "peak_reserved_bytes": 11632902144
+}

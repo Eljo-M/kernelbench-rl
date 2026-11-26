@@ -1,0 +1,39 @@
+{
+  "started_utc": "2026-11-26T19:59:06.627349+00:00",
+  "source_commit": "e72c42e794643ed4c198937e86427c3640b977c5",
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "dtype": "fp16",
+  "gpu": "Tesla T4",
+  "torch": "2.6.0+cu124",
+  "config_hash": "5ec1b65de79cdea6",
+  "generation_engine": "hf_eager",
+  "train_ops": [
+    "rmsnorm_2048",
+    "layernorm_2048",
+    "swiglu_4096",
+    "fused_add_rmsnorm_2048",
+    "fused_softmax_2048",
+    "log_softmax_2048",
+    "rope_fwd_128",
+    "matmul_bias_gelu_512"
+  ],
+  "heldout_ops": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "best_of_k": 8,
+  "sampling": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_new_tokens": 1024
+  },
+  "checkpoint_step": 8,
+  "checkpoint_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46",
+  "completed_utc": "2026-11-26T20:27:43.605041+00:00",
+  "seconds": 1716.9764640059993,
+  "peak_allocated_bytes": 8847443456
+}

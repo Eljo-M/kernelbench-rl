@@ -1,0 +1,575 @@
+{
+  "schema_version": "kernelbench_heldout_comparison_v1",
+  "pooled_across_runs": false,
+  "methodology_notes": {
+    "small_test_set": "Each run is evaluated on a small configured held-out set (e.g., N=3); no statistical significance claims are made.",
+    "search_budget_note": "base_pass1 (k=1) and base_best_of_k (k>1, validation-seed selected) use different inference-time search budgets; only base_pass1 vs trained_checkpoint share matched k=1 budgets.",
+    "hardware_precision_separation": "Runs with distinct models, training modes (Full-Parameter 0.49B vs 7B QLoRA NF4), dtypes, or GPUs are reported separately and never pooled.",
+    "denominator_policy": "Failures remain in the denominator for pass rate, fast_vs_eager, and fast_vs_compile; passing ops with unavailable torch.compile are reported separately.",
+    "geomean_policy": "Geomean speedups are computed over correct (PASS) rows only and labeled accordingly."
+  },
+  "runs": [
+    {
+      "environment": {
+        "run_name": "laptop_fullparam",
+        "run_dir": "experiments\\laptop_fullparam",
+        "model_id": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "model_name_or_path": "../../work/models/Qwen2.5-Coder-0.5B-Instruct",
+        "revision": "ea3f2471cf1b1f0db85067f1ef93848e38e88c25",
+        "training_mode": "full_param_0.49b",
+        "training_mode_label": "Full-Parameter 0.49B",
+        "backend": "triton",
+        "dtype": "fp32",
+        "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+        "config_hash": "b06d4b72437f6cb2",
+        "source_commit": "03468e3c717e8b8d90b40766e3eff80eff9403b3",
+        "checkpoint_weights_sha": "14e3f9d1c22f78473f97a59f94366d197e4c1ed32e285bc4088e5030ef4a0a00",
+        "heldout_ops": [
+          "rmsnorm_4096",
+          "int8_weight_only_gemm_512",
+          "scaled_dot_product_attn_128"
+        ],
+        "heldout_best_of_k": 8,
+        "seed": 42,
+        "heldout_seed_offset": 50000,
+        "independent_seed_offset": 10000
+      },
+      "canonical_methods": [
+        "base_pass1",
+        "base_best_of_8",
+        "trained_checkpoint"
+      ],
+      "excluded_row_counts": {
+        "selection_val": 24,
+        "fixture": 0,
+        "oracle": 0,
+        "other_eval_phase": 0
+      },
+      "methods": {
+        "base_pass1": {
+          "method": "base_pass1",
+          "search_budget_k": 1,
+          "selection_methods": [
+            "single_sample"
+          ],
+          "total_ops": 3,
+          "compiled_count": 0,
+          "pass_count": 0,
+          "pass_rate_pct": 0.0,
+          "fast_vs_eager_count": 0,
+          "fast_vs_eager_rate_pct": 0.0,
+          "fast_vs_compile_count": 0,
+          "fast_vs_compile_denominator": 3,
+          "fast_vs_compile_rate_pct": 0.0,
+          "compile_available_passing_count": 0,
+          "compile_unavailable_passing_count": 0,
+          "compile_unavailable_total_count": 3,
+          "geomean_speedup_vs_eager_correct_only": null,
+          "geomean_speedup_vs_eager_n": 0,
+          "geomean_speedup_vs_compile_correct_only": null,
+          "geomean_speedup_vs_compile_n": 0,
+          "failure_count": 3,
+          "failure_counts_by_status": {
+            "COMPILE_ERROR": 0,
+            "NUMERICAL_MISMATCH": 0,
+            "TIMEOUT": 0,
+            "OOM": 0,
+            "RUNTIME_ERROR": 0,
+            "CHEAT": 3
+          },
+          "mean_reward": -1.0
+        },
+        "base_best_of_8": {
+          "method": "base_best_of_8",
+          "search_budget_k": 8,
+          "selection_methods": [
+            "validation_seed_regrade"
+          ],
+          "total_ops": 3,
+          "compiled_count": 0,
+          "pass_count": 0,
+          "pass_rate_pct": 0.0,
+          "fast_vs_eager_count": 0,
+          "fast_vs_eager_rate_pct": 0.0,
+          "fast_vs_compile_count": 0,
+          "fast_vs_compile_denominator": 3,
+          "fast_vs_compile_rate_pct": 0.0,
+          "compile_available_passing_count": 0,
+          "compile_unavailable_passing_count": 0,
+          "compile_unavailable_total_count": 3,
+          "geomean_speedup_vs_eager_correct_only": null,
+          "geomean_speedup_vs_eager_n": 0,
+          "geomean_speedup_vs_compile_correct_only": null,
+          "geomean_speedup_vs_compile_n": 0,
+          "failure_count": 3,
+          "failure_counts_by_status": {
+            "COMPILE_ERROR": 3,
+            "NUMERICAL_MISMATCH": 0,
+            "TIMEOUT": 0,
+            "OOM": 0,
+            "RUNTIME_ERROR": 0,
+            "CHEAT": 0
+          },
+          "mean_reward": 0.0
+        },
+        "trained_checkpoint": {
+          "method": "trained_checkpoint",
+          "search_budget_k": 1,
+          "selection_methods": [
+            "single_sample"
+          ],
+          "total_ops": 3,
+          "compiled_count": 0,
+          "pass_count": 0,
+          "pass_rate_pct": 0.0,
+          "fast_vs_eager_count": 0,
+          "fast_vs_eager_rate_pct": 0.0,
+          "fast_vs_compile_count": 0,
+          "fast_vs_compile_denominator": 3,
+          "fast_vs_compile_rate_pct": 0.0,
+          "compile_available_passing_count": 0,
+          "compile_unavailable_passing_count": 0,
+          "compile_unavailable_total_count": 3,
+          "geomean_speedup_vs_eager_correct_only": null,
+          "geomean_speedup_vs_eager_n": 0,
+          "geomean_speedup_vs_compile_correct_only": null,
+          "geomean_speedup_vs_compile_n": 0,
+          "failure_count": 3,
+          "failure_counts_by_status": {
+            "COMPILE_ERROR": 2,
+            "NUMERICAL_MISMATCH": 0,
+            "TIMEOUT": 0,
+            "OOM": 0,
+            "RUNTIME_ERROR": 0,
+            "CHEAT": 1
+          },
+          "mean_reward": -0.3333
+        }
+      },
+      "per_op_paired": [
+        {
+          "op_name": "rmsnorm_4096",
+          "expected_seed": 50042,
+          "paired_pass1_vs_trained": "both_fail",
+          "base_pass1": {
+            "run_id": "base_pass1-rmsnorm_4096-k0",
+            "status": "CHEAT",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": -1.0
+          },
+          "base_best_of_8": {
+            "run_id": "base_best_of_8-rmsnorm_4096-test-selected-k3",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 3,
+            "budget_k": 8,
+            "selection_method": "validation_seed_regrade",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "trained_checkpoint": {
+            "run_id": "trained_checkpoint-rmsnorm_4096-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          }
+        },
+        {
+          "op_name": "int8_weight_only_gemm_512",
+          "expected_seed": 50043,
+          "paired_pass1_vs_trained": "both_fail",
+          "base_pass1": {
+            "run_id": "base_pass1-int8_weight_only_gemm_512-k0",
+            "status": "CHEAT",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": -1.0
+          },
+          "base_best_of_8": {
+            "run_id": "base_best_of_8-int8_weight_only_gemm_512-test-selected-k2",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 2,
+            "budget_k": 8,
+            "selection_method": "validation_seed_regrade",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "trained_checkpoint": {
+            "run_id": "trained_checkpoint-int8_weight_only_gemm_512-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          }
+        },
+        {
+          "op_name": "scaled_dot_product_attn_128",
+          "expected_seed": 50044,
+          "paired_pass1_vs_trained": "both_fail",
+          "base_pass1": {
+            "run_id": "base_pass1-scaled_dot_product_attn_128-k0",
+            "status": "CHEAT",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": -1.0
+          },
+          "base_best_of_8": {
+            "run_id": "base_best_of_8-scaled_dot_product_attn_128-test-selected-k3",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 3,
+            "budget_k": 8,
+            "selection_method": "validation_seed_regrade",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "trained_checkpoint": {
+            "run_id": "trained_checkpoint-scaled_dot_product_attn_128-k0",
+            "status": "CHEAT",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": -1.0
+          }
+        }
+      ]
+    },
+    {
+      "environment": {
+        "run_name": "qlora7b_fresh",
+        "run_dir": "experiments\\colab_t4\\qlora7b_fresh",
+        "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "model_name_or_path": "/content/models/Qwen2.5-Coder-7B-Instruct",
+        "revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+        "training_mode": "qlora_7b_nf4",
+        "training_mode_label": "7B QLoRA (NF4)",
+        "backend": "triton",
+        "dtype": "fp16",
+        "gpu": "Tesla T4",
+        "config_hash": "5ec1b65de79cdea6",
+        "source_commit": "e72c42e794643ed4c198937e86427c3640b977c5",
+        "checkpoint_weights_sha": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46",
+        "heldout_ops": [
+          "rmsnorm_4096",
+          "int8_weight_only_gemm_512",
+          "scaled_dot_product_attn_128"
+        ],
+        "heldout_best_of_k": 8,
+        "seed": 42,
+        "heldout_seed_offset": 50000,
+        "independent_seed_offset": 10000
+      },
+      "canonical_methods": [
+        "base_pass1",
+        "base_best_of_8",
+        "trained_checkpoint"
+      ],
+      "excluded_row_counts": {
+        "selection_val": 24,
+        "fixture": 0,
+        "oracle": 0,
+        "other_eval_phase": 0
+      },
+      "methods": {
+        "base_pass1": {
+          "method": "base_pass1",
+          "search_budget_k": 1,
+          "selection_methods": [
+            "single_sample"
+          ],
+          "total_ops": 3,
+          "compiled_count": 0,
+          "pass_count": 0,
+          "pass_rate_pct": 0.0,
+          "fast_vs_eager_count": 0,
+          "fast_vs_eager_rate_pct": 0.0,
+          "fast_vs_compile_count": 0,
+          "fast_vs_compile_denominator": 3,
+          "fast_vs_compile_rate_pct": 0.0,
+          "compile_available_passing_count": 0,
+          "compile_unavailable_passing_count": 0,
+          "compile_unavailable_total_count": 3,
+          "geomean_speedup_vs_eager_correct_only": null,
+          "geomean_speedup_vs_eager_n": 0,
+          "geomean_speedup_vs_compile_correct_only": null,
+          "geomean_speedup_vs_compile_n": 0,
+          "failure_count": 3,
+          "failure_counts_by_status": {
+            "COMPILE_ERROR": 2,
+            "NUMERICAL_MISMATCH": 0,
+            "TIMEOUT": 0,
+            "OOM": 0,
+            "RUNTIME_ERROR": 0,
+            "CHEAT": 1
+          },
+          "mean_reward": -0.3333
+        },
+        "base_best_of_8": {
+          "method": "base_best_of_8",
+          "search_budget_k": 8,
+          "selection_methods": [
+            "validation_seed_regrade"
+          ],
+          "total_ops": 3,
+          "compiled_count": 0,
+          "pass_count": 0,
+          "pass_rate_pct": 0.0,
+          "fast_vs_eager_count": 0,
+          "fast_vs_eager_rate_pct": 0.0,
+          "fast_vs_compile_count": 0,
+          "fast_vs_compile_denominator": 3,
+          "fast_vs_compile_rate_pct": 0.0,
+          "compile_available_passing_count": 0,
+          "compile_unavailable_passing_count": 0,
+          "compile_unavailable_total_count": 3,
+          "geomean_speedup_vs_eager_correct_only": null,
+          "geomean_speedup_vs_eager_n": 0,
+          "geomean_speedup_vs_compile_correct_only": null,
+          "geomean_speedup_vs_compile_n": 0,
+          "failure_count": 3,
+          "failure_counts_by_status": {
+            "COMPILE_ERROR": 3,
+            "NUMERICAL_MISMATCH": 0,
+            "TIMEOUT": 0,
+            "OOM": 0,
+            "RUNTIME_ERROR": 0,
+            "CHEAT": 0
+          },
+          "mean_reward": 0.0
+        },
+        "trained_checkpoint": {
+          "method": "trained_checkpoint",
+          "search_budget_k": 1,
+          "selection_methods": [
+            "single_sample"
+          ],
+          "total_ops": 3,
+          "compiled_count": 0,
+          "pass_count": 0,
+          "pass_rate_pct": 0.0,
+          "fast_vs_eager_count": 0,
+          "fast_vs_eager_rate_pct": 0.0,
+          "fast_vs_compile_count": 0,
+          "fast_vs_compile_denominator": 3,
+          "fast_vs_compile_rate_pct": 0.0,
+          "compile_available_passing_count": 0,
+          "compile_unavailable_passing_count": 0,
+          "compile_unavailable_total_count": 3,
+          "geomean_speedup_vs_eager_correct_only": null,
+          "geomean_speedup_vs_eager_n": 0,
+          "geomean_speedup_vs_compile_correct_only": null,
+          "geomean_speedup_vs_compile_n": 0,
+          "failure_count": 3,
+          "failure_counts_by_status": {
+            "COMPILE_ERROR": 2,
+            "NUMERICAL_MISMATCH": 0,
+            "TIMEOUT": 0,
+            "OOM": 0,
+            "RUNTIME_ERROR": 0,
+            "CHEAT": 1
+          },
+          "mean_reward": -0.3333
+        }
+      },
+      "per_op_paired": [
+        {
+          "op_name": "rmsnorm_4096",
+          "expected_seed": 50042,
+          "paired_pass1_vs_trained": "both_fail",
+          "base_pass1": {
+            "run_id": "base_pass1-rmsnorm_4096-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "base_best_of_8": {
+            "run_id": "base_best_of_8-rmsnorm_4096-test-selected-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 8,
+            "selection_method": "validation_seed_regrade",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "trained_checkpoint": {
+            "run_id": "trained_checkpoint-rmsnorm_4096-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          }
+        },
+        {
+          "op_name": "int8_weight_only_gemm_512",
+          "expected_seed": 50043,
+          "paired_pass1_vs_trained": "both_fail",
+          "base_pass1": {
+            "run_id": "base_pass1-int8_weight_only_gemm_512-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "Tesla T4",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "base_best_of_8": {
+            "run_id": "base_best_of_8-int8_weight_only_gemm_512-test-selected-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "Tesla T4",
+            "sample_k": 0,
+            "budget_k": 8,
+            "selection_method": "validation_seed_regrade",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "trained_checkpoint": {
+            "run_id": "trained_checkpoint-int8_weight_only_gemm_512-k0",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          }
+        },
+        {
+          "op_name": "scaled_dot_product_attn_128",
+          "expected_seed": 50044,
+          "paired_pass1_vs_trained": "both_fail",
+          "base_pass1": {
+            "run_id": "base_pass1-scaled_dot_product_attn_128-k0",
+            "status": "CHEAT",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": -1.0
+          },
+          "base_best_of_8": {
+            "run_id": "base_best_of_8-scaled_dot_product_attn_128-test-selected-k1",
+            "status": "COMPILE_ERROR",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 1,
+            "budget_k": 8,
+            "selection_method": "validation_seed_regrade",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": 0.0
+          },
+          "trained_checkpoint": {
+            "run_id": "trained_checkpoint-scaled_dot_product_attn_128-k0",
+            "status": "CHEAT",
+            "compiled": false,
+            "correct": false,
+            "gpu_model": "unavailable",
+            "sample_k": 0,
+            "budget_k": 1,
+            "selection_method": "single_sample",
+            "speedup_vs_eager": 0.0,
+            "speedup_vs_compile": null,
+            "compile_available": false,
+            "reward": -1.0
+          }
+        }
+      ]
+    }
+  ]
+}

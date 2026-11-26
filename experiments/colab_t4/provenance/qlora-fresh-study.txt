@@ -1,0 +1,134 @@
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:23<01:10, 23.38s/it]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:46<00:46, 23.46s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [01:07<00:22, 22.19s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:11<00:00, 15.09s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:11<00:00, 17.95s/it]
+{"event": "model_ready", "training_mode": "qlora_7b_nf4", "trainable_parameters": 5046272, "gpu": "Tesla T4", "compute_dtype": "torch.float16"}
+{"event": "step_start", "step": 1, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 1, "statuses": ["CHEAT", "CHEAT"], "rewards": [-1.0, -1.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 2, "op_name": "layernorm_2048"}
+{"event": "step_complete", "step": 2, "statuses": ["COMPILE_ERROR", "COMPILE_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+{"event": "step_start", "step": 3, "op_name": "swiglu_4096"}
+/content/kernelbench-venv/lib/python3.13/site-packages/torch/_dynamo/eval_frame.py:745: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+{"event": "step_complete", "step": 3, "statuses": ["CHEAT", "COMPILE_ERROR"], "rewards": [-1.0, 0.0], "optimizer_step_count": 1, "policy_updated": true, "skipped_non_finite_grad": false, "skipped_non_finite_loss": false, "policy_loss": 6.097555160522461e-05, "mean_kl": 1.306637159359525e-06, "weight_l2_delta": 0.06751587919442834, "trainable_weights_sha256": "e520a7fc70c0675c406068c780c522ac7147d31e2a60544b753f8759f4dc4d6e"}
+{"event": "step_start", "step": 4, "op_name": "fused_add_rmsnorm_2048"}
+{"event": "step_complete", "step": 4, "statuses": ["CHEAT", "COMPILE_ERROR"], "rewards": [-1.0, 0.0], "optimizer_step_count": 2, "policy_updated": true, "skipped_non_finite_grad": false, "skipped_non_finite_loss": false, "policy_loss": 6.380677223205566e-05, "mean_kl": 4.223611540510319e-06, "weight_l2_delta": 0.07556472413569625, "trainable_weights_sha256": "74fb313e9910e41368b74f7345781d09358c69f82f4998dcb265dd8505c74343"}
+{"event": "step_start", "step": 5, "op_name": "fused_softmax_2048"}
+{"event": "step_complete", "step": 5, "statuses": ["CHEAT", "CHEAT"], "rewards": [-1.0, -1.0], "optimizer_step_count": 2}
+{"event": "step_start", "step": 6, "op_name": "log_softmax_2048"}
+{"event": "step_complete", "step": 6, "statuses": ["CHEAT", "COMPILE_ERROR"], "rewards": [-1.0, 0.0], "optimizer_step_count": 3, "policy_updated": true, "skipped_non_finite_grad": false, "skipped_non_finite_loss": false, "policy_loss": -7.659196853637695e-06, "mean_kl": 1.4269560779212043e-05, "weight_l2_delta": 0.06647921894430314, "trainable_weights_sha256": "cf81da83b50def64313b7d910f20ca0f6529992b698c40a6d4ea23234c872dab"}
+{"event": "step_start", "step": 7, "op_name": "rope_fwd_128"}
+{"event": "step_complete", "step": 7, "statuses": ["CHEAT", "COMPILE_ERROR"], "rewards": [-1.0, 0.0], "optimizer_step_count": 4, "policy_updated": true, "skipped_non_finite_grad": false, "skipped_non_finite_loss": false, "policy_loss": 1.055002212524414e-05, "mean_kl": 1.2623651855392382e-05, "weight_l2_delta": 0.05672427212043595, "trainable_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46"}
+{"event": "step_start", "step": 8, "op_name": "matmul_bias_gelu_512"}
+{"event": "step_complete", "step": 8, "statuses": ["COMPILE_ERROR", "RUNTIME_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 4}
+FRESH_TRAINING_COMPLETE {"started_utc": "2026-11-26T19:37:29.971707+00:00", "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct", "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242", "source_commit": "e72c42e794643ed4c198937e86427c3640b977c5", "config_hash": "5ec1b65de79cdea6", "torch": "2.6.0+cu124", "triton": "3.2.0", "cuda": "12.4", "gpu": "Tesla T4", "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]", "training_mode": "qlora_7b_nf4", "compute_dtype": "fp16", "training_performed": true, "schedule": "fresh on-policy groups with immediate per-group updates", "completed_utc": "2026-11-26T19:58:57.792918+00:00", "steps": 8, "optimizer_steps": 4, "trainable_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46", "seconds": 1287.7517439399999, "peak_allocated_bytes": 10282289664, "peak_reserved_bytes": 11632902144}
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:22<01:08, 22.82s/it]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:45<00:45, 22.94s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [01:06<00:21, 21.84s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:10<00:00, 14.88s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:10<00:00, 17.65s/it]
+{"event": "heldout_generation", "method": "base_pass1", "op_name": "rmsnorm_4096", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_pass1", "op_name": "int8_weight_only_gemm_512", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_pass1", "op_name": "scaled_dot_product_attn_128", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 1, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 2, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 3, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 4, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 5, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 6, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "sample_k": 7, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 1, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 2, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 3, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 4, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 5, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 6, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "sample_k": 7, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 1, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 2, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 3, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 4, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 5, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 6, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "sample_k": 7, "cached": false}
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:22<01:08, 22.76s/it]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:45<00:46, 23.03s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [01:06<00:21, 21.75s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:10<00:00, 14.88s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:10<00:00, 17.64s/it]
+{"event": "heldout_generation", "method": "trained_checkpoint", "op_name": "rmsnorm_4096", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "trained_checkpoint", "op_name": "int8_weight_only_gemm_512", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "trained_checkpoint", "op_name": "scaled_dot_product_attn_128", "sample_k": 0, "cached": false}
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "int8_weight_only_gemm_512", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "scaled_dot_product_attn_128", "phase": "heldout_test", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "int8_weight_only_gemm_512", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "selection_val", "status": "CHEAT"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "scaled_dot_product_attn_128", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "trained_checkpoint", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "trained_checkpoint", "op_name": "int8_weight_only_gemm_512", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "trained_checkpoint", "op_name": "scaled_dot_product_attn_128", "phase": "heldout_test", "status": "CHEAT"}
+{
+  "base_pass1": {
+    "ops": 3.0,
+    "selection_method": "single_sample",
+    "pass_rate": 0.0,
+    "fast_1x_rate": 0.0,
+    "fast_compile_rate": 0.0,
+    "geomean_speedup_vs_eager": 0.0,
+    "mean_reward": -0.3333
+  },
+  "base_best_of_8": {
+    "ops": 3.0,
+    "selection_method": "validation_seed_regrade",
+    "pass_rate": 0.0,
+    "fast_1x_rate": 0.0,
+    "fast_compile_rate": 0.0,
+    "geomean_speedup_vs_eager": 0.0,
+    "mean_reward": 0.0
+  },
+  "trained_checkpoint": {
+    "ops": 3.0,
+    "selection_method": "single_sample",
+    "pass_rate": 0.0,
+    "fast_1x_rate": 0.0,
+    "fast_compile_rate": 0.0,
+    "geomean_speedup_vs_eager": 0.0,
+    "mean_reward": -0.3333
+  }
+}
+HELDOUT_COMPLETE {"started_utc": "2026-11-26T19:59:06.627349+00:00", "source_commit": "e72c42e794643ed4c198937e86427c3640b977c5", "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct", "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242", "dtype": "fp16", "gpu": "Tesla T4", "torch": "2.6.0+cu124", "config_hash": "5ec1b65de79cdea6", "generation_engine": "hf_eager", "train_ops": ["rmsnorm_2048", "layernorm_2048", "swiglu_4096", "fused_add_rmsnorm_2048", "fused_softmax_2048", "log_softmax_2048", "rope_fwd_128", "matmul_bias_gelu_512"], "heldout_ops": ["rmsnorm_4096", "int8_weight_only_gemm_512", "scaled_dot_product_attn_128"], "best_of_k": 8, "sampling": {"do_sample": true, "temperature": 1.0, "top_p": 1.0, "top_k": 0, "max_new_tokens": 1024}, "checkpoint_step": 8, "checkpoint_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46", "completed_utc": "2026-11-26T20:27:43.605041+00:00", "seconds": 1716.9764640059993, "peak_allocated_bytes": 8847443456}

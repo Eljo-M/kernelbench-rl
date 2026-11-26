@@ -1,0 +1,10 @@
+{
+  "initial_adapter_artifact_sha256": "bf84e2a9783ecaeccec7e5b58244cf5ede5996b3a0688bdedbd6225106a1ef19",
+  "trained_adapter_artifact_sha256": "898a877a5861a233bc0bd9758e5ab5d45f63bed3c78a9f7000cc46ba8f19ce52",
+  "trainable_parameters": 5046272,
+  "changed_scalar_parameters": 5046250,
+  "l2_delta_from_initial_adapter": 0.1991094043585815,
+  "optimizer_steps": 4,
+  "comparison": "independent CPU comparison of matching saved adapter tensor names and shapes",
+  "recorded_trainable_model_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46"
+}

@@ -9,9 +9,10 @@ checks → reward and group advantages → strict JSONL → report. The reposito
 also includes optional policy-search/training adapters and a CUDA baseline
 validation path. Measured laptop baseline results are in
 [`experiments/rtx5060/full30`](experiments/rtx5060/full30).
-The 0.49B full-parameter training and held-out experiment completed and showed
-no kernel-quality gain. The free-T4 7B QLoRA experiment is running. Baseline
-speedups measure handwritten kernels, separately from model-generated results.
+Both the 0.49B full-parameter and free-T4 7B QLoRA experiments completed training
+and held-out evaluation. Neither showed a kernel-quality gain. Baseline speedups
+measure handwritten kernels, separately from model-generated results. See the
+[final report](RESULTS.md) and [paired held-out comparison](experiments/heldout_comparison/comparison.md).
 
 ## Run locally
 
@@ -40,7 +41,7 @@ is synthetic format test data, explicitly marked `fixture: true`.
 | `contracts/` | Shared Python/Rust evaluation record and JSON Schema | Keep field names stable across tracks |
 | `kernels/` | 30 NumPy references, Triton baselines and native PyTorch references; 180/180 laptop fp32/bf16 checks passed | Generalization is limited to the registered canonical/stress cases |
 | `sandbox_runner/` | AST checks, child-process timeout, input mutation checks, multiple seeds and stress inputs, finite JSON | Development runner, not a security sandbox; Windows has no hard memory cap |
-| `rl_trainer/` | Bounded search/repair, CUDA grading, clipped GRPO, full-parameter 0.49B and 7B QLoRA paths, verified optimizer/weight/RNG resume | Free-T4 experiment in progress; FSDP and multi-node training are not implemented |
+| `rl_trainer/` | Bounded search/repair, CUDA grading, clipped GRPO, completed full-parameter 0.49B and 7B QLoRA experiments, checkpoint support | FSDP and multi-node training are not implemented |
 | `eval/` | Grouped metrics, failure counts, plots, offline viewer, Nsight CSV import and strict paired held-out comparison | Three held-out workloads per run are a small test set |
 
 CPU records always use `backend: numpy_dev`. `compiled: true` means Python source
@@ -97,3 +98,17 @@ and evaluation pipeline, with no observed quality improvement. Best-of-8 has a
 larger inference budget; only base and trained pass@1 use matched budgets. See
 the [held-out comparison](experiments/laptop_fullparam/comparison/comparison.md)
 and raw records for failure categories and per-operator results.
+
+## Completed free-T4 experiment
+
+The 7B NF4/FP16 QLoRA run completed eight groups / 16 samples and four verified
+optimizer updates to 5,046,272 adapter parameters. Independent comparison of
+the saved initial and trained adapters measured L2 change 0.19911. Training
+took 21 minutes 28 seconds on a free Tesla T4, followed by a 28 minute 37 second
+held-out evaluation. All generated training candidates failed verification.
+
+Base pass@1, validation-selected best-of-8 and trained pass@1 each passed **0/3**.
+The raw [T4 records](experiments/colab_t4/qlora7b_fresh) retain source commit,
+configuration, model revision, completion tokens, probabilities and checkpoint
+identity. This is adapter training over a frozen 7B base, not full-parameter 7B
+training. The initial failed worker/recovery attempts remain separate diagnostics.

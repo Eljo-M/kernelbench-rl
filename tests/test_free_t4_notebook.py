@@ -57,7 +57,7 @@ class TestFreeT4Notebook(unittest.TestCase):
 
         # Pinned public repo, commit, model, and revision
         self.assertIn("https://github.com/Eljo-M/kernelbench-rl.git", self.all_code)
-        self.assertIn("e72c42e794643ed4c198937e86427c3640b977c5", self.all_code)
+        self.assertIn("73a9220c5d3182ccc21f3e4cbcd0ec512aa1d48c", self.all_code)
         self.assertIn("Qwen/Qwen2.5-Coder-7B-Instruct", self.all_code)
         self.assertIn("c03e6d358207e414f1eca0bb1891e29f1db0e242", self.all_code)
         self.assertIn("token=False", self.all_code)

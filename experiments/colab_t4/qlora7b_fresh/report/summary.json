@@ -1,0 +1,233 @@
+{
+  "overall": {
+    "n": 9,
+    "compile_pct": 0.0,
+    "correct_pct": 0.0,
+    "fast_1x_pct": 0.0,
+    "fast_compile_pct": null,
+    "compile_baseline_n": 0,
+    "timed_correct_n": 0,
+    "geomean_speedup": 0.0,
+    "speedup_ci95": null,
+    "failure_counts": {
+      "CHEAT": 2,
+      "COMPILE_ERROR": 7
+    },
+    "development_n": 0,
+    "fixture_n": 0
+  },
+  "groups": [
+    {
+      "method": "base_best_of_8",
+      "backend": "triton",
+      "level": 1,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "base_best_of_8",
+      "backend": "triton",
+      "level": 2,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "base_best_of_8",
+      "backend": "triton",
+      "level": 3,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "Tesla T4",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "base_pass1",
+      "backend": "triton",
+      "level": 1,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "base_pass1",
+      "backend": "triton",
+      "level": 2,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "CHEAT": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "base_pass1",
+      "backend": "triton",
+      "level": 3,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "Tesla T4",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "trained_checkpoint",
+      "backend": "triton",
+      "level": 1,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "trained_checkpoint",
+      "backend": "triton",
+      "level": 2,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "CHEAT": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    },
+    {
+      "method": "trained_checkpoint",
+      "backend": "triton",
+      "level": 3,
+      "fixture": false,
+      "dtype": "fp16",
+      "gpu_model": "unavailable",
+      "timing_mode": "cuda_graph",
+      "n": 1,
+      "compile_pct": 0.0,
+      "correct_pct": 0.0,
+      "fast_1x_pct": 0.0,
+      "fast_compile_pct": null,
+      "compile_baseline_n": 0,
+      "timed_correct_n": 0,
+      "geomean_speedup": 0.0,
+      "speedup_ci95": null,
+      "failure_counts": {
+        "COMPILE_ERROR": 1
+      },
+      "development_n": 0,
+      "fixture_n": 0
+    }
+  ],
+  "selection_records_excluded": 24,
+  "hardware_roof": {
+    "peak_tflops": null,
+    "bandwidth_gbps": null
+  }
+}

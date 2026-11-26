@@ -1,0 +1,45 @@
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "layernorm_2048", "status": "COMPILE_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "layernorm_2048", "status": "COMPILE_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "swiglu_4096", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "swiglu_4096", "status": "COMPILE_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "fused_add_rmsnorm_2048", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "fused_add_rmsnorm_2048", "status": "COMPILE_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "fused_softmax_2048", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "fused_softmax_2048", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "log_softmax_2048", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "log_softmax_2048", "status": "COMPILE_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "rope_fwd_128", "status": "CHEAT", "reward": -1.0}
+{"event": "recovery_grade", "op_name": "rope_fwd_128", "status": "COMPILE_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "matmul_bias_gelu_512", "status": "RUNTIME_ERROR", "reward": 0.0}
+{"event": "recovery_grade", "op_name": "matmul_bias_gelu_512", "status": "RUNTIME_ERROR", "reward": 0.0}
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards:  25%|██▌       | 1/4 [00:23<01:10, 23.65s/it]
+Loading checkpoint shards:  50%|█████     | 2/4 [00:47<00:47, 23.55s/it]
+Loading checkpoint shards:  75%|███████▌  | 3/4 [01:07<00:22, 22.25s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:12<00:00, 15.13s/it]
+Loading checkpoint shards: 100%|██████████| 4/4 [01:12<00:00, 18.01s/it]
+Traceback (most recent call last):
+  File "/content/run_7b_recovered_study.py", line 14, in <module>
+    recovery=recover_initial_batch(input_jsonl=source/'train.jsonl',config_path=source/'config.json',out_dir=out,initial_checkpoint=source/'checkpoints',logp_verify_atol=0.001)
+  File "/content/kernelbench-rl/rl_trainer/recover_initial_batch.py", line 447, in recover_initial_batch
+    max_old_err, max_ref_err = verify_stored_logps_against_policy(
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        policy=policy,
+        ^^^^^^^^^^^^^^
+    ...<3 lines>...
+        verify_ref_with_disable_adapter=(cfg.training_mode == "qlora_7b_nf4"),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/content/kernelbench-rl/rl_trainer/recover_initial_batch.py", line 265, in verify_stored_logps_against_policy
+    return _verify_stored_logps(policy=policy, samples=samples, logp_fn=logp_fn,
+        logp_verify_atol=logp_verify_atol,
+        verify_ref_with_disable_adapter=verify_ref_with_disable_adapter)
+  File "/content/kernelbench-rl/rl_trainer/recover_initial_batch.py", line 291, in _verify_stored_logps
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Stale/mismatched policy detected on sample 0: max|recomputed_old_logp - stored_old_logp|=1.3374e-02 > atol=1.0000e-03.

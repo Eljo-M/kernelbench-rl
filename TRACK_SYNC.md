@@ -7,7 +7,7 @@ This file records the actual implementation state and remaining experiments.
 | :--- | :--- | :--- |
 | Runner | CPU worker, timeout, reduced environment, static checks, multi-seed/stress checks, mutation and timing validation; Rust supervisory CLI verified in CI | Supply external isolation for adversarial execution |
 | Kernels | All 30 Triton baselines integrated; final canonical/stress CUDA suite 180/180 PASS in fp32/bf16 on three seeds | Windows SSM compiled comparison unavailable; 29 comparable operators |
-| Training | Real 0.49B full-parameter run and held-out evaluation completed; exact checkpoint resume verified; free 7B QLoRA has performed verified updates | Finish T4 held-out evaluation; FSDP/multi-node training not implemented |
+| Training | Completed real 0.49B full-parameter and free 7B QLoRA training/held-out studies; one and four optimizer updates respectively | No held-out quality gain; FSDP/multi-node training not implemented |
 | Evaluation | Strict ingestion, grouped summaries, plots, offline viewer, profiler import and paired held-out report | Three held-out workloads per model limit generalization claims |
 
 ## 2026-11-26 integration
@@ -31,10 +31,11 @@ This file records the actual implementation state and remaining experiments.
   [GitHub CI](https://github.com/Eljo-M/kernelbench-rl/actions/runs/45870454904),
   including Python tests, operator verification, report generation and Rust tests.
 
-## Current experiment
+## Completed free-resource studies
 
-Finish the fresh free-T4 study and collect the checkpoint and held-out records.
-The corrected worker passed a real T4 preflight. The initial attempt produced
+The fresh free-T4 study and held-out evaluation completed. Its checkpoint and
+raw records have been exported. The corrected worker passed a real T4 preflight.
+The initial attempt produced
 no updates because child processes lacked the Linux driver environment; the
 failed recovery also stopped before any update after a probability mismatch.
 Both attempts remain separate from fresh training results. Only final test-phase
@@ -55,8 +56,9 @@ records enter comparisons, with equal pass@1 budgets for base and trained models
   0/3; the result shows no quality improvement. The real checkpoint restored
   model weights, optimizer and RNG with a matching trainable-weight checksum.
 - The 7B NF4/rank-8 QLoRA run uses a free T4 with 5,046,272 trainable adapter
-  parameters. Fresh training has performed two finite, nonzero adapter updates;
-  completion and held-out quality results have not yet been verified.
+  parameters. Fresh training completed four finite, nonzero adapter updates.
+  Base pass@1, best-of-8 and trained pass@1 each passed 0/3 held-out workloads.
+  Independent saved-adapter comparison measured L2 change 0.19911.
 - Commit `3e9de7c9bf1cd83a523282e26e41feaf4505c66b` passed
   [CI](https://github.com/Eljo-M/kernelbench-rl/actions/runs/45877414778), including
   actual Torch backward, optimizer and checkpoint tests.
