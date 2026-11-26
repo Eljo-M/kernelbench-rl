@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KernelEvalResult",
+  "type": "object",
+  "required": [
+    "run_id",
+    "op_name",
+    "level",
+    "backend",
+    "status",
+    "compiled",
+    "correct",
+    "cheat_detected",
+    "max_abs_err",
+    "eager_ms",
+    "compile_ms",
+    "candidate_ms",
+    "speedup_vs_eager",
+    "speedup_vs_compile",
+    "reward"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "op_name": {
+      "type": "string"
+    },
+    "level": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    "backend": {
+      "type": "string",
+      "enum": [
+        "triton",
+        "cuda",
+        "numpy_dev"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "COMPILE_ERROR",
+        "NUMERICAL_MISMATCH",
+        "TIMEOUT",
+        "OOM",
+        "RUNTIME_ERROR",
+        "CHEAT"
+      ]
+    },
+    "compiled": {
+      "type": "boolean"
+    },
+    "correct": {
+      "type": "boolean"
+    },
+    "cheat_detected": {
+      "type": "boolean"
+    },
+    "max_abs_err": {
+      "type": "number"
+    },
+    "eager_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "compile_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "candidate_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "speedup_vs_eager": {
+      "type": "number",
+      "minimum": 0
+    },
+    "speedup_vs_compile": {
+      "type": "number",
+      "minimum": 0
+    },
+    "achieved_tflops": {
+      "type": "number",
+      "minimum": 0
+    },
+    "arithmetic_intensity": {
+      "type": "number",
+      "minimum": 0
+    },
+    "reward": {
+      "type": "number"
+    },
+    "error_message": {
+      "type": "string"
+    }
+  }
+}

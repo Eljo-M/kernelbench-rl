@@ -1,0 +1,27 @@
+name: KernelBench-RL CI
+
+on:
+  push:
+    branches: [main, "codex/**", "track-*"]
+  pull_request:
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: python3 -m unittest discover -s tests -v
+      - run: python3 -m kernels.op_registry --verify
+      - run: python3 eval/benchmark_report.py --input eval/sample_traces.jsonl --out /tmp/kb_out
+
+  rust-sandbox-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - working-directory: sandbox_runner
+        run: cargo test --locked || cargo test
