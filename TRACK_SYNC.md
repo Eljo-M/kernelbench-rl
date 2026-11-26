@@ -59,6 +59,12 @@ records enter comparisons, with equal pass@1 budgets for base and trained models
   parameters. Fresh training completed four finite, nonzero adapter updates.
   Base pass@1, best-of-8 and trained pass@1 each passed 0/3 held-out workloads.
   Independent saved-adapter comparison measured L2 change 0.19911.
+- The actual T4 checkpoint restored adapter weights, optimizer and RNG with an
+  exact checksum at step 8, preserving four optimizer updates and adding no
+  training steps. The live probability diagnostic reproduced the 0.013374
+  cache-mode difference on the original 395-token sample; repeated no-cache
+  eval and grad-enabled training forwards matched exactly. Strict summaries are
+  retained in `experiments/colab_t4/live_verification.json`.
 - Commit `3e9de7c9bf1cd83a523282e26e41feaf4505c66b` passed
   [CI](https://github.com/Eljo-M/kernelbench-rl/actions/runs/45877414778), including
   actual Torch backward, optimizer and checkpoint tests.

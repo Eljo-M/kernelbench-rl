@@ -46,6 +46,11 @@ L2 change **0.19911** from its initial checkpoint. Adapter artifact hashes and
 trainable-model hashes are recorded separately because they hash different
 representations.
 
+The live T4 resume probe restored checkpoint 8, all four optimizer steps and RNG
+state with the exact recorded trainable-weight checksum. It performed no
+additional training. The [live verification summary](experiments/colab_t4/live_verification.json)
+records this result separately from the original training run.
+
 All 16 training candidates failed verification in each run. The T4 categories
 were eight source-policy rejections (`CHEAT`), seven compile errors and one
 runtime error from generated `tl.meshgrid` usage. A `CHEAT` label records a
@@ -96,8 +101,13 @@ driver-library environment. A subsequent recovery rejected old/recomputed
 probabilities differing by 0.013374 at tolerance 0.001, before updating. Both
 remain diagnostics, separate from the fresh trained experiment. The later
 `73a9220` scoring fix explicitly disables KV caching for teacher-forced scoring
-without changing generation's cache configuration. It does not retroactively
-relabel the historical experiments or prove a cause for the earlier mismatch.
+without changing generation's cache configuration. A live T4 diagnostic on the
+recorded 395-token initial-policy sample reproduced the exact **0.0133743286**
+maximum difference by changing only the cache flag. The original stored values
+matched cache-enabled scoring exactly; repeated cache-disabled evaluation and
+the gradient-enabled cache-disabled training forward matched exactly. This
+supports a cache-path cause on that sample. It does not retroactively relabel
+or rerun the historical experiments, and the recovery tolerance remains 0.001.
 
 All **134 local tests passed**, including real tiny-Torch backward, optimizer,
 checkpoint, cache and reporting regressions. The scoring implementation passed

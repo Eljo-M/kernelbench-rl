@@ -19,6 +19,8 @@ and dry-run fixtures are kept elsewhere and do not enter the results below.
 Both bounded training and held-out studies are complete. Neither observed a
 kernel-quality improvement. The independent T4 adapter comparison is recorded in
 `colab_t4/qlora7b_fresh/adapter_delta_verified.json`.
+The live T4 checkpoint-resume and cache-mode diagnostic summaries are in
+`colab_t4/live_verification.json` and `qlora7b_fresh/resume_verified.json`.
 
 ## Regenerate reports
 

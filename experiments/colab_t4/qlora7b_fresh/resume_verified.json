@@ -1,0 +1,10 @@
+{
+  "checkpoint_step": 8,
+  "optimizer_steps": 4,
+  "trainable_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46",
+  "restored_model_checksum_verified": true,
+  "restored_optimizer_and_rng": true,
+  "additional_training_steps": 0,
+  "source_commit": "73a9220c5d3182ccc21f3e4cbcd0ec512aa1d48c",
+  "capture_method": "completed Colab notebook output"
+}

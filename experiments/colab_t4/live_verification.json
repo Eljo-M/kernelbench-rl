@@ -1,0 +1,94 @@
+{
+  "capture_method": "Summary transcribed from the completed live Colab notebook output via native accessibility; original diagnostic JSON remains in the Colab export.",
+  "captured_utc": "2026-11-26T21:35:29.849736+00:00",
+  "source_commit": "73a9220c5d3182ccc21f3e4cbcd0ec512aa1d48c",
+  "gpu": "Tesla T4",
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "config_hash": "5ec1b65de79cdea6",
+  "diagnostic_return_code": 0,
+  "resume_probe_return_code": 0,
+  "tolerance_changed": false,
+  "policy_updated": false,
+  "diagnostic_comparisons": {
+    "use_cache_true_vs_false_eval": {
+      "token_count": 395,
+      "max_abs_diff": 0.01337432861328125,
+      "mean_abs_diff": 0.00042778932595554785,
+      "p95_abs_diff": 0.0022344589233398424,
+      "max_abs_diff_token_index": 276
+    },
+    "stored_old_vs_recomputed_eval_use_cache_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.01337432861328125,
+      "mean_abs_diff": 0.00042778932595554785,
+      "p95_abs_diff": 0.0022344589233398424,
+      "max_abs_diff_token_index": 276
+    },
+    "stored_old_vs_recomputed_train_use_cache_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.01337432861328125,
+      "mean_abs_diff": 0.00042778932595554785,
+      "p95_abs_diff": 0.0022344589233398424,
+      "max_abs_diff_token_index": 276
+    },
+    "ref_use_cache_true_vs_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.01337432861328125,
+      "mean_abs_diff": 0.00042778932595554785,
+      "p95_abs_diff": 0.0022344589233398424,
+      "max_abs_diff_token_index": 276
+    },
+    "stored_ref_vs_recomputed_ref_use_cache_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.01337432861328125,
+      "mean_abs_diff": 0.00042778932595554785,
+      "p95_abs_diff": 0.0022344589233398424,
+      "max_abs_diff_token_index": 276
+    },
+    "same_process_repeatability_eval_use_cache_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "p95_abs_diff": 0.0,
+      "max_abs_diff_token_index": 0
+    },
+    "eval_vs_train_dropout_off_use_cache_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "p95_abs_diff": 0.0,
+      "max_abs_diff_token_index": 0
+    },
+    "stored_old_vs_recomputed_eval_use_cache_true": {
+      "token_count": 395,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "p95_abs_diff": 0.0,
+      "max_abs_diff_token_index": 0
+    },
+    "recomputed_old_vs_ref_use_cache_false": {
+      "token_count": 395,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "p95_abs_diff": 0.0,
+      "max_abs_diff_token_index": 0
+    },
+    "stored_ref_vs_recomputed_ref_use_cache_true": {
+      "token_count": 395,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "p95_abs_diff": 0.0,
+      "max_abs_diff_token_index": 0
+    }
+  },
+  "resume": {
+    "checkpoint_step": 8,
+    "optimizer_steps": 4,
+    "trainable_weights_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46",
+    "restored_model_checksum_verified": true,
+    "restored_optimizer_and_rng": true,
+    "additional_training_steps": 0
+  },
+  "interpretation": "On this recorded 395-token initial-policy sample, cache mode alone reproduced the earlier 0.013374 mismatch. Repeated no-cache evaluation, grad-enabled no-cache training, and unchanged-base reference matched exactly. This does not relabel or rerun historical training."
+}
