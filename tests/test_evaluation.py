@@ -57,6 +57,14 @@ class TestEvaluation(unittest.TestCase):
         groups = grouped_summaries([trace(method="base"), trace(method="trained"), trace(method="base", backend="numpy_dev"), trace(method="base", level=2), trace(method="base", fixture=True)])
         self.assertEqual(len(groups), 5)
 
+    def test_precision_device_and_timing_modes_are_not_pooled(self):
+        rows = [trace(seed=1, dtype="fp32", gpu_model="gpuA", timing_mode="events"),
+                trace(seed=2, dtype="bf16", gpu_model="gpuA", timing_mode="events"),
+                trace(seed=3, dtype="fp32", gpu_model="gpuB", timing_mode="events"),
+                trace(seed=4, dtype="fp32", gpu_model="gpuA", timing_mode="cuda_graph")]
+        self.assertEqual(len(grouped_summaries(rows)), 4)
+        self.assertIsNone(summarize_traces(rows)["speedup_ci95"])
+
     def test_malformed_jsonl_reports_filename_and_line(self):
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "bad.jsonl"

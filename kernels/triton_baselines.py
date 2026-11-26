@@ -289,7 +289,7 @@ def _matmul_bias_gelu_kernel(
     z = acc + bias[None, :]
     k_coef = 0.7978845608028654
     inner = k_coef * (z + 0.044715 * z * z * z)
-    t = tl.math.tanh(inner)
+    t = 2.0 * tl.sigmoid(2.0 * inner) - 1.0
     out = 0.5 * z * (1.0 + t)
     tl.store(
         C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn,

@@ -77,7 +77,9 @@ def _geomean(values: list[float]) -> float:
 def _seed_ci(rows: list[dict]) -> dict | None:
     if not rows or any("seed" not in row for row in rows):
         return None
-    if len({(row.get("method", "unspecified"), row["backend"], row.get("fixture", False)) for row in rows}) != 1:
+    if len({(row.get("method", "unspecified"), row["backend"], row.get("fixture", False),
+             row.get("dtype", "unspecified"), row.get("gpu_model", "unspecified"),
+             row.get("timing_mode", "unspecified")) for row in rows}) != 1:
         return None
     grouped = defaultdict(list)
     for row in rows:
@@ -125,8 +127,10 @@ def summarize_traces(rows: list[dict]) -> dict:
 def grouped_summaries(rows: list[dict]) -> list[dict]:
     groups = defaultdict(list)
     for row in rows:
-        groups[(row.get("method", "unspecified"), row["backend"], row["level"], bool(row.get("fixture", False)))].append(row)
-    return [{"method": key[0], "backend": key[1], "level": key[2], "fixture": key[3], **summarize_traces(group)}
+        groups[(row.get("method", "unspecified"), row["backend"], row["level"], bool(row.get("fixture", False)),
+                row.get("dtype", "unspecified"), row.get("gpu_model", "unspecified"), row.get("timing_mode", "unspecified"))].append(row)
+    return [{"method": key[0], "backend": key[1], "level": key[2], "fixture": key[3],
+             "dtype": key[4], "gpu_model": key[5], "timing_mode": key[6], **summarize_traces(group)}
             for key, group in sorted(groups.items())]
 
 
@@ -148,7 +152,7 @@ def _plots(rows: list[dict], out_dir: Path, peak_tflops: float | None, bandwidth
     if passing:
         shown = passing[:60]
         ax.barh(range(len(shown)), [row["speedup_vs_eager"] for row in shown], color=["#64748b" if row["backend"] == "numpy_dev" else "#2563eb" for row in shown])
-        ax.set_yticks(range(len(shown)), [f"{row['run_id']} · {row['op_name']}" for row in shown], fontsize=7)
+        ax.set_yticks(range(len(shown)), [f"{row['op_name']} · {row.get('dtype', 'unspecified')} · seed {row.get('seed', '?')}" for row in shown], fontsize=7)
         ax.axvline(1, color="#475569", linestyle="--", linewidth=1)
         if len(passing) > len(shown):
             ax.text(.99, .02, "First 60 timed correct records; full data in report.html", transform=ax.transAxes, ha="right", fontsize=8)
@@ -205,9 +209,9 @@ def write_report(input_jsonl: Path, out_dir: Path, *, peak_tflops: float | None 
         lines.extend([f"**Synthetic fixtures: {stats['fixture_n']} records. These values are test data, not benchmark evidence.**", ""])
     if stats["development_n"]:
         lines.extend([f"CPU development records: {stats['development_n']}. NumPy timing is not CUDA performance or a torch.compile baseline.", ""])
-    lines.extend(["| Metric | Value |", "| :--- | ---: |", f"| Total rollouts | {stats['n']} |", f"| Compile rate | {stats['compile_pct']}% |", f"| Correctness rate | {stats['correct_pct']}% |", f"| Fast_1.0x (vs eager; all-rollout denominator) | {stats['fast_1x_pct']}% |", f"| Fast_compile | {compile_value} |", f"| Timed correct candidates | {stats['timed_correct_n']} |", f"| Geomean speedup (timed correct only) | {stats['geomean_speedup']}x |", f"| Geomean speedup 95% interval | {_format_ci(stats['speedup_ci95'])} |", "", "Speedup excludes failed, cheating, or untimed records. Zero baseline latency means unavailable. The interval resamples whole seeds with equal weight; it is conditional on timed correct records and is not a paired ablation test.", "", "## Method, backend, and level", "", "| Method | Backend | Level | Fixture | N | Compile % | Correct % | Fast_1.0x % | Correct-only geomean | 95% interval |", "| :--- | :--- | ---: | :--- | ---: | ---: | ---: | ---: | ---: | :--- |"])
+    lines.extend(["| Metric | Value |", "| :--- | ---: |", f"| Total rollouts | {stats['n']} |", f"| Compile rate | {stats['compile_pct']}% |", f"| Correctness rate | {stats['correct_pct']}% |", f"| Fast_1.0x (vs eager; all-rollout denominator) | {stats['fast_1x_pct']}% |", f"| Fast_compile | {compile_value} |", f"| Timed correct candidates | {stats['timed_correct_n']} |", f"| Geomean speedup (timed correct only) | {stats['geomean_speedup']}x |", f"| Geomean speedup 95% interval | {_format_ci(stats['speedup_ci95'])} |", "", "Speedup excludes failed, cheating, or untimed records. Zero baseline latency means unavailable. The interval resamples whole seeds with equal weight; it is conditional on timed correct records and is not a paired ablation test.", "", "## Method, backend, precision, and level", "", "| Method | Backend | Dtype | GPU | Timing | Level | Fixture | N | Compile % | Correct % | Fast_1.0x % | Correct-only geomean | 95% interval |", "| :--- | :--- | :--- | :--- | :--- | ---: | :--- | ---: | ---: | ---: | ---: | ---: | :--- |"])
     for group in groups:
-        lines.append(f"| {_md(group['method'])} | {_md(group['backend'])} | {group['level']} | {group['fixture']} | {group['n']} | {group['compile_pct']} | {group['correct_pct']} | {group['fast_1x_pct']} | {group['geomean_speedup']}x | {_format_ci(group['speedup_ci95'])} |")
+        lines.append(f"| {_md(group['method'])} | {_md(group['backend'])} | {_md(group['dtype'])} | {_md(group['gpu_model'])} | {_md(group['timing_mode'])} | {group['level']} | {group['fixture']} | {group['n']} | {group['compile_pct']} | {group['correct_pct']} | {group['fast_1x_pct']} | {group['geomean_speedup']}x | {_format_ci(group['speedup_ci95'])} |")
     lines.extend(["", "## Failure counts", "", "| Failure | Count |", "| :--- | ---: |"])
     lines.extend(f"| {_md(status)} | {count} |" for status, count in stats["failure_counts"].items())
     if not stats["failure_counts"]:

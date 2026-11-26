@@ -6,8 +6,10 @@ Execution-feedback tooling for generating and checking numerical kernels, with
 The CPU pipeline runs locally: candidate source → bounded worker → numerical
 checks → reward and group advantages → strict JSONL → report. The repository
 also includes optional policy-search/training adapters and a CUDA baseline
-validation path. No trained checkpoint, measured GPU speedup, or distributed
-training result is claimed in this repository.
+validation path. Measured laptop baseline results are in
+[`experiments/rtx5060/cuda_graph`](experiments/rtx5060/cuda_graph).
+Real-model training experiments are in progress; these baseline results do not
+establish learning gains or distributed training results.
 
 ## Run locally
 
@@ -34,7 +36,7 @@ is synthetic format test data, explicitly marked `fixture: true`.
 | Component | Implemented | Remaining validation or scope |
 | :--- | :--- | :--- |
 | `contracts/` | Shared Python/Rust evaluation record and JSON Schema | Keep field names stable across tracks |
-| `kernels/` | 30 NumPy workload references, deterministic inputs, stress cases, analytical cost estimates; Triton source for 11 entries | GPU numerical and performance validation is a separate CUDA run |
+| `kernels/` | 30 NumPy workload references; 11 Triton entries with native PyTorch references; 66/66 laptop fp32/bf16 checks passed | GPU results cover the 11 baseline entries, not all 30 workloads |
 | `sandbox_runner/` | AST checks, child-process timeout, input mutation checks, multiple seeds and stress inputs, finite JSON | Development runner, not a security sandbox; Windows has no hard memory cap |
 | `rl_trainer/` | Bounded asynchronous search/repair, group rewards, optional single-process on-policy GRPO update and checkpoint code | Large-model, CUDA-kernel and distributed training experiments remain unverified |
 | `eval/` | Metrics by method/backend/level, seed intervals, failure counts, PNG plots, offline viewer, Nsight CSV import | Controlled held-out ablations require actual independent runs |
@@ -61,3 +63,19 @@ this limit is platform-dependent.
 See [architecture](ARCHITECTURE.md), [training usage](rl_trainer/README.md),
 [kernel and CUDA validation usage](kernels/README.md),
 [evaluation usage](eval/README.md), and [track status](TRACK_SYNC.md).
+
+## Measured laptop baselines
+
+RTX 5060 Laptop (8 GB), PyTorch 2.11/cu128, Triton Windows 3.6; 11 operators,
+three input seeds, canonical/stress checks, and two precisions. All 66 checks
+passed. CUDA graphs replay 16 calls, with 50 event measurements after warmup;
+these are steady-state device timings, excluding Python dispatch and compilation.
+
+| Precision | Geomean vs native PyTorch eager | Geomean vs verified torch.compile |
+| :--- | ---: | ---: |
+| fp32 | 2.310x | 1.024x |
+| bf16 | 5.893x | 1.139x |
+
+These are hand-written baseline comparisons, not trained-model results. Precision,
+GPU and timing modes are grouped separately. Raw records, environment, per-op
+values and seed ranges are retained alongside the [comparison chart](experiments/rtx5060/cuda_graph/report/baseline_comparison.png).

@@ -15,7 +15,9 @@ grouping metadata (`seed`, `dtype`, `method`, `gpu_model`).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import linecache
 import math
 import sys
 from pathlib import Path
@@ -137,6 +139,7 @@ def serialize_eval_record(
     dtype: str,
     gpu_model: str,
     method: str = "triton_baseline",
+    timing_mode: str = "events",
 ) -> str:
     """Serialize KernelEvalResult + grouping metadata as strict RFC-8259 JSON (no NaN/Infinity)."""
     payload = record.to_dict()
@@ -147,6 +150,11 @@ def serialize_eval_record(
     payload["dtype"] = dtype
     payload["method"] = method
     payload["gpu_model"] = gpu_model
+    payload["timing_mode"] = timing_mode
+    source = TRITON_BASELINES.get(record.op_name)
+    if source and method == "triton_baseline":
+        payload["source"] = source
+        payload["source_sha256"] = hashlib.sha256(source.encode()).hexdigest()
     return json.dumps(payload, allow_nan=False)
 
 
@@ -166,6 +174,41 @@ def _time_cuda_events(torch_mod: Any, fn: Callable, inputs: tuple, warmup: int, 
     median = float(np.median(np.asarray(times_ms, dtype=np.float64)))
     if not math.isfinite(median) or median <= 0:
         raise ValueError("CUDA event median must be finite and positive")
+    return median
+
+
+def _time_cuda_graph(torch_mod: Any, fn: Callable, inputs: tuple, warmup: int, iters: int) -> float:
+    """Amortize host dispatch by timing 16 captured calls per graph replay.
+
+    This reports steady-state device execution, not end-to-end Python latency.
+    Every implementation is captured and measured with the same procedure.
+    """
+    stream = torch_mod.cuda.Stream()
+    stream.wait_stream(torch_mod.cuda.current_stream())
+    with torch_mod.cuda.stream(stream):
+        for _ in range(max(warmup, 3)):
+            fn(*inputs)
+    torch_mod.cuda.current_stream().wait_stream(stream)
+    torch_mod.cuda.synchronize()
+    graph = torch_mod.cuda.CUDAGraph()
+    outputs = []
+    with torch_mod.cuda.graph(graph, stream=stream):
+        for _ in range(16):
+            outputs.append(fn(*inputs))
+    graph.replay()
+    torch_mod.cuda.synchronize()
+    samples = []
+    for _ in range(iters):
+        start = torch_mod.cuda.Event(enable_timing=True)
+        end = torch_mod.cuda.Event(enable_timing=True)
+        start.record()
+        graph.replay()
+        end.record()
+        end.synchronize()
+        samples.append(float(start.elapsed_time(end)) / 16)
+    median = float(np.median(samples))
+    if not math.isfinite(median) or median <= 0:
+        raise ValueError("CUDA graph median must be finite and positive")
     return median
 
 
@@ -260,6 +303,7 @@ def validate_single_baseline_cuda(
     warmup: int = 10,
     iters: int = 50,
     run_prefix: str = "cuda-val",
+    timing_mode: str = "events",
 ) -> KernelEvalResult:
     """Validate one Triton baseline on CUDA against PyTorch and quantized-input NumPy references."""
     ok, env_msg = check_cuda_triton_environment()
@@ -267,6 +311,10 @@ def validate_single_baseline_cuda(
         raise RuntimeError(env_msg)
 
     import torch  # type: ignore
+
+    if timing_mode not in {"events", "cuda_graph"}:
+        raise ValueError("Unknown timing mode")
+    timer_fn = _time_cuda_graph if timing_mode == "cuda_graph" else _time_cuda_events
 
     spec = OP_REGISTRY[op_name]
     run_id = f"{run_prefix}-{op_name}-{float_dtype}"
@@ -278,7 +326,13 @@ def validate_single_baseline_cuda(
     # Load candidate module (does NOT establish compiled=True since Triton JITs on first call)
     ns: dict[str, Any] = {}
     try:
-        exec(compile(TRITON_BASELINES[op_name], f"<triton_baseline:{op_name}>", "exec"), ns)
+        source = TRITON_BASELINES[op_name] + "\n"
+        filename = f"<triton_baseline:{op_name}>"
+        # Triton inspects the decorated Python function to obtain its source.
+        # Keep generated baseline source available to inspect.getsource.
+        linecache.cache[filename] = (len(source), None, source.splitlines(keepends=True), filename)
+        ns["__name__"] = f"kernelbench_baseline_{op_name}"
+        exec(compile(source, filename, "exec", dont_inherit=True), ns)
         cand_fn = ns["kernel_forward"]
     except Exception as exc:
         return _make_error_record(run_id, spec, "COMPILE_ERROR", False, f"Baseline load error ({type(exc).__name__}): {exc}")
@@ -372,10 +426,10 @@ def validate_single_baseline_cuda(
 
         assert canonical_gpu_inputs is not None and canonical_eager_np is not None
         with torch.no_grad():
-            eager_ms = _time_cuda_events(torch, torch_ref_fn, canonical_gpu_inputs, warmup, iters)
-            cand_ms = _time_cuda_events(torch, cand_fn, canonical_gpu_inputs, warmup, iters)
+            eager_ms = timer_fn(torch, torch_ref_fn, canonical_gpu_inputs, warmup, iters)
+            cand_ms = timer_fn(torch, cand_fn, canonical_gpu_inputs, warmup, iters)
             compile_ms, compile_note = benchmark_compiled_reference(
-                torch, torch_ref_fn, canonical_gpu_inputs, canonical_eager_np, rtol, atol, warmup, iters
+                torch, torch_ref_fn, canonical_gpu_inputs, canonical_eager_np, rtol, atol, warmup, iters, timer_fn=timer_fn
             )
 
         speedup_eager = eager_ms / cand_ms if cand_ms > 0.0 else 0.0
@@ -431,6 +485,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--warmup", type=int, default=10)
     parser.add_argument("--iters", type=int, default=50)
+    parser.add_argument("--timing-mode", choices=["events", "cuda_graph"], default="cuda_graph",
+                        help="CUDA graphs amortize Python dispatch; events include host dispatch gaps")
     args = parser.parse_args(argv)
 
     out_path = Path(args.out)
@@ -464,6 +520,7 @@ def main(argv: list[str] | None = None) -> int:
                     seed=args.seed,
                     warmup=args.warmup,
                     iters=args.iters,
+                    timing_mode=args.timing_mode,
                 )
                 records.append(res)
                 line = serialize_eval_record(
@@ -472,6 +529,7 @@ def main(argv: list[str] | None = None) -> int:
                     dtype=dtype,
                     gpu_model=gpu_or_err,
                     method="triton_baseline",
+                    timing_mode=args.timing_mode,
                 )
                 fh.write(line + "\n")
                 fh.flush()

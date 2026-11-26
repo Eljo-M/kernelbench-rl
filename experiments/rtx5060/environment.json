@@ -1,0 +1,31 @@
+{
+  "started_utc": "2026-11-26T18:06:00.149132+00:00",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "capability": [
+    12,
+    0
+  ],
+  "device_vram_bytes": 8546484224,
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "warmup": 10,
+  "iterations": 50,
+  "source_sha256": {
+    "kernels\\op_registry.py": "45d03e277f0c58583a79e4b210103d769b5497f85f8d447a281a774ff15004e4",
+    "kernels\\torch_references.py": "06daae55420f8711cda632d22dcabb53afa24ce14cde9d622c46738ea35bde4b",
+    "kernels\\triton_baselines.py": "d954e6b5ca6a32338e584d50e30ed071a927a244f0726cf6dc6f5094ba7cec23",
+    "kernels\\validate_cuda.py": "d6f829854520d15957ab269646bc2cd94b08e83b6dd74914e6179ce7f7225705",
+    "kernels\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "measurement": "live CUDA events; trusted baseline source",
+  "completed_utc": "2026-11-26T18:06:44.080825+00:00",
+  "records": 66,
+  "passed": 66
+}
