@@ -61,9 +61,9 @@ def _simulate_bf16_round(arr: np.ndarray) -> np.ndarray:
 
 
 class TestTrack2CudaCliAndTorchRefs(unittest.TestCase):
-    def test_torch_references_cover_all_11_triton_baselines(self):
+    def test_torch_references_cover_all_30_triton_baselines(self):
         self.assertEqual(set(TORCH_REFERENCES.keys()), set(TRITON_BASELINES.keys()))
-        self.assertEqual(len(TORCH_REFERENCES), 11)
+        self.assertEqual(len(TORCH_REFERENCES), 30)
         for op_name in TORCH_REFERENCES:
             self.assertIn(op_name, OP_REGISTRY)
             self.assertTrue(callable(TORCH_REFERENCES[op_name]))
@@ -79,7 +79,7 @@ class TestTrack2CudaCliAndTorchRefs(unittest.TestCase):
 
     def test_triton_baselines_enforce_ieee_dot_and_contiguous(self):
         syntax_map = validate_triton_baselines_syntax()
-        self.assertEqual(len(syntax_map), 11)
+        self.assertEqual(len(syntax_map), 30)
         for op_name, ok in syntax_map.items():
             self.assertTrue(ok, msg=f"Baseline {op_name} failed AST/IEEE/contiguous check")
 

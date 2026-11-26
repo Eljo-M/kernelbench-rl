@@ -1,4 +1,4 @@
-"""Native PyTorch reference implementations for the 11 Triton-baseline operators.
+"""Native PyTorch reference implementations for all 30 Triton-baseline operators.
 
 All PyTorch imports are strictly lazy (inside functions) so importing this
 module is safe on CPU-only environments without PyTorch installed.
@@ -62,7 +62,7 @@ def convert_numpy_inputs_to_torch(
 
     tensors = []
     for arr in inputs:
-        t = torch.from_numpy(np.ascontiguousarray(arr))
+        t = torch.from_numpy(np.asarray(arr, order="C"))
         if np.issubdtype(arr.dtype, np.floating):
             t = t.to(device=device, dtype=tdtype)
         else:
@@ -86,7 +86,7 @@ def torch_inputs_to_numpy_fp32(tensors: Sequence[Any]) -> tuple[np.ndarray, ...]
             arr = t.detach().cpu().numpy()
         else:
             arr = np.asarray(t)
-        out.append(np.ascontiguousarray(arr))
+        out.append(np.asarray(arr, order="C"))
     return tuple(out)
 
 
@@ -194,3 +194,7 @@ TORCH_REFERENCES: dict[str, Callable[..., Any]] = {
     "int8_weight_only_gemm_512": _torch_int8_weight_only_gemm,
     "scaled_dot_product_attn_128": _torch_sdpa_causal,
 }
+
+CORE_TORCH_REFERENCES = dict(TORCH_REFERENCES)
+from kernels.torch_extended import TORCH_EXTENDED
+TORCH_REFERENCES.update(TORCH_EXTENDED)

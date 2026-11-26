@@ -13,6 +13,7 @@ trusted-candidate boundary, NOT an OS/container security sandbox.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import importlib.util
 import json
@@ -61,6 +62,7 @@ from kernels.validate_cuda import (  # noqa: E402
 )
 from rl_trainer.grpo_reward import compute_kernel_reward  # noqa: E402
 from sandbox_runner.anti_cheat import analyze_candidate_source  # noqa: E402
+from sandbox_runner.gpu_source_policy import check_gpu_source_policy  # noqa: E402
 
 ISOLATION_BOUNDARY = "sanitized_child_process_trusted_only"
 
@@ -108,6 +110,7 @@ def _emit_strict_json(
     payload["isolation_boundary"] = ISOLATION_BOUNDARY
     payload["candidate_source"] = source_code
     payload["candidate_sha256"] = _sha256_text(source_code)
+    payload["source_policy_sha256"] = hashlib.sha256(Path(__file__).with_name("gpu_source_policy.py").read_bytes()).hexdigest()
     return json.dumps(payload, allow_nan=False)
 
 
@@ -124,7 +127,7 @@ def _convert_inputs_with_fp16(np_in: tuple[np.ndarray, ...], float_dtype: str, t
     if float_dtype == "fp16":
         tensors = []
         for arr in np_in:
-            t = torch_mod.from_numpy(np.ascontiguousarray(arr))
+            t = torch_mod.from_numpy(np.asarray(arr, order="C"))
             if np.issubdtype(arr.dtype, np.floating):
                 t = t.to(device="cuda", dtype=torch_mod.float16)
             else:
@@ -165,6 +168,14 @@ def grade_candidate_in_worker(
     indep_seed = (seed + 10_000) if independent_seed is None else independent_seed
 
     cheat = analyze_candidate_source(source_code)
+    try:
+        ast.parse(source_code)
+    except SyntaxError as exc:
+        return _make_error_record(run_id, spec, "COMPILE_ERROR", False, str(exc)), "unavailable"
+    policy = check_gpu_source_policy(source_code)
+    if not policy.allowed and not cheat.cheat_detected:
+        from sandbox_runner.anti_cheat import CheatReport
+        cheat = CheatReport(True, "GPU source policy: " + "; ".join(policy.violations[:5]))
     if cheat.cheat_detected:
         rec = KernelEvalResult(
             run_id=run_id,

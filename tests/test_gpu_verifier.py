@@ -25,12 +25,14 @@ class TestGpuVerifierAndWorker(unittest.TestCase):
         fake_env = {
             "PATH": "/usr/bin",
             "CUDA_VISIBLE_DEVICES": "0",
+            "LD_LIBRARY_PATH": "/usr/lib64-nvidia",
             "UNLISTED_PRIVATE_VAR": "private_val_1",
         }
         clean = build_sanitized_env(base_env=fake_env)
         self.assertEqual(clean["PATH"], "/usr/bin")
         self.assertEqual(clean["CUDA_VISIBLE_DEVICES"], "0")
         self.assertEqual(clean["PYTHONNOUSERSITE"], "1")
+        self.assertEqual(clean["LD_LIBRARY_PATH"], "/usr/lib64-nvidia")
         self.assertNotIn("UNLISTED_PRIVATE_VAR", clean)
 
     def test_load_candidate_from_real_temp_file_supports_inspect_getsource(self):
@@ -98,17 +100,14 @@ class TestGpuVerifierAndWorker(unittest.TestCase):
             json.dumps(res_oom, allow_nan=False)
 
     def test_real_isolated_child_worker_runs_via_repo_root_bootstrap(self):
-        valid_np = (
-            "import numpy as np\n"
-            "def kernel_forward(x, w, eps=1e-6):\n"
-            "    return (x / np.sqrt(np.mean(x*x, axis=-1, keepdims=True) + eps)) * w\n"
-        )
-        gpu_res = grade_candidate("rmsnorm_2048", valid_np, backend="triton", float_dtype="fp16", timeout_secs=15.0, run_id="iso-test")
+        from kernels.triton_baselines import TRITON_BASELINES
+        source = TRITON_BASELINES["rmsnorm_2048"]
+        gpu_res = grade_candidate("rmsnorm_2048", source, backend="triton", float_dtype="fp16", timeout_secs=15.0, run_id="iso-test")
         self.assertEqual(gpu_res["run_id"], "iso-test")
         self.assertEqual(gpu_res["backend"], "triton")
         self.assertEqual(gpu_res["status"], "RUNTIME_ERROR")
         self.assertEqual(gpu_res["gpu_model"], "unavailable")
-        self.assertEqual(gpu_res["candidate_source"], valid_np)
+        self.assertEqual(gpu_res["candidate_source"], source)
         self.assertEqual(len(gpu_res["candidate_sha256"]), 64)
         self.assertEqual(gpu_res["isolation_boundary"], ISOLATION_BOUNDARY)
         json.dumps(gpu_res, allow_nan=False)

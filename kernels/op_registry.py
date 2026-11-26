@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Callable, Optional
 
 import numpy as np
@@ -725,6 +725,13 @@ OP_REGISTRY: dict[str, OperatorSpec] = {
         atol=1e-3,
     ),
 }
+
+
+from kernels.extended_stress import make_extended_stress_cases
+from kernels.triton_extended import TRITON_EXTENDED
+for _name in TRITON_EXTENDED:
+    OP_REGISTRY[_name] = replace(OP_REGISTRY[_name],
+        make_stress_inputs=lambda rng, name=_name: make_extended_stress_cases(name, rng))
 
 
 def get_operators_by_level(level: int) -> list[OperatorSpec]:

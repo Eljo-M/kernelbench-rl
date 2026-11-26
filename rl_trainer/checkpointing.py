@@ -358,6 +358,11 @@ def load_checkpoint(
 
         optimizer.load_state_dict(torch.load(step_dir / state.optimizer_state_file, map_location=map_location, weights_only=True))
 
+    if model is not None and state.trainable_weights_sha256 and hasattr(model, "parameters"):
+        actual_sha = compute_trainable_weights_sha256(model.parameters())
+        if actual_sha and actual_sha != state.trainable_weights_sha256:
+            raise ValueError("Restored trainable weights do not match the checkpoint checksum")
+
     if restore_rng and state.rng_state_file:
         rng_payload = json.loads((step_dir / state.rng_state_file).read_text(encoding="utf-8"))
         _restore_python_numpy_rng(rng_payload)

@@ -10,7 +10,7 @@ from kernels.torch_references import (
     resolve_input_dtype_plan,
     torch_inputs_to_numpy_fp32,
 )
-from kernels.triton_baselines import TRITON_BASELINES
+from kernels.triton_baselines import TRITON_BASELINES, CORE_TRITON_BASELINES
 from kernels.triton_extended import TRITON_EXTENDED, validate_triton_extended_syntax
 from sandbox_runner.anti_cheat import analyze_candidate_source
 
@@ -39,7 +39,7 @@ class TestTrack2Extended19Ops(unittest.TestCase):
             self.assertTrue(np.allclose(actual, expected, rtol=spec.rtol, atol=spec.atol))
 
     def test_exact_19_remaining_ops_covered_with_zero_overlap(self):
-        existing = set(TRITON_BASELINES.keys())
+        existing = set(CORE_TRITON_BASELINES.keys())
         ext_triton = set(TRITON_EXTENDED.keys())
         ext_torch = set(TORCH_EXTENDED.keys())
         all_reg = set(OP_REGISTRY.keys())

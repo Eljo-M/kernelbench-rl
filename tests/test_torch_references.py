@@ -40,8 +40,8 @@ class TestTorchReferences(unittest.TestCase):
         torch.set_num_threads(1)
         cls.addClassCleanup(torch.set_num_threads, previous_threads)
 
-    def test_references_cover_exactly_the_eleven_baseline_entries(self):
-        self.assertEqual(len(TORCH_REFERENCES), 11)
+    def test_references_cover_all_thirty_baseline_entries(self):
+        self.assertEqual(len(TORCH_REFERENCES), 30)
         self.assertEqual(set(TORCH_REFERENCES), set(TRITON_BASELINES))
 
     def _check_all_references(self, dtype_name):

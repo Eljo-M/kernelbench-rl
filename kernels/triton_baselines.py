@@ -457,6 +457,11 @@ TRITON_BASELINES: Dict[str, str] = {
 }
 
 
+CORE_TRITON_BASELINES = dict(TRITON_BASELINES)
+from kernels.triton_extended import TRITON_EXTENDED
+TRITON_BASELINES.update(TRITON_EXTENDED)
+
+
 def validate_triton_baselines_syntax() -> dict[str, bool]:
     """Parse every Triton baseline with AST and verify `@triton.jit`, `kernel_forward`,
     `.contiguous()`, and explicit `input_precision="ieee"` on every `tl.dot(...)` call.
