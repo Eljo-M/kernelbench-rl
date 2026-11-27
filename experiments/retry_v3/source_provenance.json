@@ -1,0 +1,20 @@
+{
+  "schema_version": "kernelbench_study_source_provenance_v1",
+  "study_source_commit": "2c174abe268495159c10d538c92d071e7733828d",
+  "protocol_path": "experiments/retry_v3/protocol.json",
+  "protocol_sha256": "dafe3f2fa92dd4f99e0405498f32082024dd1acefcba7f062ef1977fd13e5e53",
+  "config_hashes": {
+    "laptop_7b": "0dfb0a14abad3067"
+  },
+  "source_ci_url": "https://github.com/Eljo-M/kernelbench-rl/actions/runs/45926316831",
+  "source_ci_conclusion": "success",
+  "source_ci_receipt_path": "experiments/retry_v3/source_ci_verified.json",
+  "source_ci_receipt_sha256": "8e6a6494679062099f84d2dcaae4fdc8b02d20eb780267851b3d9ae990401f51",
+  "published_before_training": true,
+  "observed_before_training_utc": "2026-11-27T02:08:17.222133+00:00",
+  "git_author": "Eljo-M <mustafajeljo@gmail.com>",
+  "git_committer": "Eljo-M <mustafajeljo@gmail.com>",
+  "authenticated_github_login": "Eljo-M",
+  "source_code_dirty": false,
+  "initialization": "Fresh pinned base and fresh expanded adapters; no prior model adapter or optimizer resume."
+}

@@ -1,0 +1,315 @@
+{
+  "schema_version": "verified_primary_bibliography_v1",
+  "verified_on": "2026-11-26",
+  "scope": "References describe prior work; none is a DOI or publication credential for the new manuscript.",
+  "references": [
+    {
+      "id": "kernelbench2025",
+      "number": 1,
+      "type": "conference_paper",
+      "title": "KernelBench: Can LLMs Write Efficient GPU Kernels?",
+      "authors": [
+        "Anne Ouyang",
+        "Simon Guo",
+        "Simran Arora",
+        "Alex L Zhang",
+        "William Hu",
+        "Christopher Re",
+        "Azalia Mirhoseini"
+      ],
+      "year": 2025,
+      "venue": "Proceedings of the 42nd International Conference on Machine Learning",
+      "series": "Proceedings of Machine Learning Research",
+      "volume": "267",
+      "pages": "47356–47415",
+      "publisher": "PMLR",
+      "publication_date": "2025-07-13/2025-07-19",
+      "url": "https://proceedings.mlr.press/v267/ouyang25a.html",
+      "pdf_url": "https://raw.githubusercontent.com/mlresearch/v267/main/assets/ouyang25a/ouyang25a.pdf",
+      "doi": null,
+      "metadata_note": "Author names follow the PMLR citation export; Anne, not Annie. No DOI is supplied by the retrieved PMLR entry.",
+      "primary_metadata_urls": [
+        "https://proceedings.mlr.press/v267/ouyang25a.html"
+      ]
+    },
+    {
+      "id": "triton2019",
+      "number": 2,
+      "type": "conference_paper",
+      "title": "Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations",
+      "authors": [
+        "Philippe Tillet",
+        "H. T. Kung",
+        "David Cox"
+      ],
+      "year": 2019,
+      "venue": "Proceedings of the 3rd ACM SIGPLAN International Workshop on Machine Learning and Programming Languages",
+      "venue_abbreviation": "MAPL '19",
+      "pages": "10–19",
+      "publisher": "ACM",
+      "publication_date": "2019-06-22",
+      "doi": "10.1145/3315508.3329973",
+      "url": "https://doi.org/10.1145/3315508.3329973",
+      "pdf_url": "https://www.eecs.harvard.edu/~htk/publication/2019-mapl-tillet-kung-cox.pdf",
+      "primary_metadata_urls": [
+        "https://pldi19.sigplan.org/details/mapl-2019-papers/1/Triton-An-Intermediate-Language-and-Compiler-for-Tiled-Neural-Network-Computations",
+        "https://api.crossref.org/works/10.1145/3315508.3329973"
+      ],
+      "metadata_note": "Author-hosted paper and conference page verify authors/title; publisher-deposited Crossref metadata verifies pagination and DOI. Historical paper describes the original Triton design, not every current Python API."
+    },
+    {
+      "id": "deepseekmath2024",
+      "number": 3,
+      "type": "preprint",
+      "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+      "authors": [
+        "Zhihong Shao",
+        "Peiyi Wang",
+        "Qihao Zhu",
+        "Runxin Xu",
+        "Junxiao Song",
+        "Xiao Bi",
+        "Haowei Zhang",
+        "Mingchuan Zhang",
+        "Y.K. Li",
+        "Y. Wu",
+        "Daya Guo"
+      ],
+      "year": 2024,
+      "venue": "arXiv",
+      "identifier": "arXiv:2402.03300",
+      "version": "v3",
+      "submitted_date": "2024-02-05",
+      "version_date": "2024-04-27",
+      "doi": "10.48550/arXiv.2402.03300",
+      "url": "https://arxiv.org/abs/2402.03300",
+      "pdf_url": "https://arxiv.org/pdf/2402.03300v3",
+      "primary_metadata_urls": [
+        "https://arxiv.org/abs/2402.03300",
+        "https://arxiv.org/html/2402.03300v3"
+      ],
+      "metadata_note": "Initials in author names are preserved as supplied by arXiv. Do not add a conference venue without further verification."
+    },
+    {
+      "id": "ppo2017",
+      "number": 4,
+      "type": "preprint",
+      "title": "Proximal Policy Optimization Algorithms",
+      "authors": [
+        "John Schulman",
+        "Filip Wolski",
+        "Prafulla Dhariwal",
+        "Alec Radford",
+        "Oleg Klimov"
+      ],
+      "year": 2017,
+      "venue": "arXiv",
+      "identifier": "arXiv:1707.06347",
+      "version": "v2",
+      "submitted_date": "2017-07-20",
+      "version_date": "2017-08-28",
+      "doi": "10.48550/arXiv.1707.06347",
+      "url": "https://arxiv.org/abs/1707.06347",
+      "pdf_url": "https://arxiv.org/pdf/1707.06347v2",
+      "primary_metadata_urls": [
+        "https://arxiv.org/abs/1707.06347"
+      ]
+    },
+    {
+      "id": "qlora2023",
+      "number": 5,
+      "type": "conference_paper",
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "authors": [
+        "Tim Dettmers",
+        "Artidoro Pagnoni",
+        "Ari Holtzman",
+        "Luke Zettlemoyer"
+      ],
+      "year": 2023,
+      "venue": "Advances in Neural Information Processing Systems",
+      "venue_abbreviation": "NeurIPS 2023",
+      "volume": "36",
+      "pages": "10088–10115",
+      "publisher": "Curran Associates, Inc.",
+      "editors": [
+        "A. Oh",
+        "T. Naumann",
+        "A. Globerson",
+        "K. Saenko",
+        "M. Hardt",
+        "S. Levine"
+      ],
+      "doi": "10.52202/075280-0441",
+      "identifier": "arXiv:2305.14314",
+      "url": "https://papers.nips.cc/paper_files/paper/2023/hash/1feb87871436031bdc0f2beaa62a049b-Abstract-Conference.html",
+      "pdf_url": "https://proceedings.neurips.cc/paper_files/paper/2023/file/1feb87871436031bdc0f2beaa62a049b-Paper-Conference.pdf",
+      "primary_metadata_urls": [
+        "https://papers.nips.cc/paper_files/paper/2023/hash/1feb87871436031bdc0f2beaa62a049b-Abstract-Conference.html",
+        "https://papers.nips.cc/paper_files/paper/21543-/bibtex",
+        "https://arxiv.org/abs/2305.14314"
+      ],
+      "metadata_note": "Pagination, editors and publisher verified from the official NeurIPS BibTeX response. Cite conference DOI rather than silently assigning its credential to the new manuscript."
+    },
+    {
+      "id": "qwen25coder2024",
+      "number": 6,
+      "type": "preprint",
+      "title": "Qwen2.5-Coder Technical Report",
+      "authors": [
+        "Binyuan Hui",
+        "Jian Yang",
+        "Zeyu Cui",
+        "Jiaxi Yang",
+        "Dayiheng Liu",
+        "Lei Zhang",
+        "Tianyu Liu",
+        "Jiajun Zhang",
+        "Bowen Yu",
+        "Keming Lu",
+        "Kai Dang",
+        "Yang Fan",
+        "Yichang Zhang",
+        "An Yang",
+        "Rui Men",
+        "Fei Huang",
+        "Bo Zheng",
+        "Yibo Miao",
+        "Shanghaoran Quan",
+        "Yunlong Feng",
+        "Xingzhang Ren",
+        "Xuancheng Ren",
+        "Jingren Zhou",
+        "Junyang Lin"
+      ],
+      "year": 2024,
+      "venue": "arXiv",
+      "identifier": "arXiv:2409.12186",
+      "version": "v3",
+      "submitted_date": "2024-09-18",
+      "version_date": "2024-11-12",
+      "doi": "10.48550/arXiv.2409.12186",
+      "url": "https://arxiv.org/abs/2409.12186",
+      "pdf_url": "https://arxiv.org/pdf/2409.12186v3",
+      "primary_metadata_urls": [
+        "https://arxiv.org/abs/2409.12186"
+      ],
+      "metadata_note": "All 24 authors are retained. Model sizes in the report are not claims of kernel-synthesis performance."
+    },
+    {
+      "id": "cuda_graphs",
+      "number": 7,
+      "type": "technical_documentation",
+      "title": "CUDA Programming Guide: CUDA Graphs",
+      "authors": [
+        "NVIDIA"
+      ],
+      "year": 2026,
+      "year_note": "Documentation access year; use access date rather than asserting an original publication year.",
+      "accessed_date": "2026-11-26",
+      "venue": "NVIDIA CUDA documentation",
+      "doi": null,
+      "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cuda-graphs.html",
+      "primary_metadata_urls": [
+        "https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cuda-graphs.html"
+      ]
+    },
+    {
+      "id": "roofline2009",
+      "number": 8,
+      "type": "journal_article",
+      "title": "Roofline: An Insightful Visual Performance Model for Multicore Architectures",
+      "authors": [
+        "Samuel Williams",
+        "Andrew Waterman",
+        "David Patterson"
+      ],
+      "year": 2009,
+      "venue": "Communications of the ACM",
+      "volume": "52",
+      "issue": "4",
+      "pages": "65–76",
+      "publisher": "Association for Computing Machinery",
+      "publication_date": "2009-04",
+      "doi": "10.1145/1498765.1498785",
+      "url": "https://doi.org/10.1145/1498765.1498785",
+      "primary_metadata_urls": [
+        "https://amcr.lbl.gov/departments/computer-science-department/ppan/roofline-performance-model/ppan-roofline-publications/",
+        "https://api.crossref.org/works/10.1145/1498765.1498785"
+      ],
+      "related_author_hosted_technical_report_pdf": "https://www2.eecs.berkeley.edu/Pubs/TechRpts/2008/Archive/EECS-2008-134.pdf",
+      "metadata_note": "Author-lab publication list verifies the full article title; publisher-deposited Crossref metadata verifies volume, issue, pagination and DOI. The 2008 technical-report PDF is a related version, not the final journal artifact."
+    },
+    {
+      "id": "kernelllm2025",
+      "number": 9,
+      "type": "software_release",
+      "title": "KernelLLM: Making Kernel Development More Accessible",
+      "authors": [
+        "Zacharias V. Fisches",
+        "Sahan Paliskara",
+        "Simon Guo",
+        "Alex Zhang",
+        "Joe Spisak",
+        "Chris Cummins",
+        "Hugh Leather",
+        "Gabriel Synnaeve",
+        "Joe Isaacson",
+        "Aram Markosyan",
+        "Mark Saroufim"
+      ],
+      "year": 2025,
+      "month": 6,
+      "publisher": "Meta",
+      "doi": null,
+      "url": "https://huggingface.co/facebook/KernelLLM",
+      "model_card_revision": "26d1191a7186ac499448a868a2ecdf9ef8d3abd5",
+      "model_card_url": "https://huggingface.co/facebook/KernelLLM/blob/26d1191a7186ac499448a868a2ecdf9ef8d3abd5/README.md",
+      "primary_metadata_urls": [
+        "https://huggingface.co/facebook/KernelLLM/blob/26d1191a7186ac499448a868a2ecdf9ef8d3abd5/README.md"
+      ],
+      "verified_utc": "2026-11-27T03:34:25.769323+00:00",
+      "accessed_date": "2026-11-27",
+      "metadata_note": "Official software/model release; current author-maintained @software citation specifies June 2025. No arXiv paper, peer-reviewed venue or DOI is asserted. Older model-card revisions have different authors/month; retain this pinned eleven-author citation."
+    },
+    {
+      "id": "kevin2025",
+      "number": 10,
+      "type": "preprint",
+      "title": "Kevin: Multi-Turn RL for Generating CUDA Kernels",
+      "authors": [
+        "Carlo Baronio",
+        "Pietro Marsella",
+        "Ben Pan",
+        "Simon Guo",
+        "Silas Alberti"
+      ],
+      "year": 2025,
+      "venue": "arXiv",
+      "identifier": "arXiv:2507.11948",
+      "version": "v1",
+      "publication_date": "2025-07-16",
+      "doi": "10.48550/arXiv.2507.11948",
+      "url": "https://arxiv.org/abs/2507.11948",
+      "pdf_url": "https://arxiv.org/pdf/2507.11948v1",
+      "primary_metadata_urls": [
+        "https://arxiv.org/abs/2507.11948",
+        "https://arxiv.org/html/2507.11948v1"
+      ],
+      "verified_utc": "2026-11-27T03:34:25.769323+00:00",
+      "accessed_date": "2026-11-27",
+      "metadata_note": "Exact five-author arXiv v1 record submitted 16 July 2025. The DOI identifies this research preprint, not an asserted peer-reviewed publication. Its evaluation tasks, language, hardware and inference budgets differ from this artifact."
+    }
+  ],
+  "publication_engineering_source": {
+    "id": "scholar_inclusion",
+    "authors": [
+      "Google Scholar"
+    ],
+    "title": "Inclusion Guidelines for Webmasters",
+    "url": "https://scholar.google.com/intl/en/scholar/inclusion.html",
+    "accessed_date": "2026-11-26",
+    "use": "Hosting and metadata checklist only; not evidence that the manuscript is indexed or peer reviewed."
+  },
+  "latest_addition_verified_utc": "2026-11-27T03:34:25.769323+00:00"
+}

@@ -9,6 +9,16 @@
     "note": {"type": "string"},
     "runs": {"type": "array", "items": {"type": "object", "required": ["label", "hardware", "training_mode", "status", "cohorts"], "properties": {
       "label": {"type": "string"}, "hardware": {"type": "string"}, "training_mode": {"type": "string"},
+      "study_key": {"enum": ["v2/laptop", "v2/laptop_7b", "v3/laptop_7b"]},
+      "protocol_version": {"enum": ["v2", "v3"]}, "cohort_label": {"type": "string", "minLength": 1},
+      "short_label": {"type": "string", "minLength": 1},
+      "config_hash": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+      "model_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+      "comparison_path": {"type": "string"},
+      "notes": {"type": "array", "items": {"type": "string"}},
+      "cohort_ops": {"type": "object", "required": ["fresh", "development"], "properties": {
+        "fresh": {"$ref": "#/$defs/operatorNames"}, "development": {"$ref": "#/$defs/operatorNames"}
+      }, "additionalProperties": false},
       "status": {"enum": ["partial", "completed"]}, "source_commit": {"type": "string"},
       "sft_updates": {"type": "integer", "minimum": 0}, "optimizer_updates": {"type": "integer", "minimum": 0},
       "cohorts": {"type": "object", "properties": {
@@ -16,7 +26,8 @@
       }, "additionalProperties": false}
     }}}
   },
-  "$defs": {"methods": {"type": "array", "items": {"type": "object", "required": ["method", "passed", "total", "budget"], "properties": {
+  "$defs": {"operatorNames": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "methods": {"type": "array", "items": {"type": "object", "required": ["method", "passed", "total", "budget"], "properties": {
     "method": {"type": "string"}, "passed": {"type": "integer", "minimum": 0}, "total": {"type": "integer", "minimum": 1}, "budget": {"type": "integer", "minimum": 1}
   }}}}
 }

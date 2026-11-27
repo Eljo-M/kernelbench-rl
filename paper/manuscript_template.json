@@ -1,0 +1,204 @@
+{
+  "schema_version": "kernelbench_manuscript_source_v1",
+  "status": "DRAFT_PENDING_VERIFIED_RETRY_RESULTS",
+  "title": "KernelBench-RL: Verification, Execution Feedback, and Reproducible GPU Kernel Synthesis",
+  "author": {
+    "display_name": "Eljo Mustafaj",
+    "given_name": "Eljo",
+    "family_name": "Mustafaj",
+    "github_account": "Eljo-M",
+    "github_url": "https://github.com/Eljo-M",
+    "affiliation": null,
+    "email": null,
+    "orcid": null
+  },
+  "repository_url": "https://github.com/Eljo-M/kernelbench-rl",
+  "publication_date": null,
+  "publication_type": "Independent research manuscript; publication status must remain factual",
+  "abstract": "KernelBench-RL is an execution-graded GPU kernel synthesis system designed for a memory-constrained workstation. It combines a custom thirty-operator registry, fixed Triton implementations, numerical verification, bounded candidate execution, token-level group-relative optimization and identity-checked evaluation. The original fixed-baseline campaign passed 180 operator/precision/input-seed records on an RTX 5060 Laptop GPU. Geometric mean speedups over native PyTorch eager were 2.494x in fp32 and 5.417x in bf16; verified compiled-reference comparisons covered twenty-nine operators. These are fixed-kernel measurements, not learned gains. Initial 0.49B full-parameter and 7B QLoRA runs produced verified parameter updates but each evaluation method passed zero of three held-out operators. We diagnose invalid-program feedback and specify a corrected protocol using training-only supervised demonstrations, correctness-gated GRPO, separate fresh and inspected-development cohorts, and an SFT-only checkpoint control. [DRAFT: corrected-run results are pending and must be inserted after strict artifact validation.] The artifact emphasizes explicit timing boundaries, failure preservation and separation of numerical correctness, optimizer progress and learned-program quality.",
+  "sections": [
+    {
+      "id": "introduction",
+      "heading": "1. Introduction",
+      "paragraphs": [
+        "GPU kernel synthesis joins two different questions: whether an implementation computes the intended function, and whether it improves execution time under a specified measurement procedure. A plausible program can fail either question. It may compile but return a slightly wrong reduction; it may use an inappropriate precision; or it may reproduce a reference operation through a prohibited fallback. Conversely, a correct specialized kernel can lose to an existing compiler. A useful learning system therefore needs execution evidence at the operator level and provenance linking that evidence to the model and checkpoint that produced the program.",
+        "KernelBench-RL studies that engineering problem on a commodity workstation. Its purpose is an auditable path from an operator contract to source generation, isolated-process grading, optimization and held-out comparison. The name acknowledges KernelBench, the benchmark introduced by Ouyang and colleagues [1]. The present project uses its own 30-operator registry and workload definitions. It does not claim to run the complete official KernelBench suite or reproduce that benchmark's leaderboard. In particular, this registry's difficulty tiers should not be interpreted as the original benchmark's task partitions.",
+        "Three evidence classes are kept separate. First, fixed Triton implementations test the numerical and timing infrastructure. Second, generated programs test whether an open-weight coding model can satisfy the same verifier. Third, optimizer and checkpoint records test whether a training update actually occurred and can be restored. Success in the first or third class cannot substitute for success in the second. This separation matters because the initial release produced strong fixed-kernel comparisons and functioning training updates while all three held-out methods still passed zero of three operators.",
+        "The contribution is consequently a measured systems artifact and an explicit diagnosis of a failed learning experiment, rather than an assertion of a superior synthesis algorithm. The system makes invalid programs visible, preserves denominators, separates development inspection from fresh tests, and retains model, source and checkpoint identities. A corrected protocol then tests a training-only supervised bootstrap followed by correctness-gated execution feedback. Its SFT-only control is necessary to distinguish the effect of that bootstrap from any subsequent change associated with reinforcement learning. [DRAFT: insert the verified retry outcome here without converting a systems result into an unsupported learned-performance claim.]"
+      ]
+    },
+    {
+      "id": "related_work",
+      "heading": "2. Related Work",
+      "paragraphs": [
+        "KernelBench evaluates language models on 250 PyTorch machine-learning workloads and introduces a correctness-and-speed threshold metric, fast_p [1]. It motivates measuring functional validity and relative performance together. This project adopts that evaluation principle while using a smaller, independently implemented operator collection and a narrower resource budget. The resulting numbers are local artifact results, not official KernelBench scores or directly comparable leaderboard entries.",
+        "Triton's original language and compiler work describes tiled tensor computations and compilation to efficient GPU programs [2]. Here, Triton is the candidate-program language and the fixed-baseline implementation medium. The project contributes verification and experiment plumbing around that toolchain; it does not claim a new compiler or that every supplied baseline is globally optimal. Compiler version and platform remain part of the empirical setting.",
+        "DeepSeekMath introduced Group Relative Policy Optimization, using rewards within a sampled group rather than training a separate value model [3]. PPO provides the clipped policy-ratio background [4]. KernelBench-RL applies a small, token-level clipped group-relative objective to execution-graded programs. This adaptation is deliberately bounded: mathematical-reasoning findings in those papers do not establish that the same update rule improves GPU code, particularly when almost every sampled program is invalid.",
+        "QLoRA backpropagates through a frozen quantized base into trainable low-rank adapters, using NF4 and other memory-saving techniques [5]. Qwen2.5-Coder provides the open-weight code-model family used in the experiments [6]. The 0.49B full-parameter and 7B adapter experiments are distinct model and precision tracks. Neither the language-model report nor the quantization method supplies evidence for kernel correctness in this project; that must come from the local verifier.",
+        "CUDA Graphs separate a captured workflow from repeated execution, reducing repeated submission overhead [7]. Their use makes the timing mode explicit rather than eliminating every source of experimental variance. Roofline analysis relates arithmetic intensity and attainable performance [8]. The artifact records operator cost models for interpretation, but estimated FLOPs and idealized bytes are not hardware-counter measurements of actual memory traffic. No unmeasured device ceiling is treated as an empirical result.",
+        "Kernel generation has also been studied through specialized model training. KernelLLM uses supervised PyTorch/Triton pairs to adapt Llama-3.1-8B-Instruct [9]. Kevin trains a QwQ-32B-based CUDA generator with multi-turn execution feedback and credit assignment across refinement turns [10]. These precedents motivate examining training and verification together. The corrected studies here examine a bounded setting on a laptop with nominal 8 GB GPU memory: a custom thirty-operator registry, a small supervised corpus, separate base, SFT-only and hybrid controls, and explicitly separated prospective and development cohorts. Different languages, workloads, hardware and inference budgets preclude direct score comparisons. This artifact provides traceable verification, training and evaluation evidence under that resource constraint."
+      ]
+    },
+    {
+      "id": "system_methods",
+      "heading": "3. System and Methods",
+      "paragraphs": [
+        "The registry defines each operator's public name, function description, input generator, numerical reference, tolerances, difficulty tier and cost model. It spans elementwise and normalization functions, attention-related operations, matrix products and quantized or structured workloads. Deterministic generators make an input seed meaningful. Canonical cases establish the registered problem shape; additional stress cases exercise awkward dimensions, tails or magnitudes where the implementation supplies them. The scope of numerical evidence is this finite case collection. A passing record is not a proof for every possible shape, stride or input value.",
+        "The numerical path compares a candidate with a native PyTorch reference and an independent NumPy formulation where supported. For reduced-precision inputs, the NumPy comparison receives the same effective quantized values, converted back to a representation NumPy can evaluate. Integer weights and indices retain their integer types. This prevents an apparent mismatch caused by comparing a bf16 computation with an unrounded fp32 input problem. Shape, dtype, finiteness and operator-specific tolerances are checked before performance can contribute to a successful result.",
+        "Candidate programs expose a host entry point that launches Triton computation. Static source checks reject unsupported imports, direct reference-operation fallbacks, prohibited host arithmetic and other patterns outside the supported execution policy. Accepted source is materialized in a real file so Triton can inspect it, then evaluated by a supervised child process with a wall-clock timeout and a sanitized environment. This boundary is intended for development and trusted candidates. AST checks and process separation do not constitute an operating-system security sandbox or a formal proof against adversarial code.",
+        "A shared evaluation record carries status, compilation and correctness flags, error information, baseline and candidate latencies, speedup ratios and reward. Additional provenance identifies the program hash, operator, input seeds, precision, GPU, model revision, configuration and checkpoint. Failed records remain records rather than disappearing from a successful-only table. Unavailable compiled baselines are represented explicitly. Strict JSON serialization rejects non-finite values, and the comparison stage checks identities and completeness before summarizing an experiment.",
+        "Fixed-baseline timing uses a CUDA Graph containing sixteen invocations, warmup, and fifty CUDA-event measurements. It is a steady-state device-time comparison on the recorded input allocation, excluding program compilation and ordinary Python dispatch. Each precision is summarized separately. Within an operator, the report takes a geometric mean of speedups across three input seeds; the aggregate then weights operators equally. Input-seed variation is reported as a range, not as independent training replication. Replaying a captured workflow is useful for microbenchmarks, but it does not measure a serving system's end-to-end response time.",
+        "For policy optimization, a prompt specifies the operation and execution contract. Completions are sampled with temperature one, top_p one and top_k zero so the stored token probabilities correspond to the raw sampling policy. Group rewards are standardized, and the clipped objective includes a reference-policy penalty [3,4]. The implementation computes completion-token log probabilities with the appropriate causal shift; prompt tokens receive no direct target loss. Before an update, recomputed old-policy probabilities must agree with their stored values within the configured tolerance. Finite-loss and gradient checks guard optimizer mutation.",
+        "The small-model track updates 494,032,768 parameters in fp32 with a recorded optimizer configuration. The 7B track trains 5,046,272 adapter parameters over a frozen NF4 base, with precision and device placement recorded separately. Sequential generation, unloading before grading, gradient checkpointing and explicit CPU/GPU placement address memory constraints. In the laptop readiness path, vocabulary embedding and output projection computation stay on CPU while quantized decoder layers and adapters remain on GPU. This is single-process placement, not distributed training or a fully trainable 7B model.",
+        "Checkpoint publication records model weights, optimizer state, counters, configuration and random-number state. For low-precision models using fp32 CPU master weights, the rounded model checksum and master-weight checksum have separate fields and are verified in their respective roles. A small master update can be real even if an individual bf16 model value does not change after rounding. Resume checks preserve that distinction. A completed supervised stage is saved before GRPO so its checkpoint can be evaluated independently and a restart need not repeat supervision."
+      ]
+    },
+    {
+      "id": "original_evidence",
+      "heading": "4. Original Empirical Evidence",
+      "paragraphs": [
+        "The fixed-baseline suite completed 180 successful operator/precision/input-seed evaluation records on an NVIDIA GeForce RTX 5060 Laptop GPU with nominal 8 GB VRAM. The run used PyTorch 2.11.0 with CUDA 12.8 and Triton Windows 3.6.0. All thirty registered operators were covered in fp32 and bf16 over seeds 42, 43 and 44, with the recorded canonical and stress checks. This establishes that the supplied fixed implementations passed that validation campaign. It does not establish that generated implementations achieved the same coverage.",
+        "Across thirty operators, the fixed-baseline geometric mean speedup over native PyTorch eager was 2.494x in fp32 and 5.417x in bf16. Against verified torch.compile references, the corresponding means were 1.089x and 1.248x over twenty-nine operators. The state-space-model reference did not compile with the recorded Windows Inductor stack; its compiled comparison is unavailable, while its Triton checks passed. The larger eager gains and smaller compiled gains make the baseline choice consequential. Per-operator results, including slower cases and seed ranges, are more informative than the aggregate alone.",
+        "The original 0.49B full-parameter experiment completed eight sampled groups of two programs and one verified optimizer update. The original 7B NF4 QLoRA experiment on a free Tesla T4 completed eight groups and four verified adapter updates. All generated training candidates in both runs failed verification. On the original three held-out operators, base pass@1, validation-selected best-of-eight and trained pass@1 each passed 0/3 in both model tracks. These observations demonstrate functioning execution, training and checkpoint paths but no observed learned quality improvement. They do not establish an inherent inability of either model family to learn kernels.",
+        "The later 7B laptop readiness probe is a different kind of evidence. A 1,646-token teacher-forced sequence produced finite backward gradients, a verified adapter change and matching recorded frozen-base checksums; a short generation produced sixty-four tokens. Peak allocated GPU memory was approximately 4.65 GiB under fixed CPU vocabulary placement. Probe weights were discarded and no checkpoint was retained. This is a feasibility check for the intended placement and sequence length, not a kernel-quality experiment, a training-curve result or a guarantee that every later workload will fit."
+      ]
+    },
+    {
+      "id": "failure_diagnosis",
+      "heading": "5. Failure Diagnosis",
+      "paragraphs": [
+        "The initial failure records identify more specific problems than the headline 0/3 result. Programs included malformed Python, nonexistent module names, incorrect Triton APIs, absent host entry points, prohibited reference fallbacks and unsupported host tensor computation. Such failures occur before meaningful optimization of device performance. Some samples reached the generation limit, making incomplete code a plausible contributor in those cases. This diagnosis is based on preserved source and error records; it is not a controlled estimate of how much each individual defect reduced accuracy.",
+        "A second problem concerns the training signal. In the earlier shaped-reward setting, different invalid categories could receive different scalar values. Group normalization can therefore produce nonzero advantages even when every sampled program is unusable. An optimizer update under those circumstances may prefer one failure category over another rather than increase the probability of a verified solution. The historical audit recorded invalid samples with nonzero advantages. This explains why a changed weight checksum cannot itself be interpreted as progress in kernel synthesis.",
+        "The verifier also defines an operational target that is stricter than returning numerically plausible values. A program implementing the right mathematical expression through a prohibited host or reference-library path fails this project policy. Prompt ambiguity about allowed imports, dtype handling and host/device responsibilities can therefore create a mismatch between what the model tries to produce and what is accepted. The corrected prompt makes those requirements explicit and includes only a generic launch pattern, not a worked solution for the requested evaluation operator.",
+        "These observations motivate changes to training and prompting, but inspecting failures consumes a test set's status as fresh evidence. The original RMSNorm-4096, INT8 weight-only GEMM and causal attention operators are therefore retained as an explicitly labeled development cohort. A better result on them would be useful for regression diagnosis, but could reflect decisions informed by their previous failures. The corrected protocol uses separate fresh operators and reports both cohorts without combining their denominators."
+      ]
+    },
+    {
+      "id": "corrected_protocol",
+      "heading": "6. Corrected Protocol and Supervised-Only Ablation",
+      "paragraphs": [
+        "The retry freezes four supervised epochs over the eight configured training operators, followed by eight GRPO groups with two sampled completions each. The intended supervised phase contains thirty-two example updates; actual completed counters must be read from durable logs and checkpoints. Supervised targets are verified fixed-source implementations for training operators only. Neither the fresh held-out sources nor the previously inspected development sources are selected as targets. Examples use the same versioned contract prompt and chat formatting as generation, a fenced source completion and an explicit end-of-sequence token. Overlength examples are rejected rather than silently truncated.",
+        "The supervised loss averages negative log probabilities over completion tokens. It initializes a model that can plausibly satisfy the required program interface before sparse execution rewards are considered. The subsequent correctness gate gives every non-PASS program zero training reward, while retaining the original verifier status and reward for diagnosis. An all-invalid group consequently has no relative correctness signal and causes no policy update. A completed group is counted separately from a verified optimizer update. This is an explicit design choice for the retry, not evidence that supervision or the gate has already improved quality.",
+        "Fresh evaluation uses l2_normalize_2048, fused_bias_silu_4096 and matmul_residual_add_512. Development evaluation uses the original three inspected operators. Each final fresh method has exactly three operator records and predetermined input and independent-check seeds. Base pass@1, the supervised-only checkpoint and the final supervised-plus-GRPO checkpoint each use one completion per operator. Base best-of-eight allocates eight samples only to fresh operators; selection uses a separate validation seed, and only the selected candidate is regraded on the independent test seed. Selection records do not enter the final denominator.",
+        "One complete model track should therefore preserve thirty-nine main records: twenty-four validation-selection records, nine final fresh records for the three main methods, and six development records for base and trained pass@1. A separate SFT-only file contains three fresh and three development records. Development best-of-eight is unavailable rather than zero, because no search budget was allocated there. Reporting checks the complete inventory, selected candidate hashes, validation-reward winner, per-operator seeds, matching prompts and configuration, checkpoint identity, precision and hardware. A mislabeled development row is an error, not an opportunity to raise the fresh pass count.",
+        "The supervised-only control is the checkpoint immediately after the completed warmup and before any GRPO update. Comparing base with that checkpoint describes the supervised change. Comparing it with the final checkpoint describes the additional change observed during the frozen GRPO schedule, with equal pass@1 sampling budgets. These small comparisons do not isolate a general causal effect of reinforcement learning: sampling variability, eight training groups and three fresh operators sharply limit inference. The final hybrid checkpoint must never be described as an RL-only intervention.",
+        "The historical 7B run used a free T4, whereas the retry is planned sequentially on the laptop after the free Colab quota was exhausted. The smaller fp32 model and the 7B NF4/FP16-decoder placement remain separate tracks even when the GPU name is the same. Public configuration hashes and an explicit schedule identify each attempt. Historical contract_v1 and retry contract_v2 outcomes are unpaired protocol comparisons, because prompts, cohorts and training changed together. [DRAFT: insert verified per-track fresh and development tables, supervised and GRPO update counts, checkpoint hashes and failure breakdowns; preserve incomplete or failed attempts.]"
+      ]
+    },
+    {
+      "id": "applications",
+      "heading": "7. Applications and Systems Relevance",
+      "paragraphs": [
+        "The operator families correspond to concrete components in modern model execution. Normalization and gated activations process intermediate transformer representations; rotary embedding changes attention inputs; matrix products with epilogues combine dense computation with transformations that otherwise require additional work; quantized weight products trade representation choices against arithmetic and memory movement. A generator that reliably produces correct specialized implementations could help explore these implementation choices. The present measurements concern registered microbenchmarks, so this is a potential application rather than a demonstrated deployment benefit.",
+        "A practical compiler or inference team could also use the verifier independently of the learner: preserve a contract, compare a proposed optimization with native and compiled references, reject incorrect tails, and retain the exact source and hardware record behind a timing claim. The fixed-baseline campaign demonstrates this testing workflow on one laptop. An offline explorer can make rejected programs and missing compiler comparisons inspectable without requiring a reviewer to reproduce model training before understanding the evidence.",
+        "For resource-limited research, sequential model loading and explicit placement can make otherwise inaccessible experiments feasible. The readiness probe provides a measured example of that possibility, while CPU vocabulary computation introduces its own latency and host-memory costs. A deployable synthesis service would additionally need broader workload coverage, robust isolation, scheduling and reliability work. No production throughput, electricity use, cooling demand, operating cost or end-to-end application speedup was measured here. Such benefits would require a separate application study with an appropriate workload and system boundary."
+      ]
+    },
+    {
+      "id": "limitations",
+      "heading": "8. Limitations and Threats to Validity",
+      "paragraphs": [
+        "The principal statistical limitation is the evaluation size. Three fresh operators and one training seed per study do not support a robust estimate of generalization or a significance claim. Three input seeds in a fixed-kernel timing campaign are not three independent training runs. A zero pass count must retain its denominator, but is not proof of zero underlying success probability. Any improvement in the retry must be described as observed on the configured operators and sampling budget, with the complete failures available for inspection.",
+        "The registry contains custom workload formulations, fixed shapes and a finite set of stress inputs. Numerical tolerances are operational acceptance rules, not exact equivalence proofs. Behavior on untested strides, magnitudes, shapes, devices and software versions may differ. Mixed precision can change both the reference computation and the candidate's performance. The structured FLOP and byte models simplify actual execution, particularly for sparsity, masking, quantization, cache reuse and compiler transformations; they should not be reported as measured hardware utilization.",
+        "Timing is sensitive to its boundary. CUDA Graph replay emphasizes steady-state captured execution and excludes ordinary Python dispatch and compilation. It may favor or disadvantage implementations differently from eager launches, dynamic serving, graph construction or workloads with changing shapes. Laptop thermal state, driver behavior and other activity can affect measurements. The Windows compiler stack also differs from Linux configurations; the unavailable SSM compiled reference is an observed platform limitation, not a failure of all compiled PyTorch implementations. Results cannot be pooled across those conditions.",
+        "The learning comparison changes several elements between historical and retry protocols. A longer, more explicit prompt, supervised demonstrations and a correctness gate can each affect outcomes. The SFT-only checkpoint addresses one attribution question but does not provide a full factorial ablation of prompt, reward, optimizer and sample-budget effects. Training targets are related operator implementations, so held-out operator names do not imply absence of conceptual similarity. Public model pretraining may also contain related code; the study does not establish an uncontaminated pretraining corpus.",
+        "Memory feasibility remains conditional on the model placement and tested sequence lengths. Adapter training is not full-parameter 7B training. Readiness probes alone do not establish convergence or full-schedule stability. The completed studies separately document their observed update counts and kernel-quality results. Likewise, static source restrictions and a timeout-bounded worker are not defenses sufficient to execute hostile code safely. The artifact should be understood as a local research environment with an explicit trust boundary, not a public untrusted-code execution service."
+      ]
+    },
+    {
+      "id": "reproducibility_ethics",
+      "heading": "9. Reproducibility and Responsible Release",
+      "paragraphs": [
+        "The public artifact should link each result table to its raw JSONL, configuration, environment and source commit. Generation caches preserve sampled completions and seeds; evaluation records preserve candidate and prompt hashes, phase and cohort labels, model revision and checkpoint identity. Checkpoint manifests record update counters and model checksums, with optimizer-master identity separated when applicable. Failed, interrupted and readiness-only attempts remain distinguishable from completed quality experiments. The final paper and explanatory website should share the same machine-readable result source rather than hand-maintained copies of headline numbers.",
+        "Reproduction proceeds in stages: install the pinned environment, validate CPU contracts and numerical helpers, run GPU baseline checks, verify an experiment's frozen configuration and schedule, train within the stated resource budget, reload a durable checkpoint, and evaluate cached completions with no model resident during grading. A small completed-resume probe checks model and optimizer restoration without adding training steps. Interrupted supervision without a durable checkpoint is preserved as an incomplete attempt rather than silently repeated under the same completed-study label.",
+        "Release materials should credit the original benchmark, compiler, optimization methods and model family through their primary publications and preserve relevant software attribution. This manuscript reports a research artifact by Eljo Mustafaj without an institutional affiliation claim. It does not claim peer review, an assigned publication DOI, a formal security proof or production savings. Public access to code and logs improves inspectability, while executing candidate source still requires an appropriate local environment and trust decision.",
+        "The reporting objective is evidence that another engineer can trace: what was generated, what was accepted, what changed during training, and what remained unsupported. Negative learning results and unavailable baselines are part of that record. [DRAFT: after the retry is complete, replace pending statements with the verified outcome, exact release identifier and permanent artifact links; remove this sentence before public release.]"
+      ]
+    }
+  ],
+  "citation_number_order": [
+    "kernelbench2025",
+    "triton2019",
+    "deepseekmath2024",
+    "ppo2017",
+    "qlora2023",
+    "qwen25coder2024",
+    "cuda_graphs",
+    "roofline2009",
+    "kernelllm2025",
+    "kevin2025"
+  ],
+  "equations": [
+    {
+      "id": "completion_nll",
+      "latex": "\\mathcal{L}_{\\mathrm{SFT}}=-\\frac{1}{T}\\sum_{t=1}^{T}\\log\\pi_\\theta(y_t\\mid x,y_{<t})",
+      "description": "Completion tokens only, including EOS; prompt labels are not included."
+    },
+    {
+      "id": "gated_reward",
+      "latex": "r_i^{\\mathrm{train}}=\\mathbf{1}[\\mathrm{status}_i=\\mathrm{PASS}\\wedge\\mathrm{compiled}_i\\wedge\\mathrm{correct}_i\\wedge\\neg\\mathrm{cheat}_i]\\,r_i^{\\mathrm{verifier}}",
+      "description": "The original verifier reward/status remains available as separate diagnostic information; all-invalid groups get zero advantage."
+    },
+    {
+      "id": "group_advantage",
+      "latex": "A_i=\\frac{r_i-\\overline{r}}{\\sqrt{\\operatorname{Var}(r)}+\\epsilon}",
+      "description": "The implementation uses population standard deviation, epsilon=1e-6, and returns zero advantages when the group standard deviation is below epsilon.",
+      "citations": [
+        "deepseekmath2024"
+      ]
+    }
+  ],
+  "pending_results": {
+    "required": true,
+    "no_new_quality_metrics_available_at_draft": true,
+    "tracks": [
+      {
+        "run_dir": "experiments/retry_v2/laptop",
+        "model_track": "0.49B full-parameter fp32",
+        "fresh_methods": [
+          "base_pass1",
+          "base_best_of_8",
+          "sft_only_checkpoint",
+          "trained_checkpoint"
+        ]
+      },
+      {
+        "run_dir": "experiments/retry_v2/laptop_7b",
+        "model_track": "7B NF4 adapters / FP16 decoder / fixed FP32 CPU vocabulary",
+        "fresh_methods": [
+          "base_pass1",
+          "base_best_of_8",
+          "sft_only_checkpoint",
+          "trained_checkpoint"
+        ]
+      }
+    ],
+    "fresh_ops": [
+      "l2_normalize_2048",
+      "fused_bias_silu_4096",
+      "matmul_residual_add_512"
+    ],
+    "inspected_development_ops": [
+      "rmsnorm_4096",
+      "int8_weight_only_gemm_512",
+      "scaled_dot_product_attn_128"
+    ],
+    "required_insertions": [
+      "Verified fresh and development pass counts, each with denominator",
+      "Actual supervised and GRPO optimizer-step counts",
+      "Checkpoint identities and identical/different SFT/final checksums",
+      "Failure modes, unavailable compile comparisons and correct-only speedup denominators",
+      "Actual run hardware/precision/source commits; no historical pooling",
+      "Interrupted/failed-attempt status if any schedule cannot complete"
+    ]
+  },
+  "finalization_guards": [
+    "Do not publish DRAFT markers or pending result slots.",
+    "Do not infer learned gains from fixed baseline speedups, optimizer counts, readiness probes or changed checksums.",
+    "Keep custom registry scope distinct from official KernelBench.",
+    "No affiliation, email, ORCID, DOI, review status or funding statement has been supplied; do not fabricate any.",
+    "Do not relabel inspected development as fresh held-out data.",
+    "Do not attribute hybrid SFT+GRPO gains to RL alone."
+  ],
+  "draft_word_count_excluding_equations_references": 3755
+}

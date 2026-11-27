@@ -1,0 +1,126 @@
+{
+  "schema_version": "kernelbench_paper_verification_v1",
+  "verified": true,
+  "pdf_path": "paper/KernelBench-RL-Paper.pdf",
+  "pdf_sha256": "7eb507a12e0e7b4c163b8bf6432806472718931d3ea75cc7be14d082c23da75f",
+  "pdf_bytes": 471509,
+  "manuscript_path": "paper/manuscript.json",
+  "manuscript_sha256": "b0902154472084c1240c159291a590b32b1e7e45d5f05d6f63b71fc922abedc9",
+  "pages": 16,
+  "tables": 5,
+  "figures": 3,
+  "equations": 3,
+  "rendered_text_fonts_embedded": {
+    "/AAAAAA+Calibri": true,
+    "/AAAAAA+Georgia-Bold": true,
+    "/AAAAAA+Georgia": true,
+    "/AAAAAA+CambriaMath-1": true,
+    "/AAAAAA+Calibri-Bold": true,
+    "/AAAAAA+Georgia-Italic": true
+  },
+  "page_character_counts": [
+    3067,
+    3584,
+    3669,
+    3637,
+    2494,
+    3541,
+    3540,
+    2151,
+    3600,
+    1125,
+    2488,
+    2229,
+    2479,
+    3517,
+    3576,
+    3270
+  ],
+  "external_link_count": 15,
+  "unresolved_placeholders": false,
+  "review": "AI-assisted visual review of all sixteen rendered pages by coordinator and independent agent; unchanged page PNG byte equality retained across minor wording rerender. Scientific consistency checked against the three completed strict reports.",
+  "page_reviews": [
+    {
+      "page": 1,
+      "status": "PASS",
+      "rendered_png_sha256": "fbe226f52b21557adf780caf556099a4b9de3be891e87a19193a3eb64868176e"
+    },
+    {
+      "page": 2,
+      "status": "PASS",
+      "rendered_png_sha256": "da6ffef808b1a3ec58a50a83ebd9dff0aea889c003f9a0bcec16875448a7f489"
+    },
+    {
+      "page": 3,
+      "status": "PASS",
+      "rendered_png_sha256": "9025145cbf153d15dac3fe18c9112b89f30c3ceacbd1592bf356e1cf1ca9edb2"
+    },
+    {
+      "page": 4,
+      "status": "PASS",
+      "rendered_png_sha256": "d89b55d191992b8856497ae258eb63ff86c73866013618b37b0b5501a5db8f3f"
+    },
+    {
+      "page": 5,
+      "status": "PASS",
+      "rendered_png_sha256": "4cc11fe0733684bced50480b1af0817b87362a718b1111b5e520c845a925c427"
+    },
+    {
+      "page": 6,
+      "status": "PASS",
+      "rendered_png_sha256": "ede811396fdb49151ab0ec4b4fd50b539d414f24853fb63494bdaee11ecc424f"
+    },
+    {
+      "page": 7,
+      "status": "PASS",
+      "rendered_png_sha256": "027ae002eb4c5a81896d5a995d9bc661a5102a3c6c0cda52a2507f13cb8c0e94"
+    },
+    {
+      "page": 8,
+      "status": "PASS",
+      "rendered_png_sha256": "fea093369e93a88b2610b9097b87c8127cf9cd06d3aa146c53e7ea233ac2e587"
+    },
+    {
+      "page": 9,
+      "status": "PASS",
+      "rendered_png_sha256": "bf507b68b10bd42fae0ed181d3211725b5e92604be3c2101bb9a08841f1f6136"
+    },
+    {
+      "page": 10,
+      "status": "PASS",
+      "rendered_png_sha256": "66337d45be98a8585d22ef8c082bc548bca07f6c03fc754eb5c5cae38ce21b3e"
+    },
+    {
+      "page": 11,
+      "status": "PASS",
+      "rendered_png_sha256": "079b92fee35e01fdfb32474a607ea1ba2c4298500be93e6b7b49b367fa4a4523"
+    },
+    {
+      "page": 12,
+      "status": "PASS",
+      "rendered_png_sha256": "da8e7b6455388c1a9036cf883710de9871e39de1f0a68c4cff4c79b73881a5b8"
+    },
+    {
+      "page": 13,
+      "status": "PASS",
+      "rendered_png_sha256": "f376b6afedd34b2eb70644fbc05ab7dff3e68a52b21663475c07dd2afd0919c5"
+    },
+    {
+      "page": 14,
+      "status": "PASS",
+      "rendered_png_sha256": "4f6f7d76e8afd393b1d88d60e39be955b26f41211e772aa2998d512fc040682f"
+    },
+    {
+      "page": 15,
+      "status": "PASS",
+      "rendered_png_sha256": "4c16ef319929a338b7941aec9f4a496d35f6f971b02f1d7428e8b53d43815e08"
+    },
+    {
+      "page": 16,
+      "status": "PASS",
+      "rendered_png_sha256": "07115a23c841debd5f9214b7fd8d99344e5604afb88c79451c2f8a24667bcd9a"
+    }
+  ],
+  "scope": "Rendering and artifact consistency evidence; no claim of peer review, formal proof or cryptographic signature.",
+  "observed_utc": "2026-11-27T04:39:09.347822+00:00"
+}

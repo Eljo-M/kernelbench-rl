@@ -1,0 +1,1563 @@
+{
+  "schema_version": "kernelbench_website_results_v1",
+  "author": "Eljo Mustafaj",
+  "evidence_date": "2026-11-26",
+  "baseline": {
+    "passed": 180,
+    "total": 180,
+    "operator_count": 30,
+    "hardware": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "timing_mode": "cuda_graph",
+    "warmup": 10,
+    "iterations": 50,
+    "graph_calls_per_replay": 16,
+    "summary": {
+      "fp32": {
+        "records": 90,
+        "passed": 90,
+        "operators": 30,
+        "eager_geomean": 2.49405985946529,
+        "compile_geomean": 1.0888186549232899,
+        "compile_operators": 29
+      },
+      "bf16": {
+        "records": 90,
+        "passed": 90,
+        "operators": 30,
+        "eager_geomean": 5.4168524167586325,
+        "compile_geomean": 1.2479135332447293,
+        "compile_operators": 29
+      }
+    },
+    "operators": [
+      {
+        "name": "cosine_similarity_1024",
+        "level": 1,
+        "description": "Batched row-wise cosine similarity over [512, 1024]",
+        "input_shapes": [
+          [
+            512,
+            1024
+          ],
+          [
+            512,
+            1024
+          ]
+        ],
+        "analytic_flops": 3145728,
+        "analytic_bytes": 4196352,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 5.916582836797127,
+            "compile_speedup": 1.4814030031665424
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 10.83192237206826,
+            "compile_speedup": 1.700293193352399
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _cosine_sim_kernel(A_ptr, B_ptr, Y_ptr, stride_a, stride_b, N, eps, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    a = tl.load(A_ptr + row * stride_a + cols, mask=mask, other=0.0).to(tl.float32)\n    b = tl.load(B_ptr + row * stride_b + cols, mask=mask, other=0.0).to(tl.float32)\n    dot = tl.sum(a * b, axis=0)\n    na = tl.sqrt(tl.sum(a * a, axis=0) + eps)\n    nb = tl.sqrt(tl.sum(b * b, axis=0) + eps)\n    tl.store(Y_ptr + row, (dot / (na * nb)).to(Y_ptr.dtype.element_ty))\n\n\ndef kernel_forward(a: torch.Tensor, b: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:\n    orig_lead = a.shape[:-1]\n    N = a.shape[-1]\n    a_2d = a.contiguous().reshape(-1, N)\n    b_2d = b.contiguous().reshape(-1, N)\n    M = a_2d.shape[0]\n    y = torch.empty((M,), device=a.device, dtype=a.dtype)\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    _cosine_sim_kernel[(M,)](a_2d, b_2d, y, a_2d.stride(0), b_2d.stride(0), N, eps, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_lead)",
+        "source_sha256": "364861db8052f3fa331e57ab3f5a48d125c5b033c23a23a8ac4725fa6f78475b"
+      },
+      {
+        "name": "fused_add_rmsnorm_2048",
+        "level": 1,
+        "description": "Fused residual addition + RMSNorm over [512, 2048]",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ],
+          [
+            512,
+            2048
+          ],
+          [
+            2048
+          ]
+        ],
+        "analytic_flops": 6291456,
+        "analytic_bytes": 12591104,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.9235151264701806,
+            "compile_speedup": 0.9656957246876762
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 10.66226783714576,
+            "compile_speedup": 1.406193048744999
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _add_rmsnorm_kernel(X_ptr, R_ptr, W_ptr, Y_ptr, stride_x, N, eps, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    r = tl.load(R_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    w = tl.load(W_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    h = x + r\n    rstd = tl.rsqrt(tl.sum(h * h, axis=0) / N + eps)\n    tl.store(Y_ptr + row * stride_x + cols, (h * rstd * w).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, residual: torch.Tensor, weight: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    r_2d = residual.contiguous().reshape(-1, orig_shape[-1])\n    w = weight.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE > 65536:\n        raise ValueError(f\"Unsupported hidden size N={N} > 65536 for fused Add+RMSNorm\")\n    _add_rmsnorm_kernel[(M,)](x_2d, r_2d, w, y, x_2d.stride(0), N, eps, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "dae5ecbb4ffbf0ec37d69547728c96be766d3baa51a752ac01697fbdeba7a629"
+      },
+      {
+        "name": "fused_bias_gelu_4096",
+        "level": 1,
+        "description": "Fused bias add + tanh-approx GeLU over [512, 4096]",
+        "input_shapes": [
+          [
+            512,
+            4096
+          ],
+          [
+            4096
+          ]
+        ],
+        "analytic_flops": 18874368,
+        "analytic_bytes": 16793600,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 8.72860806929522,
+            "compile_speedup": 0.9066109040441422
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 22.252001854498364,
+            "compile_speedup": 0.9974936904367024
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _bias_gelu_kernel(X_ptr, B_ptr, Y_ptr, stride_x, N, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    blk = tl.program_id(1)\n    cols = blk * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    b = tl.load(B_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    z = x + b\n    k_coef = 0.7978845608028654\n    u = k_coef * (z + 0.044715 * z * z * z)\n    t = 2.0 * tl.sigmoid(2.0 * u) - 1.0\n    out = 0.5 * z * (1.0 + t)\n    tl.store(Y_ptr + row * stride_x + cols, out.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    b_c = bias.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = 1024\n    _bias_gelu_kernel[(M, triton.cdiv(N, BLOCK_SIZE))](x_2d, b_c, y, x_2d.stride(0), N, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "a2780807e388615031a1584b3ecfc29e5eb6f7704a2bf3ea7b31fb4b446bcab7"
+      },
+      {
+        "name": "fused_bias_silu_4096",
+        "level": 1,
+        "description": "Fused bias add + SiLU activation over [512, 4096]",
+        "input_shapes": [
+          [
+            512,
+            4096
+          ],
+          [
+            4096
+          ]
+        ],
+        "analytic_flops": 10485760,
+        "analytic_bytes": 16793600,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.057362089802925,
+            "compile_speedup": 0.9883179110323502
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 6.680984628061542,
+            "compile_speedup": 0.9979730789922598
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _bias_silu_kernel(X_ptr, B_ptr, Y_ptr, stride_x, N, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    blk = tl.program_id(1)\n    cols = blk * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    b = tl.load(B_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    z = x + b\n    out = z * tl.sigmoid(z)\n    tl.store(Y_ptr + row * stride_x + cols, out.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    b_c = bias.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = 1024\n    _bias_silu_kernel[(M, triton.cdiv(N, BLOCK_SIZE))](x_2d, b_c, y, x_2d.stride(0), N, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "cd29be1657abd7d27fe8448c4207dfdb9137b4c23d23e8c5a82180628190fa14"
+      },
+      {
+        "name": "fused_dropout_residual_2048",
+        "level": 1,
+        "description": "Fused pre-generated dropout mask scaling + residual add [512, 2048]",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ],
+          [
+            512,
+            2048
+          ],
+          [
+            512,
+            2048
+          ]
+        ],
+        "analytic_flops": 3145728,
+        "analytic_bytes": 16777216,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 0.5795002615055762,
+            "compile_speedup": 0.9959185398501178
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 8.690991950611263,
+            "compile_speedup": 0.9811480355359085
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _dropout_residual_kernel(X_ptr, R_ptr, M_ptr, Y_ptr, n_elements, scale, BLOCK_SIZE: tl.constexpr):\n    pid = tl.program_id(0)\n    offs = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)\n    mask = offs < n_elements\n    x = tl.load(X_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    r = tl.load(R_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    m = tl.load(M_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    out = r + x * m * scale\n    tl.store(Y_ptr + offs, out.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, residual: torch.Tensor, mask: torch.Tensor, p: float = 0.1) -> torch.Tensor:\n    x_c = x.contiguous()\n    r_c = residual.contiguous()\n    m_c = mask.contiguous()\n    y = torch.empty_like(x_c)\n    n = x_c.numel()\n    scale = 1.0 / (1.0 - float(p))\n    BLOCK_SIZE = 1024\n    _dropout_residual_kernel[(triton.cdiv(n, BLOCK_SIZE),)](x_c, r_c, m_c, y, n, scale, BLOCK_SIZE=BLOCK_SIZE)\n    return y",
+        "source_sha256": "752107c18ffb8bdc2c132d7131048bdf6a0483c5a15396197f90110f76f425dc"
+      },
+      {
+        "name": "fused_scale_mask_2048",
+        "level": 1,
+        "description": "Fused attention score scale + boolean mask fill [512, 2048]",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ],
+          [
+            512,
+            2048
+          ],
+          []
+        ],
+        "analytic_flops": 2097152,
+        "analytic_bytes": 12582912,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.8349027737986279,
+            "compile_speedup": 1.0142718539358593
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 7.552427200909367,
+            "compile_speedup": 1.196631653684108
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _scale_mask_kernel(X_ptr, M_ptr, S_ptr, Y_ptr, n_elements, BLOCK_SIZE: tl.constexpr):\n    pid = tl.program_id(0)\n    offs = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)\n    mask = offs < n_elements\n    x = tl.load(X_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    m = tl.load(M_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    s = tl.load(S_ptr).to(tl.float32)\n    out = tl.where(m > 0.5, x * s, -1e9)\n    tl.store(Y_ptr + offs, out.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, mask: torch.Tensor, scale: torch.Tensor) -> torch.Tensor:\n    x_c = x.contiguous()\n    m_c = mask.contiguous()\n    s_c = scale.contiguous()\n    y = torch.empty_like(x_c)\n    n = x_c.numel()\n    BLOCK_SIZE = 1024\n    _scale_mask_kernel[(triton.cdiv(n, BLOCK_SIZE),)](x_c, m_c, s_c, y, n, BLOCK_SIZE=BLOCK_SIZE)\n    return y",
+        "source_sha256": "ec0b22358f17b0a08d6f87b4effdf221ce27e4eb460e70781a61a7332e949ccf"
+      },
+      {
+        "name": "geglu_4096",
+        "level": 1,
+        "description": "Fused GeGLU (tanh-approx GeLU gate) over [512, 4096]",
+        "input_shapes": [
+          [
+            512,
+            4096
+          ],
+          [
+            512,
+            4096
+          ]
+        ],
+        "analytic_flops": 18874368,
+        "analytic_bytes": 25165824,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 3.739304806496602,
+            "compile_speedup": 1.0020990337900053
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 26.352814459588465,
+            "compile_speedup": 1.1313452925780132
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _geglu_kernel(X_ptr, G_ptr, Y_ptr, n_elements, BLOCK_SIZE: tl.constexpr):\n    pid = tl.program_id(0)\n    offs = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)\n    mask = offs < n_elements\n    x = tl.load(X_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    g = tl.load(G_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    k_coef = 0.7978845608028654\n    u = k_coef * (g + 0.044715 * g * g * g)\n    t = 2.0 * tl.sigmoid(2.0 * u) - 1.0\n    gelu = 0.5 * g * (1.0 + t)\n    tl.store(Y_ptr + offs, (x * gelu).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, gate: torch.Tensor) -> torch.Tensor:\n    x_c = x.contiguous()\n    g_c = gate.contiguous()\n    y = torch.empty_like(x_c)\n    n = x_c.numel()\n    BLOCK_SIZE = 1024\n    _geglu_kernel[(triton.cdiv(n, BLOCK_SIZE),)](x_c, g_c, y, n, BLOCK_SIZE=BLOCK_SIZE)\n    return y",
+        "source_sha256": "003eab0c9a62dce78133fd4aa1baf0f7f7c5cf639d3c92cf2eca1e75da886625"
+      },
+      {
+        "name": "l2_normalize_2048",
+        "level": 1,
+        "description": "Row-wise L2 embedding normalization over [512, 2048]",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ]
+        ],
+        "analytic_flops": 4194304,
+        "analytic_bytes": 8388608,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.8873131274064057,
+            "compile_speedup": 1.0579569942147586
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 5.472214389052528,
+            "compile_speedup": 0.9640132209776583
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _l2_norm_kernel(X_ptr, Y_ptr, stride_x, N, eps, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    inv_norm = tl.rsqrt(tl.sum(x * x, axis=0) + eps)\n    tl.store(Y_ptr + row * stride_x + cols, (x * inv_norm).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, eps: float = 1e-12) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    _l2_norm_kernel[(M,)](x_2d, y, x_2d.stride(0), N, eps, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "6c3174c932390840d0583bd7d2be55812b024f35142f0d7ba687114775631e08"
+      },
+      {
+        "name": "layernorm_2048",
+        "level": 1,
+        "description": "Fused affine LayerNorm over [512, 2048] fp32 activations",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ],
+          [
+            2048
+          ],
+          [
+            2048
+          ]
+        ],
+        "analytic_flops": 7340032,
+        "analytic_bytes": 8404992,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 3.9875448657964707,
+            "compile_speedup": 0.9946249837487461
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 11.066770582813854,
+            "compile_speedup": 1.8162110975123782
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _layernorm_fwd_kernel(X_ptr, W_ptr, B_ptr, Y_ptr, stride_x, N, eps, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    mean = tl.sum(x, axis=0) / N\n    diff = tl.where(mask, x - mean, 0.0)\n    var = tl.sum(diff * diff, axis=0) / N\n    rstd = tl.rsqrt(var + eps)\n    w = tl.load(W_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    b = tl.load(B_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    y = diff * rstd * w + b\n    tl.store(Y_ptr + row * stride_x + cols, y.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    w = weight.contiguous()\n    b = bias.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE > 65536:\n        raise ValueError(f\"Unsupported hidden size N={N} > 65536 for single-block LayerNorm\")\n    _layernorm_fwd_kernel[(M,)](x_2d, w, b, y, x_2d.stride(0), N, eps, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "9d5f4832ae46375be227fd8af728ccb55f69ed2866c4014cf1720ce1eba42a06"
+      },
+      {
+        "name": "rmsnorm_2048",
+        "level": 1,
+        "description": "Fused RMSNorm over [512, 2048] fp32 activations",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ],
+          [
+            2048
+          ]
+        ],
+        "analytic_flops": 5242880,
+        "analytic_bytes": 8396800,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.4289923796021795,
+            "compile_speedup": 0.9449874484429965
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 6.997246010985243,
+            "compile_speedup": 1.1793104938156969
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _rmsnorm_fwd_kernel(X_ptr, W_ptr, Y_ptr, stride_x, N, eps, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    w = tl.load(W_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    mean_sq = tl.sum(x * x, axis=0) / N\n    rstd = tl.rsqrt(mean_sq + eps)\n    y = x * rstd * w\n    tl.store(Y_ptr + row * stride_x + cols, y.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, weight: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    w = weight.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE > 65536:\n        raise ValueError(f\"Unsupported hidden size N={N} > 65536 for single-block RMSNorm\")\n    _rmsnorm_fwd_kernel[(M,)](x_2d, w, y, x_2d.stride(0), N, eps, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61"
+      },
+      {
+        "name": "rmsnorm_4096",
+        "level": 1,
+        "description": "Fused RMSNorm over [256, 4096] Llama-7B hidden dimension",
+        "input_shapes": [
+          [
+            256,
+            4096
+          ],
+          [
+            4096
+          ]
+        ],
+        "analytic_flops": 5242880,
+        "analytic_bytes": 8404992,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.4702214203158803,
+            "compile_speedup": 1.1289680216862683
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 7.297073616422527,
+            "compile_speedup": 2.317087701080997
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _rmsnorm_fwd_kernel(X_ptr, W_ptr, Y_ptr, stride_x, N, eps, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    w = tl.load(W_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    mean_sq = tl.sum(x * x, axis=0) / N\n    rstd = tl.rsqrt(mean_sq + eps)\n    y = x * rstd * w\n    tl.store(Y_ptr + row * stride_x + cols, y.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, weight: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    w = weight.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE > 65536:\n        raise ValueError(f\"Unsupported hidden size N={N} > 65536 for single-block RMSNorm\")\n    _rmsnorm_fwd_kernel[(M,)](x_2d, w, y, x_2d.stride(0), N, eps, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61"
+      },
+      {
+        "name": "swiglu_4096",
+        "level": 1,
+        "description": "Fused SwiGLU activation over [512, 4096] fp32 tensors",
+        "input_shapes": [
+          [
+            512,
+            4096
+          ],
+          [
+            512,
+            4096
+          ]
+        ],
+        "analytic_flops": 10485760,
+        "analytic_bytes": 25165824,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.1280786054576002,
+            "compile_speedup": 0.9385894064616963
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 12.734113300399757,
+            "compile_speedup": 1.0216406722351719
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _swiglu_fwd_kernel(X_ptr, G_ptr, Y_ptr, n_elements, BLOCK_SIZE: tl.constexpr):\n    pid = tl.program_id(0)\n    offs = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)\n    mask = offs < n_elements\n    x = tl.load(X_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    g = tl.load(G_ptr + offs, mask=mask, other=0.0).to(tl.float32)\n    silu = g * tl.sigmoid(g)\n    tl.store(Y_ptr + offs, (x * silu).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, gate: torch.Tensor) -> torch.Tensor:\n    x_c = x.contiguous()\n    g_c = gate.contiguous()\n    y = torch.empty_like(x_c)\n    n = x_c.numel()\n    BLOCK_SIZE = 1024\n    grid = (triton.cdiv(n, BLOCK_SIZE),)\n    _swiglu_fwd_kernel[grid](x_c, g_c, y, n, BLOCK_SIZE=BLOCK_SIZE)\n    return y",
+        "source_sha256": "df5f17e222a94386a1e949fbd0a5cfdad5ead28c44ee6f67fc2474d6287346bb"
+      },
+      {
+        "name": "causal_masked_softmax_1024",
+        "level": 2,
+        "description": "Fused upper-triangular causal mask + Softmax over [32, 128, 128]",
+        "input_shapes": [
+          [
+            32,
+            128,
+            128
+          ]
+        ],
+        "analytic_flops": 3145728,
+        "analytic_bytes": 4194304,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.583873359060006,
+            "compile_speedup": 0.39891050364099045
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 3.322252360032069,
+            "compile_speedup": 0.2242568303633566
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _causal_softmax_kernel(X_ptr, Y_ptr, stride_b, stride_r, S, BLOCK_SIZE: tl.constexpr):\n    b = tl.program_id(0)\n    r = tl.program_id(1)\n    cols = tl.arange(0, BLOCK_SIZE)\n    in_bounds = cols < S\n    base = b * stride_b + r * stride_r\n    x = tl.load(X_ptr + base + cols, mask=in_bounds, other=-float(\"inf\")).to(tl.float32)\n    x_masked = tl.where(in_bounds, tl.where(cols > r, -1e9, x), -float(\"inf\"))\n    x_max = tl.max(x_masked, axis=0)\n    num = tl.where(in_bounds, tl.exp(x_masked - x_max), 0.0)\n    den = tl.sum(num, axis=0)\n    tl.store(Y_ptr + base + cols, (num / den).to(Y_ptr.dtype.element_ty), mask=in_bounds)\n\n\ndef kernel_forward(scores: torch.Tensor) -> torch.Tensor:\n    orig_shape = scores.shape\n    S = orig_shape[-1]\n    R = orig_shape[-2]\n    x_3d = scores.contiguous().reshape(-1, R, S)\n    y = torch.empty_like(x_3d)\n    B = x_3d.shape[0]\n    BLOCK_SIZE = triton.next_power_of_2(S)\n    _causal_softmax_kernel[(B, R)](x_3d, y, x_3d.stride(0), x_3d.stride(1), S, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "283ef5b84816314e60a0ddf13cb7fed106406f2375b73230b442db22b19f8aa7"
+      },
+      {
+        "name": "fused_cross_entropy_4096",
+        "level": 2,
+        "description": "Online fused LogSoftmax + NLL cross-entropy loss [256, 4096]",
+        "input_shapes": [
+          [
+            256,
+            4096
+          ],
+          [
+            256
+          ]
+        ],
+        "analytic_flops": 5242880,
+        "analytic_bytes": 4197376,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 6.499751669793905,
+            "compile_speedup": 1.1174582800021624
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 10.23477800194367,
+            "compile_speedup": 1.3092406619748207
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _cross_entropy_kernel(L_ptr, T_ptr, Y_ptr, stride_l, V, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    tgt = tl.load(T_ptr + row).to(tl.int64)\n    row_max = -float(\"inf\")\n    for c0 in range(0, V, BLOCK_SIZE):\n        cols = c0 + tl.arange(0, BLOCK_SIZE)\n        mask = cols < V\n        vals = tl.load(L_ptr + row * stride_l + cols, mask=mask, other=-float(\"inf\")).to(tl.float32)\n        row_max = tl.maximum(row_max, tl.max(vals, axis=0))\n    sum_exp = 0.0\n    for c0 in range(0, V, BLOCK_SIZE):\n        cols = c0 + tl.arange(0, BLOCK_SIZE)\n        mask = cols < V\n        vals = tl.load(L_ptr + row * stride_l + cols, mask=mask, other=-float(\"inf\")).to(tl.float32)\n        sum_exp += tl.sum(tl.where(mask, tl.exp(vals - row_max), 0.0), axis=0)\n    tgt_logit = tl.load(L_ptr + row * stride_l + tgt).to(tl.float32)\n    loss = -(tgt_logit - row_max - tl.log(sum_exp))\n    tl.store(Y_ptr + row, loss.to(Y_ptr.dtype.element_ty))\n\n\ndef kernel_forward(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:\n    if targets.is_floating_point():\n        raise TypeError(f\"targets must be an integer tensor, got {targets.dtype}\")\n    l_c = logits.contiguous()\n    t_c = targets.contiguous()\n    N, V = l_c.shape\n    y = torch.empty((N,), device=l_c.device, dtype=l_c.dtype)\n    _cross_entropy_kernel[(N,)](l_c, t_c, y, l_c.stride(0), V, BLOCK_SIZE=1024)\n    return y",
+        "source_sha256": "7048cafa31577aa99a15617a8a01914c8825590cd7bfd5171e9a625c58efccf9"
+      },
+      {
+        "name": "fused_softmax_2048",
+        "level": 2,
+        "description": "Numerically stable row-wise Softmax over [512, 2048]",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ]
+        ],
+        "analytic_flops": 5242880,
+        "analytic_bytes": 8388608,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.658428064109243,
+            "compile_speedup": 1.2021256948511296
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 7.936398798805385,
+            "compile_speedup": 1.5141776466984596
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _softmax_fwd_kernel(X_ptr, Y_ptr, stride_x, N, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=-float(\"inf\")).to(tl.float32)\n    x_max = tl.max(x, axis=0)\n    num = tl.exp(x - x_max)\n    den = tl.sum(num, axis=0)\n    tl.store(Y_ptr + row * stride_x + cols, (num / den).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE > 65536:\n        raise ValueError(f\"Unsupported row size N={N} > 65536 for single-block Softmax\")\n    _softmax_fwd_kernel[(M,)](x_2d, y, x_2d.stride(0), N, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "bbb4505f719bfc23639fec95581cb64622e1c4f02664599f0dc5244f01344eba"
+      },
+      {
+        "name": "group_norm_64x32",
+        "level": 2,
+        "description": "Fused GroupNorm (8 groups) over [16, 32, 64]",
+        "input_shapes": [
+          [
+            16,
+            32,
+            64
+          ],
+          [
+            32
+          ],
+          [
+            32
+          ]
+        ],
+        "analytic_flops": 229376,
+        "analytic_bytes": 262400,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 5.018490271892316,
+            "compile_speedup": 1.1596488860498104
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 7.587644743691404,
+            "compile_speedup": 1.1908385363734024
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _group_norm_kernel(\n    X_ptr, W_ptr, B_ptr, Y_ptr,\n    stride_n, stride_c, C_per_g, L, eps,\n    BLOCK_SIZE: tl.constexpr,\n):\n    n = tl.program_id(0)\n    g = tl.program_id(1)\n    total = C_per_g * L\n    c_start = g * C_per_g\n    base_n = n * stride_n\n\n    sum_x = 0.0\n    for idx0 in range(0, total, BLOCK_SIZE):\n        offs = idx0 + tl.arange(0, BLOCK_SIZE)\n        mask = offs < total\n        ch = c_start + (offs // L)\n        pos = offs % L\n        vals = tl.load(X_ptr + base_n + ch * stride_c + pos, mask=mask, other=0.0).to(tl.float32)\n        sum_x += tl.sum(vals, axis=0)\n    mean = sum_x / total\n\n    sum_sq = 0.0\n    for idx0 in range(0, total, BLOCK_SIZE):\n        offs = idx0 + tl.arange(0, BLOCK_SIZE)\n        mask = offs < total\n        ch = c_start + (offs // L)\n        pos = offs % L\n        vals = tl.load(X_ptr + base_n + ch * stride_c + pos, mask=mask, other=0.0).to(tl.float32)\n        diff = tl.where(mask, vals - mean, 0.0)\n        sum_sq += tl.sum(diff * diff, axis=0)\n    rstd = tl.rsqrt(sum_sq / total + eps)\n\n    for idx0 in range(0, total, BLOCK_SIZE):\n        offs = idx0 + tl.arange(0, BLOCK_SIZE)\n        mask = offs < total\n        ch = c_start + (offs // L)\n        pos = offs % L\n        vals = tl.load(X_ptr + base_n + ch * stride_c + pos, mask=mask, other=0.0).to(tl.float32)\n        w = tl.load(W_ptr + ch, mask=mask, other=1.0).to(tl.float32)\n        b = tl.load(B_ptr + ch, mask=mask, other=0.0).to(tl.float32)\n        out = (vals - mean) * rstd * w + b\n        tl.store(Y_ptr + base_n + ch * stride_c + pos, out.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor, num_groups: int = 8, eps: float = 1e-5) -> torch.Tensor:\n    x_c = x.contiguous()\n    w_c = weight.contiguous()\n    b_c = bias.contiguous()\n    N, C, L = x_c.shape\n    y = torch.empty_like(x_c)\n    _group_norm_kernel[(N, num_groups)](\n        x_c, w_c, b_c, y, x_c.stride(0), x_c.stride(1), C // num_groups, L, eps, BLOCK_SIZE=256\n    )\n    return y",
+        "source_sha256": "d244ec3713cc14621432a6179fe0a5db0f2a3be676c58b398d2fd37b03946439"
+      },
+      {
+        "name": "log_softmax_2048",
+        "level": 2,
+        "description": "Numerically stable row-wise LogSoftmax over [512, 2048]",
+        "input_shapes": [
+          [
+            512,
+            2048
+          ]
+        ],
+        "analytic_flops": 5242880,
+        "analytic_bytes": 8388608,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 3.261104696631832,
+            "compile_speedup": 1.0627059208932421
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 7.874052775939325,
+            "compile_speedup": 1.2259991763196165
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _log_softmax_kernel(X_ptr, Y_ptr, stride_x, N, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols < N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=-float(\"inf\")).to(tl.float32)\n    x_max = tl.max(x, axis=0)\n    shifted = x - x_max\n    lse = tl.log(tl.sum(tl.exp(shifted), axis=0))\n    tl.store(Y_ptr + row * stride_x + cols, (shifted - lse).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor) -> torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE > 65536:\n        raise ValueError(f\"Unsupported row size N={N} > 65536 for single-block LogSoftmax\")\n    _log_softmax_kernel[(M,)](x_2d, y, x_2d.stride(0), N, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)",
+        "source_sha256": "12f74498349c38443d1f8bf4d755f54780bb0ecb7e82c073d1f3f137b446ee56"
+      },
+      {
+        "name": "matmul_bias_gelu_512",
+        "level": 2,
+        "description": "Fused GEMM + Bias + tanh-approx GeLU [256, 512] x [512, 512]",
+        "input_shapes": [
+          [
+            256,
+            512
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            512
+          ]
+        ],
+        "analytic_flops": 135397376,
+        "analytic_bytes": 2099200,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.8215082875601551,
+            "compile_speedup": 1.2849470490192167
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.802064601519051,
+            "compile_speedup": 1.254902469142964
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _matmul_bias_gelu_kernel(\n    A_ptr, B_ptr, Bias_ptr, C_ptr,\n    M, N, K,\n    stride_am, stride_ak, stride_bk, stride_bn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        a = tl.load(\n            A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak,\n            mask=(rm[:, None] < M) & (k_offs[None, :] < K),\n            other=0.0,\n        ).to(tl.float32)\n        b = tl.load(\n            B_ptr + k_offs[:, None] * stride_bk + rn[None, :] * stride_bn,\n            mask=(k_offs[:, None] < K) & (rn[None, :] < N),\n            other=0.0,\n        ).to(tl.float32)\n        acc += tl.dot(a, b, input_precision=\"ieee\")\n    bias = tl.load(Bias_ptr + rn, mask=rn < N, other=0.0).to(tl.float32)\n    z = acc + bias[None, :]\n    k_coef = 0.7978845608028654\n    inner = k_coef * (z + 0.044715 * z * z * z)\n    t = 2.0 * tl.sigmoid(2.0 * inner) - 1.0\n    out = 0.5 * z * (1.0 + t)\n    tl.store(\n        C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn,\n        out.to(C_ptr.dtype.element_ty),\n        mask=(rm[:, None] < M) & (rn[None, :] < N),\n    )\n\n\ndef kernel_forward(a: torch.Tensor, b: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:\n    a_c = a.contiguous()\n    b_c = b.contiguous()\n    bias_c = bias.contiguous()\n    M, K = a_c.shape\n    K_b, N = b_c.shape\n    if K != K_b:\n        raise ValueError(f\"Inner dimension mismatch: {K} vs {K_b}\")\n    c = torch.empty((M, N), device=a_c.device, dtype=a_c.dtype)\n    grid = (triton.cdiv(M, 64), triton.cdiv(N, 64))\n    _matmul_bias_gelu_kernel[grid](\n        a_c, b_c, bias_c, c, M, N, K,\n        a_c.stride(0), a_c.stride(1), b_c.stride(0), b_c.stride(1), c.stride(0), c.stride(1),\n        BLOCK_M=64, BLOCK_N=64, BLOCK_K=32,\n    )\n    return c",
+        "source_sha256": "ef1fcf9751cd0c233c2cebdaeb01fb40d1880fd74901652fb004ba2dc5364678"
+      },
+      {
+        "name": "matmul_bias_silu_512",
+        "level": 2,
+        "description": "Fused GEMM + Bias + SiLU epilogue [256, 512] x [512, 512]",
+        "input_shapes": [
+          [
+            256,
+            512
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            512
+          ]
+        ],
+        "analytic_flops": 134873088,
+        "analytic_bytes": 2099200,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.3450969577947747,
+            "compile_speedup": 1.185022568310874
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.4640472314459898,
+            "compile_speedup": 1.18878081075584
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _matmul_bias_silu_kernel(\n    A_ptr, B_ptr, Bias_ptr, C_ptr,\n    M, N, K,\n    stride_am, stride_ak, stride_bk, stride_bn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        a = tl.load(A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak, mask=(rm[:, None] < M) & (k_offs[None, :] < K), other=0.0).to(tl.float32)\n        b = tl.load(B_ptr + k_offs[:, None] * stride_bk + rn[None, :] * stride_bn, mask=(k_offs[:, None] < K) & (rn[None, :] < N), other=0.0).to(tl.float32)\n        acc += tl.dot(a, b, input_precision=\"ieee\")\n    bias = tl.load(Bias_ptr + rn, mask=rn < N, other=0.0).to(tl.float32)\n    z = acc + bias[None, :]\n    out = z * tl.sigmoid(z)\n    tl.store(C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn, out.to(C_ptr.dtype.element_ty), mask=(rm[:, None] < M) & (rn[None, :] < N))\n\n\ndef kernel_forward(a: torch.Tensor, b: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:\n    a_c = a.contiguous()\n    b_c = b.contiguous()\n    bias_c = bias.contiguous()\n    M, K = a_c.shape\n    _, N = b_c.shape\n    c = torch.empty((M, N), device=a_c.device, dtype=a_c.dtype)\n    _matmul_bias_silu_kernel[(triton.cdiv(M, 64), triton.cdiv(N, 64))](\n        a_c, b_c, bias_c, c, M, N, K,\n        a_c.stride(0), a_c.stride(1), b_c.stride(0), b_c.stride(1), c.stride(0), c.stride(1),\n        BLOCK_M=64, BLOCK_N=64, BLOCK_K=32,\n    )\n    return c",
+        "source_sha256": "489fbc9b35783cfd0058d83f1ba6c260c33ccb3e40e7ffd17f64b0f2b4024937"
+      },
+      {
+        "name": "matmul_residual_add_512",
+        "level": 2,
+        "description": "Fused GEMM + residual skip-connection epilogue [256, 512] x [512, 512]",
+        "input_shapes": [
+          [
+            256,
+            512
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            256,
+            512
+          ]
+        ],
+        "analytic_flops": 134348800,
+        "analytic_bytes": 2621440,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.1734596731700058,
+            "compile_speedup": 1.18979644019956
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.4929854695789653,
+            "compile_speedup": 1.2468374446822856
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _matmul_residual_kernel(\n    A_ptr, B_ptr, R_ptr, C_ptr,\n    M, N, K,\n    stride_am, stride_ak, stride_bk, stride_bn, stride_rm, stride_rn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        a = tl.load(A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak, mask=(rm[:, None] < M) & (k_offs[None, :] < K), other=0.0).to(tl.float32)\n        b = tl.load(B_ptr + k_offs[:, None] * stride_bk + rn[None, :] * stride_bn, mask=(k_offs[:, None] < K) & (rn[None, :] < N), other=0.0).to(tl.float32)\n        acc += tl.dot(a, b, input_precision=\"ieee\")\n    r_mask = (rm[:, None] < M) & (rn[None, :] < N)\n    res = tl.load(R_ptr + rm[:, None] * stride_rm + rn[None, :] * stride_rn, mask=r_mask, other=0.0).to(tl.float32)\n    tl.store(C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn, (acc + res).to(C_ptr.dtype.element_ty), mask=r_mask)\n\n\ndef kernel_forward(a: torch.Tensor, b: torch.Tensor, residual: torch.Tensor) -> torch.Tensor:\n    a_c = a.contiguous()\n    b_c = b.contiguous()\n    r_c = residual.contiguous()\n    M, K = a_c.shape\n    _, N = b_c.shape\n    c = torch.empty((M, N), device=a_c.device, dtype=a_c.dtype)\n    _matmul_residual_kernel[(triton.cdiv(M, 64), triton.cdiv(N, 64))](\n        a_c, b_c, r_c, c, M, N, K,\n        a_c.stride(0), a_c.stride(1), b_c.stride(0), b_c.stride(1), r_c.stride(0), r_c.stride(1), c.stride(0), c.stride(1),\n        BLOCK_M=64, BLOCK_N=64, BLOCK_K=32,\n    )\n    return c",
+        "source_sha256": "81e22fd2580db16e685b178013bb988e530ba7e2a81f744bcb22b45496b5de8d"
+      },
+      {
+        "name": "rope_fwd_128",
+        "level": 2,
+        "description": "Fused Rotary Positional Embedding forward pass [8, 16, 128, 64]",
+        "input_shapes": [
+          [
+            8,
+            16,
+            128,
+            64
+          ],
+          [
+            128,
+            32
+          ],
+          [
+            128,
+            32
+          ]
+        ],
+        "analytic_flops": 3145728,
+        "analytic_bytes": 8421376,
+        "rtol": 0.0001,
+        "atol": 0.0001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.7908926250710178,
+            "compile_speedup": 0.6297110377535321
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.916286617811437,
+            "compile_speedup": 0.4037036298818585
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _rope_fwd_kernel(\n    X_ptr, COS_ptr, SIN_ptr, Y_ptr,\n    stride_bh, stride_s, stride_cos_s,\n    HALF_D, BLOCK_D: tl.constexpr,\n):\n    bh = tl.program_id(0)\n    s = tl.program_id(1)\n    offs = tl.arange(0, BLOCK_D)\n    mask = offs < HALF_D\n    base = bh * stride_bh + s * stride_s\n    x1 = tl.load(X_ptr + base + offs, mask=mask, other=0.0).to(tl.float32)\n    x2 = tl.load(X_ptr + base + HALF_D + offs, mask=mask, other=0.0).to(tl.float32)\n    c = tl.load(COS_ptr + s * stride_cos_s + offs, mask=mask, other=1.0).to(tl.float32)\n    sn = tl.load(SIN_ptr + s * stride_cos_s + offs, mask=mask, other=0.0).to(tl.float32)\n    tl.store(Y_ptr + base + offs, (x1 * c - x2 * sn).to(Y_ptr.dtype.element_ty), mask=mask)\n    tl.store(Y_ptr + base + HALF_D + offs, (x2 * c + x1 * sn).to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor) -> torch.Tensor:\n    if x.ndim != 4 or x.shape[-1] % 2 != 0:\n        raise ValueError(f\"RoPE expects 4D tensor [B, H, S, D] with even D, got {tuple(x.shape)}\")\n    B, H, S, D = x.shape\n    x_c = x.contiguous()\n    cos_c = cos.contiguous()\n    sin_c = sin.contiguous()\n    y = torch.empty_like(x_c)\n    x_3d = x_c.reshape(B * H, S, D)\n    y_3d = y.reshape(B * H, S, D)\n    HALF_D = D // 2\n    BLOCK_D = triton.next_power_of_2(HALF_D)\n    _rope_fwd_kernel[(B * H, S)](\n        x_3d, cos_c, sin_c, y_3d,\n        x_3d.stride(0), x_3d.stride(1), cos_c.stride(0),\n        HALF_D, BLOCK_D=BLOCK_D,\n    )\n    return y",
+        "source_sha256": "d98d635db11789591db33fd6805783a909d89666bba01d19907ca051c97e84f7"
+      },
+      {
+        "name": "scaled_dot_product_attn_128",
+        "level": 2,
+        "description": "Causal Scaled Dot-Product Attention [4, 8, 128, 64]",
+        "input_shapes": [
+          [
+            4,
+            8,
+            128,
+            64
+          ],
+          [
+            4,
+            8,
+            128,
+            64
+          ],
+          [
+            4,
+            8,
+            128,
+            64
+          ]
+        ],
+        "analytic_flops": 136839168,
+        "analytic_bytes": 4194304,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.943788343091643,
+            "compile_speedup": 0.9159293999893562
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.7911567659508938,
+            "compile_speedup": 0.8446020226660695
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _flash_causal_attn_kernel(\n    Q_ptr, K_ptr, V_ptr, O_ptr,\n    stride_bh, stride_s, stride_d,\n    S, D, scale,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_D: tl.constexpr,\n):\n    bh = tl.program_id(0)\n    m_blk = tl.program_id(1)\n    rm = m_blk * BLOCK_M + tl.arange(0, BLOCK_M)\n    rd = tl.arange(0, BLOCK_D)\n    base = bh * stride_bh\n    q_mask = (rm[:, None] < S) & (rd[None, :] < D)\n    q = tl.load(Q_ptr + base + rm[:, None] * stride_s + rd[None, :] * stride_d, mask=q_mask, other=0.0).to(tl.float32)\n    m_i = tl.full((BLOCK_M,), -float(\"inf\"), dtype=tl.float32)\n    l_i = tl.zeros((BLOCK_M,), dtype=tl.float32)\n    acc = tl.zeros((BLOCK_M, BLOCK_D), dtype=tl.float32)\n    max_n = tl.minimum((m_blk + 1) * BLOCK_M, S)\n    for n0 in range(0, max_n, BLOCK_N):\n        rn = n0 + tl.arange(0, BLOCK_N)\n        kv_mask = (rn[:, None] < S) & (rd[None, :] < D)\n        k = tl.load(K_ptr + base + rn[:, None] * stride_s + rd[None, :] * stride_d, mask=kv_mask, other=0.0).to(tl.float32)\n        v = tl.load(V_ptr + base + rn[:, None] * stride_s + rd[None, :] * stride_d, mask=kv_mask, other=0.0).to(tl.float32)\n        qk = tl.dot(q, tl.trans(k), input_precision=\"ieee\") * scale\n        causal_mask = (rn[None, :] <= rm[:, None]) & (rn[None, :] < S) & (rm[:, None] < S)\n        qk = tl.where(causal_mask, qk, -float(\"inf\"))\n        m_ij = tl.maximum(m_i, tl.max(qk, axis=1))\n        safe_m = tl.where(m_ij == -float(\"inf\"), 0.0, m_ij)\n        p = tl.where(causal_mask, tl.exp(qk - safe_m[:, None]), 0.0)\n        alpha = tl.where(m_i == -float(\"inf\"), 0.0, tl.exp(m_i - safe_m))\n        l_i = l_i * alpha + tl.sum(p, axis=1)\n        acc = acc * alpha[:, None] + tl.dot(p, v, input_precision=\"ieee\")\n        m_i = m_ij\n    out = tl.where(l_i[:, None] > 0.0, acc / l_i[:, None], 0.0)\n    tl.store(O_ptr + base + rm[:, None] * stride_s + rd[None, :] * stride_d, out.to(O_ptr.dtype.element_ty), mask=q_mask)\n\n\ndef kernel_forward(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor) -> torch.Tensor:\n    if q.ndim != 4:\n        raise ValueError(f\"Causal SDPA expects 4D [B, H, S, D] tensors, got {tuple(q.shape)}\")\n    B, H, S, D = q.shape\n    q_c = q.contiguous()\n    k_c = k.contiguous()\n    v_c = v.contiguous()\n    o = torch.empty_like(q_c)\n    q3 = q_c.reshape(B * H, S, D)\n    k3 = k_c.reshape(B * H, S, D)\n    v3 = v_c.reshape(B * H, S, D)\n    o3 = o.reshape(B * H, S, D)\n    scale = 1.0 / (D ** 0.5)\n    BLOCK_D = triton.next_power_of_2(D)\n    grid = (B * H, triton.cdiv(S, 32))\n    _flash_causal_attn_kernel[grid](\n        q3, k3, v3, o3,\n        q3.stride(0), q3.stride(1), q3.stride(2),\n        S, D, scale, BLOCK_M=32, BLOCK_N=32, BLOCK_D=BLOCK_D,\n    )\n    return o",
+        "source_sha256": "cbea03950494e99fa67fe6daccf0d34322deb665dbda300706cd5e28b8b29170"
+      },
+      {
+        "name": "block_sparse_attn_256",
+        "level": 3,
+        "description": "Causal local block-sparse attention (block=32) [2, 4, 256, 64]",
+        "input_shapes": [
+          [
+            2,
+            4,
+            256,
+            64
+          ],
+          [
+            2,
+            4,
+            256,
+            64
+          ],
+          [
+            2,
+            4,
+            256,
+            64
+          ]
+        ],
+        "analytic_flops": 33554432,
+        "analytic_bytes": 2097152,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 4.206521592044225,
+            "compile_speedup": 1.9572758445610299
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 3.8706281839351817,
+            "compile_speedup": 1.897806687551357
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _block_sparse_attn_kernel(\n    Q_ptr, K_ptr, V_ptr, O_ptr,\n    stride_bh, stride_s, stride_d,\n    S, D, scale,\n    BLOCK_SZ: tl.constexpr, BLOCK_D: tl.constexpr,\n):\n    bh = tl.program_id(0)\n    q_blk = tl.program_id(1)\n    rm = q_blk * BLOCK_SZ + tl.arange(0, BLOCK_SZ)\n    rd = tl.arange(0, BLOCK_D)\n    base = bh * stride_bh\n    q_mask = (rm[:, None] < S) & (rd[None, :] < D)\n    q = tl.load(Q_ptr + base + rm[:, None] * stride_s + rd[None, :] * stride_d, mask=q_mask, other=0.0).to(tl.float32)\n\n    m_i = tl.full((BLOCK_SZ,), -float(\"inf\"), dtype=tl.float32)\n    l_i = tl.zeros((BLOCK_SZ,), dtype=tl.float32)\n    acc = tl.zeros((BLOCK_SZ, BLOCK_D), dtype=tl.float32)\n\n    start_blk = tl.maximum(0, q_blk - 1)\n    for k_blk in range(start_blk, q_blk + 1):\n        rn = k_blk * BLOCK_SZ + tl.arange(0, BLOCK_SZ)\n        kv_mask = (rn[:, None] < S) & (rd[None, :] < D)\n        k = tl.load(K_ptr + base + rn[:, None] * stride_s + rd[None, :] * stride_d, mask=kv_mask, other=0.0).to(tl.float32)\n        v = tl.load(V_ptr + base + rn[:, None] * stride_s + rd[None, :] * stride_d, mask=kv_mask, other=0.0).to(tl.float32)\n        qk = tl.dot(q, tl.trans(k), input_precision=\"ieee\") * scale\n        allowed = (rn[None, :] <= rm[:, None]) & (rn[None, :] < S) & (rm[:, None] < S)\n        qk = tl.where(allowed, qk, -float(\"inf\"))\n        m_ij = tl.maximum(m_i, tl.max(qk, axis=1))\n        safe_m = tl.where(m_ij == -float(\"inf\"), 0.0, m_ij)\n        p = tl.where(allowed, tl.exp(qk - safe_m[:, None]), 0.0)\n        alpha = tl.where(m_i == -float(\"inf\"), 0.0, tl.exp(m_i - safe_m))\n        l_i = l_i * alpha + tl.sum(p, axis=1)\n        acc = acc * alpha[:, None] + tl.dot(p, v, input_precision=\"ieee\")\n        m_i = m_ij\n\n    out = tl.where(l_i[:, None] > 0.0, acc / l_i[:, None], 0.0)\n    tl.store(O_ptr + base + rm[:, None] * stride_s + rd[None, :] * stride_d, out.to(O_ptr.dtype.element_ty), mask=q_mask)\n\n\ndef kernel_forward(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, block_size: int = 32) -> torch.Tensor:\n    B, H, S, D = q.shape\n    q_c, k_c, v_c = q.contiguous(), k.contiguous(), v.contiguous()\n    o = torch.empty_like(q_c)\n    q3, k3, v3, o3 = q_c.reshape(B * H, S, D), k_c.reshape(B * H, S, D), v_c.reshape(B * H, S, D), o.reshape(B * H, S, D)\n    scale = 1.0 / (D ** 0.5)\n    BLOCK_D = triton.next_power_of_2(D)\n    _block_sparse_attn_kernel[(B * H, triton.cdiv(S, block_size))](\n        q3, k3, v3, o3, q3.stride(0), q3.stride(1), q3.stride(2),\n        S, D, scale, BLOCK_SZ=block_size, BLOCK_D=BLOCK_D,\n    )\n    return o",
+        "source_sha256": "c8626a82be307410ccb403ee487defa50a6058a8b6915d696d0d38ef00880e4f"
+      },
+      {
+        "name": "fp8_e4m3_simulated_scaled_gemm_512",
+        "level": 3,
+        "description": "Row/col-scaled FP8-range quantized GEMM [128, 512] x [512, 512]",
+        "input_shapes": [
+          [
+            128,
+            512
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            128
+          ],
+          [
+            512
+          ]
+        ],
+        "analytic_flops": 67436544,
+        "analytic_bytes": 592384,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.2349462494253736,
+            "compile_speedup": 0.935700646246202
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.5877514398494235,
+            "compile_speedup": 1.097640310548846
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _fp8_scaled_gemm_kernel(\n    A_ptr, B_ptr, SA_ptr, SB_ptr, C_ptr,\n    M, N, K,\n    stride_am, stride_ak, stride_bk, stride_bn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    sa = tl.load(SA_ptr + rm, mask=rm < M, other=1.0).to(tl.float32)\n    sb = tl.load(SB_ptr + rn, mask=rn < N, other=1.0).to(tl.float32)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        a = tl.load(A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak, mask=(rm[:, None] < M) & (k_offs[None, :] < K), other=0).to(tl.float32)\n        b = tl.load(B_ptr + k_offs[:, None] * stride_bk + rn[None, :] * stride_bn, mask=(k_offs[:, None] < K) & (rn[None, :] < N), other=0).to(tl.float32)\n        acc += tl.dot(a, b, input_precision=\"ieee\")\n    out = acc * sa[:, None] * sb[None, :]\n    tl.store(C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn, out.to(C_ptr.dtype.element_ty), mask=(rm[:, None] < M) & (rn[None, :] < N))\n\n\ndef kernel_forward(a_q: torch.Tensor, b_q: torch.Tensor, scale_a: torch.Tensor, scale_b: torch.Tensor) -> torch.Tensor:\n    if a_q.is_floating_point() or b_q.is_floating_point():\n        raise TypeError(\"a_q and b_q must remain integer tensors\")\n    a_c = a_q.contiguous()\n    b_c = b_q.contiguous()\n    sa_c = scale_a.contiguous()\n    sb_c = scale_b.contiguous()\n    M, K = a_c.shape\n    _, N = b_c.shape\n    c = torch.empty((M, N), device=a_c.device, dtype=sa_c.dtype)\n    _fp8_scaled_gemm_kernel[(triton.cdiv(M, 64), triton.cdiv(N, 64))](\n        a_c, b_c, sa_c, sb_c, c, M, N, K,\n        a_c.stride(0), a_c.stride(1), b_c.stride(0), b_c.stride(1), c.stride(0), c.stride(1),\n        BLOCK_M=64, BLOCK_N=64, BLOCK_K=32,\n    )\n    return c",
+        "source_sha256": "240a2f9b0f7088ac8360ccf69946b18ad8a9d1410d9f18d5bb3eadf6c57c3fbf"
+      },
+      {
+        "name": "gqa_decode_attn_kv512",
+        "level": 3,
+        "description": "Grouped-Query Attention decode (16 Q heads, 4 KV heads, S=512)",
+        "input_shapes": [
+          [
+            4,
+            16,
+            1,
+            64
+          ],
+          [
+            4,
+            4,
+            512,
+            64
+          ],
+          [
+            4,
+            4,
+            512,
+            64
+          ]
+        ],
+        "analytic_flops": 8552448,
+        "analytic_bytes": 4227072,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 4.3538591282643475,
+            "compile_speedup": 2.86805777335492
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 6.873282777600293,
+            "compile_speedup": 3.940102049678831
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _gqa_decode_kernel(\n    Q_ptr, K_ptr, V_ptr, O_ptr,\n    stride_qb, stride_qh, stride_kb, stride_kh, stride_ks, stride_ob, stride_oh,\n    S, D, repeats, scale,\n    BLOCK_S: tl.constexpr, BLOCK_D: tl.constexpr,\n):\n    b = tl.program_id(0)\n    hq = tl.program_id(1)\n    hkv = hq // repeats\n    rd = tl.arange(0, BLOCK_D)\n    d_mask = rd < D\n    q = tl.load(Q_ptr + b * stride_qb + hq * stride_qh + rd, mask=d_mask, other=0.0).to(tl.float32)\n\n    m_i = -float(\"inf\")\n    l_i = 0.0\n    acc = tl.zeros((BLOCK_D,), dtype=tl.float32)\n    kv_base = b * stride_kb + hkv * stride_kh\n\n    for s0 in range(0, S, BLOCK_S):\n        rs = s0 + tl.arange(0, BLOCK_S)\n        s_mask = rs < S\n        k_tile = tl.load(K_ptr + kv_base + rs[:, None] * stride_ks + rd[None, :], mask=s_mask[:, None] & d_mask[None, :], other=0.0).to(tl.float32)\n        v_tile = tl.load(V_ptr + kv_base + rs[:, None] * stride_ks + rd[None, :], mask=s_mask[:, None] & d_mask[None, :], other=0.0).to(tl.float32)\n        scores = tl.sum(k_tile * q[None, :], axis=1) * scale\n        scores = tl.where(s_mask, scores, -float(\"inf\"))\n        m_ij = tl.maximum(m_i, tl.max(scores, axis=0))\n        p = tl.where(s_mask, tl.exp(scores - m_ij), 0.0)\n        alpha = tl.exp(m_i - m_ij)\n        l_i = l_i * alpha + tl.sum(p, axis=0)\n        acc = acc * alpha + tl.sum(p[:, None] * v_tile, axis=0)\n        m_i = m_ij\n\n    tl.store(O_ptr + b * stride_ob + hq * stride_oh + rd, (acc / l_i).to(O_ptr.dtype.element_ty), mask=d_mask)\n\n\ndef kernel_forward(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor) -> torch.Tensor:\n    q_c, k_c, v_c = q.contiguous(), k.contiguous(), v.contiguous()\n    B, Hq, _, D = q_c.shape\n    _, Hkv, S, _ = k_c.shape\n    o = torch.empty_like(q_c)\n    q3 = q_c.reshape(B, Hq, D)\n    o3 = o.reshape(B, Hq, D)\n    scale = 1.0 / (D ** 0.5)\n    BLOCK_D = triton.next_power_of_2(D)\n    _gqa_decode_kernel[(B, Hq)](\n        q3, k_c, v_c, o3,\n        q3.stride(0), q3.stride(1), k_c.stride(0), k_c.stride(1), k_c.stride(2), o3.stride(0), o3.stride(1),\n        S, D, Hq // Hkv, scale, BLOCK_S=64, BLOCK_D=BLOCK_D,\n    )\n    return o",
+        "source_sha256": "648ed1ce743bcadeae810df71a545bd1f0ad2c1c93ff3be9302632c6dd50031e"
+      },
+      {
+        "name": "int4_groupwise_dequant_gemm_512",
+        "level": 3,
+        "description": "Packed INT4 groupwise (G=64) dequant + GEMM [128, 512] x [512, 512]",
+        "input_shapes": [
+          [
+            128,
+            512
+          ],
+          [
+            256,
+            512
+          ],
+          [
+            8,
+            512
+          ]
+        ],
+        "analytic_flops": 67895296,
+        "analytic_bytes": 671744,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 0.9100779795469833,
+            "compile_speedup": 0.4717973266378072
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 2.2751666555169745,
+            "compile_speedup": 1.0559439867420555
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _int4_groupwise_gemm_kernel(\n    A_ptr, PW_ptr, S_ptr, C_ptr,\n    M, N, K, group_size,\n    stride_am, stride_ak, stride_pwk, stride_pwn, stride_sg, stride_sn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        k_mask = k_offs < K\n        a = tl.load(\n            A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak,\n            mask=(rm[:, None] < M) & k_mask[None, :],\n            other=0.0,\n        ).to(tl.float32)\n        pw_row = k_offs // 2\n        is_hi = (k_offs & 1) == 1\n        packed = tl.load(\n            PW_ptr + pw_row[:, None] * stride_pwk + rn[None, :] * stride_pwn,\n            mask=k_mask[:, None] & (rn[None, :] < N),\n            other=0,\n        ).to(tl.int32)\n        nibble = tl.where(is_hi[:, None], (packed >> 4) & 0x0F, packed & 0x0F) - 8\n        g_idx = k_offs // group_size\n        sc = tl.load(\n            S_ptr + g_idx[:, None] * stride_sg + rn[None, :] * stride_sn,\n            mask=k_mask[:, None] & (rn[None, :] < N),\n            other=1.0,\n        ).to(tl.float32)\n        acc += tl.dot(a, nibble.to(tl.float32) * sc, input_precision=\"ieee\")\n    tl.store(\n        C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn,\n        acc.to(C_ptr.dtype.element_ty),\n        mask=(rm[:, None] < M) & (rn[None, :] < N),\n    )\n\n\ndef kernel_forward(x: torch.Tensor, packed_w: torch.Tensor, scales: torch.Tensor, group_size: int = 64) -> torch.Tensor:\n    if packed_w.is_floating_point():\n        raise TypeError(f\"packed_w must be an integer tensor (uint8), got {packed_w.dtype}\")\n    x_c = x.contiguous()\n    pw_c = packed_w.contiguous()\n    s_c = scales.contiguous()\n    M, K = x_c.shape\n    _, N = pw_c.shape\n    c = torch.empty((M, N), device=x_c.device, dtype=x_c.dtype)\n    _int4_groupwise_gemm_kernel[(triton.cdiv(M, 64), triton.cdiv(N, 64))](\n        x_c, pw_c, s_c, c, M, N, K, group_size,\n        x_c.stride(0), x_c.stride(1), pw_c.stride(0), pw_c.stride(1), s_c.stride(0), s_c.stride(1), c.stride(0), c.stride(1),\n        BLOCK_M=64, BLOCK_N=64, BLOCK_K=32,\n    )\n    return c",
+        "source_sha256": "b5dd79c0860cb9c74e87772dea13740fe88b0c5867b9d637d324a59cab2e1414"
+      },
+      {
+        "name": "int8_weight_only_gemm_512",
+        "level": 3,
+        "description": "Per-channel symmetric INT8 weight-only dequant + GEMM [128, 512] x [512, 512]",
+        "input_shapes": [
+          [
+            128,
+            512
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            512
+          ]
+        ],
+        "analytic_flops": 67371008,
+        "analytic_bytes": 788480,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 0.5805729373569072,
+            "compile_speedup": 0.46607950706119267
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 1.6397829728734017,
+            "compile_speedup": 1.146973267448693
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _int8_wo_gemm_kernel(\n    A_ptr, W_ptr, S_ptr, C_ptr,\n    M, N, K,\n    stride_am, stride_ak, stride_wk, stride_wn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    scales = tl.load(S_ptr + rn, mask=rn < N, other=1.0).to(tl.float32)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        a = tl.load(\n            A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak,\n            mask=(rm[:, None] < M) & (k_offs[None, :] < K),\n            other=0.0,\n        ).to(tl.float32)\n        w_q = tl.load(\n            W_ptr + k_offs[:, None] * stride_wk + rn[None, :] * stride_wn,\n            mask=(k_offs[:, None] < K) & (rn[None, :] < N),\n            other=0,\n        ).to(tl.float32)\n        acc += tl.dot(a, w_q * scales[None, :], input_precision=\"ieee\")\n    tl.store(\n        C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn,\n        acc.to(C_ptr.dtype.element_ty),\n        mask=(rm[:, None] < M) & (rn[None, :] < N),\n    )\n\n\ndef kernel_forward(x: torch.Tensor, qweight: torch.Tensor, scales: torch.Tensor) -> torch.Tensor:\n    if qweight.is_floating_point():\n        raise TypeError(f\"qweight must be an integer tensor (e.g. torch.int8), got {qweight.dtype}\")\n    x_c = x.contiguous()\n    w_c = qweight.contiguous()\n    s_c = scales.contiguous()\n    M, K = x_c.shape\n    K_w, N = w_c.shape\n    if K != K_w:\n        raise ValueError(f\"Inner dimension mismatch: {K} vs {K_w}\")\n    c = torch.empty((M, N), device=x_c.device, dtype=x_c.dtype)\n    grid = (triton.cdiv(M, 64), triton.cdiv(N, 64))\n    _int8_wo_gemm_kernel[grid](\n        x_c, w_c, s_c, c, M, N, K,\n        x_c.stride(0), x_c.stride(1), w_c.stride(0), w_c.stride(1), c.stride(0), c.stride(1),\n        BLOCK_M=64, BLOCK_N=64, BLOCK_K=32,\n    )\n    return c",
+        "source_sha256": "7bcb220ff3193646850f50f84dfa746e1c279c8f4f17097c8dcf20a59278ada1"
+      },
+      {
+        "name": "paged_kv_gather_attn_256",
+        "level": 3,
+        "description": "PagedAttention block-table KV gather + attention (B=4, H=8, S=256)",
+        "input_shapes": [
+          [
+            4,
+            8,
+            64
+          ],
+          [
+            64,
+            8,
+            16,
+            64
+          ],
+          [
+            64,
+            8,
+            16,
+            64
+          ],
+          [
+            4,
+            16
+          ]
+        ],
+        "analytic_flops": 2138112,
+        "analytic_bytes": 4210944,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 6.544316534703484,
+            "compile_speedup": 2.4538440442545304
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 6.590282372246173,
+            "compile_speedup": 2.386871250041414
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _paged_kv_attn_kernel(\n    Q_ptr, K_ptr, V_ptr, BT_ptr, O_ptr,\n    stride_qb, stride_qh,\n    stride_kp_blk, stride_kp_h, stride_kp_s,\n    stride_bt_b,\n    stride_ob, stride_oh,\n    max_blks, D, scale,\n    BLOCK_SZ: tl.constexpr, BLOCK_D: tl.constexpr,\n):\n    b = tl.program_id(0)\n    h = tl.program_id(1)\n    rd = tl.arange(0, BLOCK_D)\n    rs = tl.arange(0, BLOCK_SZ)\n    d_mask = rd < D\n    q = tl.load(Q_ptr + b * stride_qb + h * stride_qh + rd, mask=d_mask, other=0.0).to(tl.float32)\n\n    m_i = -float(\"inf\")\n    l_i = 0.0\n    acc = tl.zeros((BLOCK_D,), dtype=tl.float32)\n\n    for blk_idx in range(0, max_blks):\n        phys_blk = tl.load(BT_ptr + b * stride_bt_b + blk_idx).to(tl.int64)\n        base_kv = phys_blk * stride_kp_blk + h * stride_kp_h\n        k_tile = tl.load(K_ptr + base_kv + rs[:, None] * stride_kp_s + rd[None, :], mask=d_mask[None, :], other=0.0).to(tl.float32)\n        v_tile = tl.load(V_ptr + base_kv + rs[:, None] * stride_kp_s + rd[None, :], mask=d_mask[None, :], other=0.0).to(tl.float32)\n        scores = tl.sum(k_tile * q[None, :], axis=1) * scale\n        m_ij = tl.maximum(m_i, tl.max(scores, axis=0))\n        p = tl.exp(scores - m_ij)\n        alpha = tl.exp(m_i - m_ij)\n        l_i = l_i * alpha + tl.sum(p, axis=0)\n        acc = acc * alpha + tl.sum(p[:, None] * v_tile, axis=0)\n        m_i = m_ij\n\n    tl.store(O_ptr + b * stride_ob + h * stride_oh + rd, (acc / l_i).to(O_ptr.dtype.element_ty), mask=d_mask)\n\n\ndef kernel_forward(q: torch.Tensor, k_pool: torch.Tensor, v_pool: torch.Tensor, block_tables: torch.Tensor) -> torch.Tensor:\n    if block_tables.is_floating_point():\n        raise TypeError(f\"block_tables must remain an integer tensor, got {block_tables.dtype}\")\n    q_c, k_c, v_c, bt_c = q.contiguous(), k_pool.contiguous(), v_pool.contiguous(), block_tables.contiguous()\n    B, H, D = q_c.shape\n    _, _, blk_sz, _ = k_c.shape\n    max_blks = bt_c.shape[1]\n    o = torch.empty_like(q_c)\n    scale = 1.0 / (D ** 0.5)\n    BLOCK_D = triton.next_power_of_2(D)\n    _paged_kv_attn_kernel[(B, H)](\n        q_c, k_c, v_c, bt_c, o,\n        q_c.stride(0), q_c.stride(1),\n        k_c.stride(0), k_c.stride(1), k_c.stride(2),\n        bt_c.stride(0),\n        o.stride(0), o.stride(1),\n        max_blks, D, scale, BLOCK_SZ=blk_sz, BLOCK_D=BLOCK_D,\n    )\n    return o",
+        "source_sha256": "5fadf145ac9ca18168ba54db7f7afe6e9838773a2585927146915e2ddb73db58"
+      },
+      {
+        "name": "selective_scan_ssm_256",
+        "level": 3,
+        "description": "Mamba-style diagonal selective state-space scan [8, 256, 64]",
+        "input_shapes": [
+          [
+            8,
+            256,
+            64
+          ],
+          [
+            8,
+            256,
+            64
+          ],
+          [
+            64
+          ],
+          [
+            8,
+            256,
+            64
+          ],
+          [
+            8,
+            256,
+            64
+          ]
+        ],
+        "analytic_flops": 1048576,
+        "analytic_bytes": 2621696,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 4.375584573854363,
+            "compile_speedup": null
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 4.445321310580439,
+            "compile_speedup": null
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _selective_scan_kernel(\n    U_ptr, DT_ptr, ALOG_ptr, B_ptr, C_ptr, Y_ptr,\n    stride_b, stride_l, L, D,\n    BLOCK_D: tl.constexpr,\n):\n    b = tl.program_id(0)\n    d_blk = tl.program_id(1)\n    rd = d_blk * BLOCK_D + tl.arange(0, BLOCK_D)\n    d_mask = rd < D\n    a = -tl.exp(tl.load(ALOG_ptr + rd, mask=d_mask, other=0.0).to(tl.float32))\n    h = tl.zeros((BLOCK_D,), dtype=tl.float32)\n    base = b * stride_b\n    for t in range(0, L):\n        off = base + t * stride_l + rd\n        u = tl.load(U_ptr + off, mask=d_mask, other=0.0).to(tl.float32)\n        dt = tl.load(DT_ptr + off, mask=d_mask, other=0.0).to(tl.float32)\n        bp = tl.load(B_ptr + off, mask=d_mask, other=0.0).to(tl.float32)\n        cp = tl.load(C_ptr + off, mask=d_mask, other=0.0).to(tl.float32)\n        h = tl.exp(dt * a) * h + dt * bp * u\n        tl.store(Y_ptr + off, (h * cp).to(Y_ptr.dtype.element_ty), mask=d_mask)\n\n\ndef kernel_forward(u: torch.Tensor, delta: torch.Tensor, a_log: torch.Tensor, b_proj: torch.Tensor, c_proj: torch.Tensor) -> torch.Tensor:\n    u_c, dt_c, al_c, b_c, c_c = u.contiguous(), delta.contiguous(), a_log.contiguous(), b_proj.contiguous(), c_proj.contiguous()\n    B, L, D = u_c.shape\n    y = torch.empty_like(u_c)\n    BLOCK_D = 64\n    _selective_scan_kernel[(B, triton.cdiv(D, BLOCK_D))](\n        u_c, dt_c, al_c, b_c, c_c, y, u_c.stride(0), u_c.stride(1), L, D, BLOCK_D=BLOCK_D\n    )\n    return y",
+        "source_sha256": "81bfbcde23f419aad2715c9d4a7e3c42adac95bd22451250ab7884997491661d"
+      },
+      {
+        "name": "topk_moe_router_dispatch_64",
+        "level": 3,
+        "description": "MoE Top-2 softmax gating + weighted expert dispatch [256, 64] x 8 experts",
+        "input_shapes": [
+          [
+            256,
+            64
+          ],
+          [
+            64,
+            8
+          ],
+          [
+            8,
+            64,
+            64
+          ]
+        ],
+        "analytic_flops": 4456448,
+        "analytic_bytes": 264192,
+        "rtol": 0.001,
+        "atol": 0.001,
+        "precision": {
+          "fp32": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 5.129584276493589,
+            "compile_speedup": 4.411202088138585
+          },
+          "bf16": {
+            "passed": 3,
+            "total": 3,
+            "eager_speedup": 5.745321109878836,
+            "compile_speedup": 4.079248738985726
+          }
+        },
+        "source": "import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _topk_moe_router_kernel(\n    X_ptr, RW_ptr, EW_ptr, Y_ptr,\n    stride_xt, stride_rwd, stride_ewe, stride_ewd, stride_yt,\n    D, E, K_TOP: tl.constexpr,\n    BLOCK_D: tl.constexpr, BLOCK_E: tl.constexpr,\n):\n    t = tl.program_id(0)\n    rd = tl.arange(0, BLOCK_D)\n    re = tl.arange(0, BLOCK_E)\n    d_mask = rd < D\n    e_mask = re < E\n\n    x_vec = tl.load(X_ptr + t * stride_xt + rd, mask=d_mask, other=0.0).to(tl.float32)\n    rw_mat = tl.load(RW_ptr + rd[:, None] * stride_rwd + re[None, :], mask=d_mask[:, None] & e_mask[None, :], other=0.0).to(tl.float32)\n    logits = tl.sum(x_vec[:, None] * rw_mat, axis=0)\n    logits = tl.where(e_mask, logits, -float(\"inf\"))\n    l_max = tl.max(logits, axis=0)\n    ex = tl.where(e_mask, tl.exp(logits - l_max), 0.0)\n    probs = ex / tl.sum(ex, axis=0)\n\n    rem_probs = probs\n    w_sum = 0.0\n    acc = tl.zeros((BLOCK_D,), dtype=tl.float32)\n    for _ in range(0, K_TOP):\n        best_val = tl.max(rem_probs, axis=0)\n        is_best = (rem_probs == best_val) & e_mask\n        # Deterministic lowest-index tie break\n        best_idx = tl.min(tl.where(is_best, re, E), axis=0)\n        w_sum += best_val\n        ew_mat = tl.load(\n            EW_ptr + best_idx * stride_ewe + rd[:, None] * stride_ewd + rd[None, :],\n            mask=d_mask[:, None] & d_mask[None, :],\n            other=0.0,\n        ).to(tl.float32)\n        expert_out = tl.sum(x_vec[:, None] * ew_mat, axis=0)\n        acc += best_val * expert_out\n        rem_probs = tl.where(re == best_idx, -1.0, rem_probs)\n\n    tl.store(Y_ptr + t * stride_yt + rd, (acc / w_sum).to(Y_ptr.dtype.element_ty), mask=d_mask)\n\n\ndef kernel_forward(x: torch.Tensor, router_w: torch.Tensor, expert_w: torch.Tensor, k: int = 2) -> torch.Tensor:\n    x_c, rw_c, ew_c = x.contiguous(), router_w.contiguous(), expert_w.contiguous()\n    T, D = x_c.shape\n    E = rw_c.shape[1]\n    y = torch.empty_like(x_c)\n    BLOCK_D = triton.next_power_of_2(D)\n    BLOCK_E = triton.next_power_of_2(E)\n    _topk_moe_router_kernel[(T,)](\n        x_c, rw_c, ew_c, y,\n        x_c.stride(0), rw_c.stride(0), ew_c.stride(0), ew_c.stride(1), y.stride(0),\n        D, E, K_TOP=int(k), BLOCK_D=BLOCK_D, BLOCK_E=BLOCK_E,\n    )\n    return y",
+        "source_sha256": "67e88b8fd276fdcd3f1f96891135b703bd22ec41991260a73427309de307bd9d"
+      }
+    ]
+  },
+  "historical": [
+    {
+      "name": "laptop_fullparam",
+      "model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+      "mode": "Full-Parameter 0.49B",
+      "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "dtype": "fp32",
+      "source_commit": "03468e3c717e8b8d90b40766e3eff80eff9403b3",
+      "checkpoint_sha256": "14e3f9d1c22f78473f97a59f94366d197e4c1ed32e285bc4088e5030ef4a0a00",
+      "training_samples": 16,
+      "optimizer_updates": 1,
+      "training_failures": {
+        "COMPILE_ERROR": 15,
+        "CHEAT": 1
+      },
+      "methods": [
+        {
+          "name": "base_pass1",
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        },
+        {
+          "name": "base_best_of_8",
+          "passed": 0,
+          "total": 3,
+          "budget": 8
+        },
+        {
+          "name": "trained_checkpoint",
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        }
+      ]
+    },
+    {
+      "name": "qlora7b_fresh",
+      "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+      "mode": "7B QLoRA (NF4)",
+      "gpu": "Tesla T4",
+      "dtype": "fp16",
+      "source_commit": "e72c42e794643ed4c198937e86427c3640b977c5",
+      "checkpoint_sha256": "18281524fcaa3c625a8b77bb617b8d5cb812e8f2c73a6892953fe7c77abbfa46",
+      "training_samples": 16,
+      "optimizer_updates": 4,
+      "training_failures": {
+        "CHEAT": 8,
+        "COMPILE_ERROR": 7,
+        "RUNTIME_ERROR": 1
+      },
+      "methods": [
+        {
+          "name": "base_pass1",
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        },
+        {
+          "name": "base_best_of_8",
+          "passed": 0,
+          "total": 3,
+          "budget": 8
+        },
+        {
+          "name": "trained_checkpoint",
+          "passed": 0,
+          "total": 3,
+          "budget": 1
+        }
+      ]
+    }
+  ],
+  "retry": {
+    "status": "completed",
+    "published_results": true,
+    "runs": [
+      {
+        "study_key": "v2/laptop",
+        "protocol_version": "v2",
+        "label": "v2 0.49B full-parameter FP32",
+        "short_label": "v2 0.49B FP32",
+        "cohort_label": "v2 original fresh trio",
+        "cohort_ops": {
+          "fresh": [
+            "l2_normalize_2048",
+            "fused_bias_silu_4096",
+            "matmul_residual_add_512"
+          ],
+          "development": [
+            "rmsnorm_4096",
+            "int8_weight_only_gemm_512",
+            "scaled_dot_product_attn_128"
+          ]
+        },
+        "fresh_ops": [
+          "l2_normalize_2048",
+          "fused_bias_silu_4096",
+          "matmul_residual_add_512"
+        ],
+        "development_ops": [
+          "rmsnorm_4096",
+          "int8_weight_only_gemm_512",
+          "scaled_dot_product_attn_128"
+        ],
+        "comparison_path": "experiments/retry_v2/comparison/retry_comparison.json",
+        "hardware": "NVIDIA GeForce RTX 5060 Laptop GPU",
+        "training_mode": "full_param_0.49b",
+        "config_hash": "76f5ae26c4334710",
+        "model_revision": "ea3f2471cf1b1f0db85067f1ef93848e38e88c25",
+        "notes": [],
+        "status": "completed",
+        "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+        "sft_updates": 32,
+        "optimizer_updates": 0,
+        "cohorts": {
+          "fresh": [
+            {
+              "method": "Base pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Base best-of-8",
+              "passed": 0,
+              "total": 3,
+              "budget": 8
+            },
+            {
+              "method": "SFT-only pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Hybrid pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            }
+          ],
+          "development": [
+            {
+              "method": "Base pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "SFT-only pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Hybrid pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            }
+          ]
+        }
+      },
+      {
+        "study_key": "v2/laptop_7b",
+        "protocol_version": "v2",
+        "label": "v2 7B QLoRA rank 8 / NF4 / FP16 decoder / CPU vocabulary",
+        "short_label": "v2 7B rank 8",
+        "cohort_label": "v2 original fresh trio",
+        "cohort_ops": {
+          "fresh": [
+            "l2_normalize_2048",
+            "fused_bias_silu_4096",
+            "matmul_residual_add_512"
+          ],
+          "development": [
+            "rmsnorm_4096",
+            "int8_weight_only_gemm_512",
+            "scaled_dot_product_attn_128"
+          ]
+        },
+        "fresh_ops": [
+          "l2_normalize_2048",
+          "fused_bias_silu_4096",
+          "matmul_residual_add_512"
+        ],
+        "development_ops": [
+          "rmsnorm_4096",
+          "int8_weight_only_gemm_512",
+          "scaled_dot_product_attn_128"
+        ],
+        "comparison_path": "experiments/retry_v2/comparison/retry_comparison.json",
+        "hardware": "NVIDIA GeForce RTX 5060 Laptop GPU",
+        "training_mode": "qlora_7b_nf4",
+        "config_hash": "aac728c27b3b726c",
+        "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+        "notes": [],
+        "status": "completed",
+        "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+        "sft_updates": 32,
+        "optimizer_updates": 1,
+        "cohorts": {
+          "fresh": [
+            {
+              "method": "Base pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Base best-of-8",
+              "passed": 0,
+              "total": 3,
+              "budget": 8
+            },
+            {
+              "method": "SFT-only pass@1",
+              "passed": 2,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Hybrid pass@1",
+              "passed": 2,
+              "total": 3,
+              "budget": 1
+            }
+          ],
+          "development": [
+            {
+              "method": "Base pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "SFT-only pass@1",
+              "passed": 1,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Hybrid pass@1",
+              "passed": 1,
+              "total": 3,
+              "budget": 1
+            }
+          ]
+        }
+      },
+      {
+        "study_key": "v3/laptop_7b",
+        "protocol_version": "v3",
+        "label": "v3 7B QLoRA rank 16 / NF4 / FP16 decoder / CPU vocabulary",
+        "short_label": "v3 7B rank 16",
+        "cohort_label": "v3 prospective fresh trio",
+        "cohort_ops": {
+          "fresh": [
+            "cosine_similarity_1024",
+            "fused_bias_gelu_4096",
+            "matmul_bias_silu_512"
+          ],
+          "development": [
+            "rmsnorm_4096",
+            "int8_weight_only_gemm_512",
+            "scaled_dot_product_attn_128"
+          ]
+        },
+        "fresh_ops": [
+          "cosine_similarity_1024",
+          "fused_bias_gelu_4096",
+          "matmul_bias_silu_512"
+        ],
+        "development_ops": [
+          "rmsnorm_4096",
+          "int8_weight_only_gemm_512",
+          "scaled_dot_product_attn_128"
+        ],
+        "comparison_path": "experiments/retry_v3/comparison/retry_comparison.json",
+        "hardware": "NVIDIA GeForce RTX 5060 Laptop GPU",
+        "training_mode": "qlora_7b_nf4",
+        "config_hash": "0dfb0a14abad3067",
+        "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+        "notes": [
+          "Recorded Windows power-event evidence reports a sleep/wake interval from 2026-11-27 02:56:43.389 UTC to 2026-11-27 03:04:22.105 UTC (458.716 seconds), with the sleep reason reported as Battery. The saved provider timestamps, including the separately noted resume-event time anomaly, remain unchanged. The recorded elapsed timer (4958.953 seconds) agrees with the UTC start-to-completion interval (4958.988 seconds) to 0.035 seconds; this observed agreement indicates that it includes the documented sleep interval. Training-stage duration remains the original elapsed-timer measurement, not GPU compute time. No pause subtraction or derived GPU-only training duration is reported.",
+          "The completed-run analysis identifies 1 of 16 GRPO groups (8) in which the same verified candidate-source SHA-256 received different PASS rewards across repeated measurements; 1 of these groups also had identical completion-token sequences. Of these same-source groups, 1 performed optimizer updates. These comparisons distinguish measured rewards for identical source rather than distinct candidate programs. Timing/reference variation, KL regularization, optimizer state and finite precision can contribute to parameter behavior; this analysis does not causally decompose them. Optimizer-step counts and tensor changes therefore document activity, not automatically useful kernel learning."
+        ],
+        "status": "completed",
+        "source_commit": "2c174abe268495159c10d538c92d071e7733828d",
+        "sft_updates": 88,
+        "optimizer_updates": 5,
+        "cohorts": {
+          "fresh": [
+            {
+              "method": "Base pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Base best-of-8",
+              "passed": 0,
+              "total": 3,
+              "budget": 8
+            },
+            {
+              "method": "SFT-only pass@1",
+              "passed": 2,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Hybrid pass@1",
+              "passed": 2,
+              "total": 3,
+              "budget": 1
+            }
+          ],
+          "development": [
+            {
+              "method": "Base pass@1",
+              "passed": 0,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "SFT-only pass@1",
+              "passed": 1,
+              "total": 3,
+              "budget": 1
+            },
+            {
+              "method": "Hybrid pass@1",
+              "passed": 1,
+              "total": 3,
+              "budget": 1
+            }
+          ]
+        }
+      }
+    ],
+    "note": "The corrected v2 0.49B full-parameter FP32 study completed 32 supervised updates and 0 GRPO optimizer updates; fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 0/3, Hybrid pass@1 0/3. The corrected v2 7B QLoRA rank 8 / NF4 / FP16 decoder / CPU vocabulary study completed 32 supervised updates and 1 GRPO optimizer update; fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 2/3, Hybrid pass@1 2/3. The corrected v3 7B QLoRA rank 16 / NF4 / FP16 decoder / CPU vocabulary study completed 88 supervised updates and 5 GRPO optimizer updates; fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 2/3, Hybrid pass@1 2/3. The v2 7B SFT-only and hybrid checkpoints each passed 2/3 fresh held-out operators. The identical passing operators were fused_bias_silu_4096, l2_normalize_2048. No incremental GRPO held-out correctness gain over the SFT-only control was observed in this single configured attempt. V3 fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 2/3, Hybrid pass@1 2/3. Development counts were Base pass@1 0/3, SFT-only pass@1 1/3, Hybrid pass@1 1/3. The SFT-only and hybrid arms have the same passing-operator set; no incremental GRPO held-out correctness gain over SFT was observed in this attempt. Fresh and inspected development cohorts are reported separately; the hybrid includes supervised warmup. V2 and v3 use different fresh operators and configurations and are never pooled."
+  },
+  "provenance": [
+    {
+      "path": "experiments/rtx5060/full30/baselines.jsonl",
+      "sha256": "43938c4c4416934cb600e0e4346eb097bb342c874af580ae42f7cfc0e9f4e481"
+    },
+    {
+      "path": "experiments/heldout_comparison/comparison.json",
+      "sha256": "89f5734872926381df3dc321be33dd3919ef06e153cd901c1ccfbbe3508b584a"
+    },
+    {
+      "path": "experiments/rtx5060/full30/environment.json",
+      "sha256": "0b26f1ec022a2f838d3603909f329afb6a2a2992405105637e9a56bf9c321489"
+    },
+    {
+      "path": "experiments/retry_v2/comparison/retry_comparison.json",
+      "sha256": "21fda97a34362cda49fa2b0a421854304016e8e1193b9c1c77ff7c1ab7fcdafb"
+    },
+    {
+      "path": "experiments/retry_v3/comparison/retry_comparison.json",
+      "sha256": "ea2e012583dddeb608760a72ad20f7f77e62121fcb1bf500ccb14342d6036386"
+    },
+    {
+      "path": "experiments/retry_v3/protocol.json",
+      "sha256": "dafe3f2fa92dd4f99e0405498f32082024dd1acefcba7f062ef1977fd13e5e53"
+    },
+    {
+      "path": "experiments/retry_v3/source_provenance.json",
+      "sha256": "09b9875304dd30afb1ac5eaae0ce3ebabe8b217eafd5269045326059b3bf67ed"
+    },
+    {
+      "path": "experiments/retry_v3/operational_pause.json",
+      "sha256": "c37d82c50e8a07f1d9a0e956dbdbbdf369242fc36b05b85c916b0682f27801ae"
+    },
+    {
+      "path": "experiments/retry_v3/training_update_analysis.json",
+      "sha256": "4834f174fa7712da4e03a1c92a63a2c19d8d3c8b1a1950b180a650dfae897b6c"
+    }
+  ],
+  "verifier_regression": {
+    "checks": 60,
+    "passed": 60,
+    "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+    "note": "New-worker correctness regression; historical 180-check performance campaign remains unchanged"
+  }
+}

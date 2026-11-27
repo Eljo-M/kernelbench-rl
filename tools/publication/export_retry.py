@@ -1,9 +1,10 @@
-"""Versioned offline retry export. Run only after both studies and final docs complete.
+"""Versioned offline retry export after required studies and final docs complete.
 Historical exports and DELIVERY_MANIFEST.json are never written by this builder.
 """
 from __future__ import annotations
 import argparse
 from collections import Counter
+import copy
 from datetime import datetime, timezone
 import hashlib
 from html.parser import HTMLParser
@@ -37,9 +38,11 @@ BUILDER='kernelbench_retry_export_v1'
 SCHEMA='kernelbench_retry_delivery_v1'
 MAX_ASSET_BYTES=2*1024**3-1
 STUDY_COMMIT='cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e'
+V3_STUDY_COMMIT='2c174abe268495159c10d538c92d071e7733828d'
+V3_CONFIG_HASH='0dfb0a14abad3067'
 REPOSITORY='https://github.com/Eljo-M/kernelbench-rl'
 PROTECTED={'DELIVERY_MANIFEST.json','FINAL_REPORT.html','kernelbench-rl-source.zip','kernelbench-t4-final-results.zip','kernelbench-7b-qlora-checkpoints.zip','kernelbench-05b-fullparam-checkpoint.zip','kernelbench-rl.zip'}
-BAD_PARTS={'.git','.ssh','.aws','.codex','.venv','venv','__pycache__','node_modules','.cache','model_cache','models','huggingface','triton_cache','torchinductor_cache'}
+BAD_PARTS={'.git','.ssh','.aws','.codex','.openai','.venv','venv','__pycache__','node_modules','.cache','model_cache','models','huggingface','triton_cache','torchinductor_cache'}
 TEXT_SUFFIXES={'.py','.json','.jsonl','.md','.txt','.html','.css','.js','.yml','.yaml','.toml','.sh','.ps1','.xml','.csv'}
 SECRET=re.compile(rb'(?:gh[pousr]_[A-Za-z0-9]{25,}|github_pat_[A-Za-z0-9_]{30,}|hf_[A-Za-z0-9]{28,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)')
 
@@ -114,12 +117,152 @@ def check_source(repo,commit,study_commit):
     subprocess.run(['git','-C',str(repo),'merge-base','--is-ancestor',study_commit,commit],check=True)
 
 
+def validate_ci_verification(path,source_commit,ci_url):
+    proof=read_json(path)
+    require(proof.get('authenticated_login')=='Eljo-M'
+            and proof.get('requested_source_commit')==source_commit,
+            'Final CI receipt account/source differs from publication HEAD')
+    matches=[run for run in proof.get('runs',[]) if run.get('html_url')==ci_url]
+    require(len(matches)==1 and matches[0].get('name')=='KernelBench-RL CI'
+            and matches[0].get('head_sha')==source_commit and matches[0].get('head_branch')=='main'
+            and matches[0].get('status')=='completed' and matches[0].get('conclusion')=='success',
+            'Final publication requires completed successful exact-source main CI')
+    require(proof.get('observed_utc'),'Final CI receipt observation timestamp missing')
+    return dict(**metadata(path,'Authenticated exact-source successful main CI receipt'),
+                source_commit=source_commit,url=ci_url,verified=True)
+
+
+def validate_checkout_verification(path,source_commit,require_v3=False):
+    proof=read_json(path)
+    require(proof.get('schema_version')=='kernelbench_publication_byte_verification_v1'
+            and proof.get('verified') is True and proof.get('working_tree_clean') is True
+            and proof.get('source_commit')==source_commit,
+            'Publication byte-verification evidence does not match this final source commit')
+    if require_v3:
+        saved=proof.get('saved_byte_checks',{})
+        require(proof.get('clone_check_performed') is True
+                and proof.get('clone_check',{}).get('verified') is True
+                and saved.get('verified') is True and saved.get('v3_required') is True
+                and saved.get('publication_metrics',{}).get('verified') is True
+                and saved.get('pdf_manuscript_binding',{}).get('verified') is True
+                and saved.get('followup_plot',{}).get('verified') is True
+                and saved.get('v3_upstream_model_evidence'),
+                'V3 publication requires its completed post-study evidence and a successful clone proof')
+        sources={run.get('study_key'):run.get('study_source_commit') for run in saved.get('runs',[])}
+        require(len(saved.get('runs',[]))==3 and sources=={'v2/laptop':STUDY_COMMIT,'v2/laptop_7b':STUDY_COMMIT,
+                          'v3/laptop_7b':V3_STUDY_COMMIT},'Checkout proof study inventory/source differs')
+    return dict(**metadata(path,'Post-commit saved-byte and clone checkout verification'),
+                source_commit=source_commit,verified=True,
+                clone_check_performed=proof.get('clone_check_performed') is True)
+
+
 def completed(path,cfg_hash,source_commit):
     manifest=read_json(path)
     require(isinstance(manifest,dict) and manifest.get('completed_utc') and not manifest.get('error'),'Incomplete/failed stage: '+str(path))
     require(manifest.get('config_hash')==cfg_hash and manifest.get('source_commit')==source_commit,'Source/config mismatch: '+str(path))
     require(manifest.get('source_code_dirty') is False,'Stage does not attest clean reviewed source: '+str(path))
     return manifest
+
+
+def registered_v3_study(repo,*,expected_source=V3_STUDY_COMMIT,expected_config=V3_CONFIG_HASH):
+    """Resolve the optional independent study; an unfinished v3 cannot disappear.
+
+    Registration is written after the preregistration commit, avoiding a
+    self-referential commit hash. Completed stage checks remain validate_run's
+    responsibility. Production uses the frozen defaults; explicit expectations
+    are provided only for clearly synthetic test fixtures. This function does
+    not import models or inspect tensors.
+    """
+    repo=Path(repo).resolve(); root=repo/'experiments/retry_v3'
+    if not root.exists():
+        return None
+    require(root.is_dir() and not root.is_symlink(),'Invalid retry_v3 evidence directory')
+    run_dir=root/'laptop_7b'; provenance_path=root/'source_provenance.json'
+    require(run_dir.is_dir() and (run_dir/'config.json').is_file(),
+            'V3 is present but pending: completed independent laptop_7b study required')
+    require(provenance_path.is_file(),'V3 source registration is missing; publication must wait')
+    provenance=read_json(provenance_path)
+    require(provenance.get('schema_version')=='kernelbench_study_source_provenance_v1',
+            'Unexpected v3 source-provenance schema')
+    source_commit=provenance.get('study_source_commit','')
+    require(isinstance(source_commit,str) and re.fullmatch('[0-9a-f]{40}',source_commit) is not None,
+            'V3 requires its exact full preregistration source commit')
+    require(source_commit==expected_source,'V3 source differs from the frozen study identity')
+    protocol=repo/'experiments/retry_v3/protocol.json'
+    require(provenance.get('protocol_path')==protocol.relative_to(repo).as_posix(),
+            'V3 provenance references a different protocol')
+    require(protocol.is_file() and provenance.get('protocol_sha256')==sha256(protocol),
+            'V3 protocol bytes differ from the published registration')
+    registered=read_json(protocol); hashes=provenance.get('config_hashes')
+    require(isinstance(hashes,dict) and set(hashes)=={'laptop_7b'}
+            and hashes==registered.get('config_hashes')
+            and re.fullmatch('[0-9a-f]{16}',hashes.get('laptop_7b','')) is not None,
+            'V3 provenance/protocol configuration identities differ')
+    require(hashes['laptop_7b']==expected_config,'V3 configuration differs from the frozen study identity')
+    ci_url=provenance.get('source_ci_url')
+    require(provenance.get('published_before_training') is True and isinstance(ci_url,str)
+            and re.fullmatch(r'https://github\.com/Eljo-M/kernelbench-rl/actions/runs/[0-9]+',
+                             ci_url) is not None,
+            'V3 requires recorded pre-training publication and source CI evidence')
+    if 'source_ci_receipt_path' in provenance or 'source_ci_receipt_sha256' in provenance:
+        receipt_path=root/'source_ci_verified.json'
+        require(provenance.get('source_ci_receipt_path')==receipt_path.relative_to(repo).as_posix()
+                and receipt_path.is_file() and provenance.get('source_ci_receipt_sha256')==sha256(receipt_path),
+                'V3 source CI receipt bytes/path differ from registration')
+        receipt=read_json(receipt_path)
+        require(receipt.get('authenticated_login')=='Eljo-M'
+                and receipt.get('requested_source_commit')==source_commit,
+                'V3 source CI receipt account/commit differs')
+        matches=[run for run in receipt.get('runs',[]) if run.get('html_url')==ci_url]
+        require(len(matches)==1 and matches[0].get('head_sha')==source_commit
+                and matches[0].get('status')=='completed' and matches[0].get('conclusion')=='success'
+                and provenance.get('source_ci_conclusion')=='success',
+                'V3 source CI is not a completed successful run for its exact source')
+    cfg=read_json(run_dir/'config.json')
+    schedule={key:cfg[key] for key in ('max_steps','sft_epochs','group_size')}
+    require(registered.get('run_schedules',{}).get('laptop_7b')==schedule,
+            'V3 configuration schedule differs from preregistration')
+    require(cfg.get('training_mode')=='qlora_7b_nf4' and not cfg.get('resume_from'),
+            'Independent v3 must initialize from its pinned base, not resume v2')
+    require(cfg.get('heldout_ops')==registered.get('fresh_heldout_ops')
+            and cfg.get('development_eval_ops')==registered.get('development_regressions'),
+            'V3 fresh/development cohorts differ from preregistration')
+    require(cfg.get('train_ops')==registered.get('train_ops'),
+            'V3 training operators/order differ from preregistration')
+    adapter=registered.get('adapter',{})
+    require(cfg.get('lora_r')==adapter.get('rank') and cfg.get('lora_alpha')==adapter.get('alpha')
+            and cfg.get('lora_target_modules')==adapter.get('target_modules'),
+            'V3 adapter architecture differs from preregistration')
+    return dict(run_dir=run_dir,protocol=protocol,source_commit=source_commit,
+                config_hash=hashes['laptop_7b'],study_key='v3/laptop_7b',
+                provenance_path=provenance_path,provenance=provenance)
+
+
+def study_key(repo,run_dir):
+    relative=Path(run_dir).resolve().relative_to(Path(repo).resolve())
+    if len(relative.parts)==3 and relative.parts[:2] in (('experiments','retry_v2'),('experiments','retry_v3')):
+        return relative.parts[1].replace('retry_','',1)+'/'+relative.parts[2]
+    return Path(run_dir).name
+
+
+def validate_adapter_config(path,cfg):
+    adapter=read_json(path)
+    fields=dict(r=cfg.lora_r,lora_alpha=cfg.lora_alpha,lora_dropout=cfg.lora_dropout,
+                bias='none',peft_type='LORA',task_type='CAUSAL_LM',
+                base_model_name_or_path=cfg.model_name_or_path)
+    for key,value in fields.items():
+        require(adapter.get(key)==value,'Saved adapter configuration differs from study: '+key)
+    targets=adapter.get('target_modules')
+    require(isinstance(targets,list) and len(targets)==len(set(targets))==len(cfg.lora_target_modules)
+            and set(targets)==set(cfg.lora_target_modules),
+            'Saved adapter target modules differ from study')
+    require(adapter.get('revision') in (None,cfg.model_revision),'Saved adapter base revision differs')
+    for key in ('rank_pattern','alpha_pattern','modules_to_save','exclude_modules','layers_to_transform',
+                'layers_pattern','layer_replication','target_parameters','trainable_token_indices',
+                'alora_invocation_tokens','arrow_config','loftq_config','megatron_config',
+                'use_dora','use_rslora','use_qalora','lora_bias','fan_in_fan_out'):
+        require(not adapter.get(key),'Unexpected adapter structural override: '+key)
+    return adapter
 
 
 def checkpoint(root,cfg,manifest,sft=False):
@@ -150,6 +293,7 @@ def checkpoint(root,cfg,manifest,sft=False):
         adapter=step_root/state['adapter_dir']
         require(adapter.resolve().is_relative_to(step_root.resolve()) and adapter.is_dir() and not adapter.is_symlink(),'Invalid adapter directory')
         require((adapter/'adapter_config.json').is_file() and any((adapter/name).is_file() for name in ('adapter_model.safetensors','adapter_model.bin')),'Adapter tensors/config missing')
+        validate_adapter_config(adapter/'adapter_config.json',cfg)
         for path in adapter.rglob('*'):
             if path.is_file():
                 require(path.parent==adapter and path.name in {'adapter_config.json','adapter_model.safetensors','adapter_model.bin','README.md'},'Unexpected adapter/cache file '+str(path))
@@ -260,6 +404,14 @@ def validate_frozen_base(run_dir,cfg):
 
 def validate_run(repo,run_dir,study_commit,load_retry_run,ExperimentConfig,protocol):
     cfg=ExperimentConfig.from_json(run_dir/'config.json')
+    key=study_key(repo,run_dir); registration=None
+    if key.startswith('v3/'):
+        registration=registered_v3_study(repo)
+        require(registration is not None and registration['run_dir']==run_dir.resolve()
+                and registration['source_commit']==study_commit
+                and registration['protocol']==protocol.resolve()
+                and registration['config_hash']==cfg.config_hash(),
+                'V3 validation identity differs from its registered independent study')
     require(cfg.prompt_version=='contract_v2' and cfg.training_reward_mode=='correctness_gated' and cfg.sft_epochs>0,'Not the frozen retry protocol')
     checkpoint_root=(repo/cfg.checkpoint_dir).resolve()
     require(checkpoint_root.is_relative_to((repo/'checkpoints').resolve()),'Checkpoint root outside repository checkpoints')
@@ -280,13 +432,17 @@ def validate_run(repo,run_dir,study_commit,load_retry_run,ExperimentConfig,proto
     require(env.get('trainable_weights_sha256')==state['trainable_weights_sha256'] and env.get('optimizer_steps')==state['optimizer_step_count'],'Training environment/checkpoint mismatch')
     validate_training(run_dir,cfg,env,supervised['state'])
     frozen_base=validate_frozen_base(run_dir,cfg) if cfg.training_mode=='qlora_7b_nf4' else None
+    if registration is not None:
+        require(read_json(run_dir/'frozen_base_verified.json').get('resumed') is False,
+                'V3 original training proof must attest fresh-base initialization')
     strict=load_retry_run(run_dir,protocol_path=protocol)
     quality_env=strict['environment']
     require(env.get('gpu')==quality_env.get('gpu'),'Training and strict quality GPU identities differ')
     require(env.get('dtype')==quality_env.get('dtype')==cfg.dtype,
             'Training/quality/configuration precision identities differ')
     require(quality_env.get('backend')==cfg.backend,'Strict quality backend differs from configuration')
-    return dict(name=run_dir.name,path=run_dir,cfg=cfg,environment=env,final=final,sft=supervised,
+    return dict(name=run_dir.name,study_key=key,source_commit=study_commit,protocol=protocol,
+                source_provenance=registration,path=run_dir,cfg=cfg,environment=env,final=final,sft=supervised,
                 strict=strict,frozen_base_integrity=frozen_base)
 
 
@@ -397,6 +553,19 @@ def validate_publication(paper,report,site):
     require(parser.metadata.get('citation_pdf_url')==config['public_base_url'].rstrip('/')+'/'+config['paper_pdf_path'],'Website citation PDF URL mismatch')
 
 
+def validate_publication_source(repo,paper,report,site):
+    """External delivery copies must be the same bytes committed in source E."""
+    require(sha256(paper)==sha256(repo/'paper/KernelBench-RL-Paper.pdf'),
+            'External paper differs from the committed publication PDF')
+    require(sha256(report)==sha256(repo/'docs/report.html'),
+            'External HTML report differs from committed website report')
+    def inventory(root):
+        return {path.relative_to(root).as_posix():sha256(path) for path in root.rglob('*')
+                if path.is_file() and path.name!='.nojekyll'}
+    require(inventory(site)==inventory(repo/'docs'),
+            'External website dist differs from committed publication docs')
+
+
 def build(args):
     workspace=(args.workspace_root or ROOT).resolve()
     default_repo=workspace/'outputs/kernelbench-rl' if args.workspace_root else DEFAULT_REPO
@@ -420,6 +589,29 @@ def build(args):
     require(len(run_dirs)==2 and len({Path(path).resolve() for path in run_dirs})==2,'Both distinct laptop retry studies are required')
     runs=[validate_run(repo,Path(path).resolve(),args.study_source_commit,load_retry_run,ExperimentConfig,protocol) for path in run_dirs]
     require({run['cfg'].training_mode for run in runs}=={'full_param_0.49b','qlora_7b_nf4'},'Expected one full-parameter 0.49B and one 7B QLoRA study')
+    require({run['study_key'] for run in runs}=={'v2/laptop','v2/laptop_7b'},
+            'Original v2 laptop studies are required and cannot be replaced by v3')
+    v3=registered_v3_study(repo)
+    require(not args.require_v3 or v3 is not None,'This export requires the completed independent v3 study')
+    v3_upstream=None
+    if v3 is not None:
+        subprocess.run(['git','-C',str(repo),'merge-base','--is-ancestor',
+                        v3['source_commit'],args.source_commit],check=True)
+        registered_protocol=subprocess.check_output(['git','-C',str(repo),'show',
+            v3['source_commit']+':'+v3['protocol'].relative_to(repo).as_posix()])
+        require(hashlib.sha256(registered_protocol).hexdigest()==v3['provenance']['protocol_sha256'],
+                'V3 protocol saved bytes differ from its preregistration Git blob')
+        runs.append(validate_run(repo,v3['run_dir'],v3['source_commit'],load_retry_run,
+                                 ExperimentConfig,v3['protocol']))
+        if __package__:
+            from .verify_publication_artifacts import verify_upstream
+        else:
+            from verify_publication_artifacts import verify_upstream
+        stage_times=[read_json(v3['run_dir']/name)['completed_utc'] for name in
+                     ('environment.json','heldout_environment.json','sft_only_environment.json','resume_verified.json')]
+        v3_upstream=verify_upstream(repo,'experiments/retry_v3/upstream_model_integrity.json',
+                                   not_before=max(datetime.fromisoformat(value.replace('Z','+00:00')) for value in stage_times))
+    protocols=[protocol]+([v3['protocol']] if v3 is not None else [])
     regression=validate_verifier_regression(repo,args.study_source_commit)
     for run in runs:
         require(run['path'].is_relative_to(repo),'Run artifacts must be inside frozen source tree')
@@ -429,9 +621,29 @@ def build(args):
         run['upstream_license']=license_path
     paper=args.paper.resolve(); report=args.report.resolve(); site=args.site.resolve()
     validate_publication(paper,report,site)
-    strict=dict(schema_version='kernelbench_retry_comparison_v1',pooled_across_runs=False,rl_only_causal_claim=False,historical_paired_same_protocol=False,runs=[run['strict'] for run in runs],historical_context=[])
+    ci_verification=None; publication_verification=None
+    if v3 is not None:
+        require(args.ci_verification_file and args.verification_file,
+                'V3 export requires --ci-verification-file and --verification-file with completed exact-source evidence')
+        validate_publication_source(repo,paper,report,site)
+    if args.ci_verification_file:
+        ci_verification=validate_ci_verification(args.ci_verification_file.resolve(),args.source_commit,args.ci_url)
+    if args.verification_file:
+        publication_verification=validate_checkout_verification(args.verification_file.resolve(),args.source_commit,require_v3=v3 is not None)
+    site_config=read_json(site/'project-config.json')
+    if args.site_url is None:
+        args.site_url=site_config['public_base_url']
+    require(args.site_url.rstrip('/')==site_config['public_base_url'].rstrip('/'),
+            'Release website URL differs from the configured publication origin')
+    strict=dict(schema_version='kernelbench_retry_comparison_v1',pooled_across_runs=False,
+                rl_only_causal_claim=False,historical_paired_same_protocol=False,
+                runs=[dict(run['strict'],study_key=run['study_key']) for run in runs],historical_context=[])
+    display_strict=copy.deepcopy(strict)
+    for run in display_strict['runs']:
+        run['environment']=dict(run['environment'],run_name=run['study_key'])
     if args.validate_only:
-        print(json.dumps(dict(validation='pass',runs=[run['name'] for run in runs],release_source=args.source_commit,study_source=args.study_source_commit))); return
+        print(json.dumps(dict(validation='pass',runs=[run['study_key'] for run in runs],release_source=args.source_commit,
+                              study_sources={run['study_key']:run['source_commit'] for run in runs}))); return
     final_manifest=out/'RETRY_DELIVERY_MANIFEST.json'; upload_manifest=out/'retry-release-assets.json'
     previous=read_json(final_manifest) if final_manifest.exists() else None
     if previous or upload_manifest.exists(): require(args.rebuild and previous and previous.get('schema_version')==SCHEMA and previous.get('builder')==BUILDER,'Existing retry export requires explicit --rebuild and its valid builder manifest')
@@ -442,17 +654,25 @@ def build(args):
         source=staging/(prefix+'-source.zip')
         subprocess.run(['git','-C',str(repo),'archive','--format=zip','--prefix=kernelbench-rl/',f'--output={source}',args.source_commit],check=True)
         verify_zip(source,source=True); packages.append((source,'Frozen final source and committed result snapshot'))
-        raw=staging/(prefix+'-raw-results.zip'); entries=[(protocol,'kernelbench-rl/'+protocol.relative_to(repo).as_posix())]
+        if v3 is not None:
+            study_source=staging/(prefix+'-v3-study-source-'+v3['source_commit'][:12]+'.zip')
+            subprocess.run(['git','-C',str(repo),'archive','--format=zip','--prefix=kernelbench-rl/',
+                            f'--output={study_source}',v3['source_commit']],check=True)
+            verify_zip(study_source,source=True)
+            packages.append((study_source,'Exact independent v3 preregistration and executed source snapshot'))
+        raw=staging/(prefix+'-raw-results.zip')
+        entries=[(path,'kernelbench-rl/'+path.relative_to(repo).as_posix()) for path in protocols]
         for directory in [*[run['path'] for run in runs],regression['directory']]:
             for path in sorted(directory.rglob('*')):
                 if path.is_file():
                     require(path.suffix.lower() not in {'.pt','.safetensors','.bin'},'Tensor in raw result directory')
                     entries.append((path,'kernelbench-rl/'+path.relative_to(repo).as_posix()))
-        retry_root=repo/'experiments/retry_v2'
-        evidence=list(retry_root.glob('*.json'))
-        if (retry_root/'README.md').is_file():
-            evidence.append(retry_root/'README.md')
-        evidence += [path for path in (retry_root/'comparison').rglob('*') if path.is_file()]
+        evidence=[]
+        for retry_root in [repo/'experiments/retry_v2']+([repo/'experiments/retry_v3'] if v3 is not None else []):
+            # Include readiness attempts, host-test logs and root provenance as
+            # well as completed stages. Existing entries are deduplicated below;
+            # no failed/interrupted evidence is silently omitted from the raw ZIP.
+            evidence += [path for path in retry_root.rglob('*') if path.is_file()]
         archived_names={name for _,name in entries}
         for path in sorted(evidence):
             require(path.suffix.lower() not in {'.pt','.safetensors','.bin'},'Tensor in raw comparison/provenance directory')
@@ -460,13 +680,16 @@ def build(args):
             if name not in archived_names:
                 entries.append((path,name)); archived_names.add(name)
         entries.append((Path(__file__).resolve(),'RELEASE_EXPORT/export_retry.py'))
-        extra={'retry_comparison.json':json.dumps(strict,indent=2,allow_nan=False)+'\n','retry_comparison.md':render_retry_markdown(strict),'RELEASE_PROVENANCE.txt':f'Release source: {args.source_commit}\nActual study source: {args.study_source_commit}\nFinal CI URL: {args.ci_url}\nSource and study commits are intentionally distinguished.\n'}
+        source_lines=''.join(f'{run["study_key"]}: {run["source_commit"]}\n' for run in runs)
+        extra={'retry_comparison.json':json.dumps(strict,indent=2,allow_nan=False)+'\n','retry_comparison.md':render_retry_markdown(display_strict),
+               'RELEASE_PROVENANCE.txt':f'Release source: {args.source_commit}\nActual study sources:\n{source_lines}Final CI URL: {args.ci_url}\nSource and study commits are intentionally distinguished. Cohorts and protocols are not pooled.\n'}
         zip_files(raw,entries,extra); packages.append((raw,'Raw completed retry studies, stage/error history, protocol and strict paired comparison'))
         # Legacy model ZIPs remain immutable. Supply their original upstream
         # licenses and pinned-model attribution as a separate small asset.
         license_entries=[]; license_notes=['# Upstream licenses for immutable historical checkpoint bundles','',
             'The historical model ZIPs are byte-for-byte unchanged. This companion contains upstream LICENSE copies and attribution; it contains no model tensors.',
             f'Release source snapshot: {args.source_commit}',f'Retry study source: {args.study_source_commit}','']
+        licensed=set()
         for run in runs:
             full=run['cfg'].training_mode=='full_param_0.49b'
             historical_config=repo/('experiments/laptop_fullparam/config.json' if full else 'experiments/colab_t4/qlora7b_fresh/config.json')
@@ -474,6 +697,10 @@ def build(args):
             require(historic.get('model_revision')==run['cfg'].model_revision,
                     'Historical model revision differs from the available pinned LICENSE snapshot')
             model_id=run['environment']['model_id']; revision=run['cfg'].model_revision
+            identity=(model_id,revision)
+            if identity in licensed:
+                continue
+            licensed.add(identity)
             filename='kernelbench-05b-fullparam-checkpoint.zip' if full else 'kernelbench-7b-qlora-checkpoints.zip'
             license_entries.append((run['upstream_license'],'upstream/'+model_id.split('/')[-1]+'/LICENSE'))
             license_notes += [f'## {model_id}',f'Historical archive: {filename}',f'Pinned model revision: {revision}',
@@ -485,6 +712,8 @@ def build(args):
         packages.append((licenses,'Original upstream model licenses and attribution accompanying unchanged historical checkpoint ZIPs'))
         for run in runs:
             model='05b-fullparam' if run['cfg'].training_mode=='full_param_0.49b' else '7b-qlora'
+            if run['study_key'].startswith('v3/'):
+                model='v3-'+model
             for phase in ('final','sft'):
                 target=staging/(prefix+f'-{model}-{phase}.zip')
                 entries=[(path,'kernelbench-rl/'+path.relative_to(repo).as_posix()) for path in run[phase]['files']]
@@ -493,10 +722,13 @@ def build(args):
                     proof_names=['frozen_base_initial.json','frozen_base_verified.json',
                                  *[item['file'] for item in run['frozen_base_integrity']['resume_sidecars']]]
                     entries += [(run['path']/name,'kernelbench-rl/'+(run['path']/name).relative_to(repo).as_posix()) for name in proof_names]
+                if run['source_provenance'] is not None:
+                    entries += [(path,'kernelbench-rl/'+path.relative_to(repo).as_posix())
+                                for path in (run['protocol'],run['source_provenance']['provenance_path'])]
                 entries.append((run['upstream_license'],'UPSTREAM_MODEL_LICENSE.txt'))
                 if (repo/'LICENSE').is_file(): entries.append((repo/'LICENSE','PROJECT_LICENSE.txt'))
-                zip_files(target,entries,{'UPSTREAM_MODEL_ATTRIBUTION.md':attribution(run,phase,args.source_commit,args.study_source_commit)})
-                packages.append((target,f'{run["name"]}: '+('final hybrid checkpoint' if phase=='final' else 'SFT-only checkpoint')+' with optimizer, RNG, provenance and upstream license'))
+                zip_files(target,entries,{'UPSTREAM_MODEL_ATTRIBUTION.md':attribution(run,phase,args.source_commit,run['source_commit'])})
+                packages.append((target,f'{run["study_key"]}: '+('final hybrid checkpoint' if phase=='final' else 'SFT-only checkpoint')+' with optimizer, RNG, provenance and upstream license'))
         website=staging/(prefix+'-website.zip')
         site_entries=[(path,'kernelbench-rl-site/dist/'+path.relative_to(site).as_posix()) for path in sorted(site.rglob('*')) if path.is_file()]
         zip_files(website,site_entries); packages.append((website,'Complete static website and matching searchable paper'))
@@ -509,17 +741,10 @@ def build(args):
             package_details.append(dict(file=path.name,purpose=purpose,bytes=path.stat().st_size,sha256=sha256(path),release_asset_names=[part.name for part in bounded],split=split))
             upload_assets += [dict(path=str(out/part.name),bytes=part.stat().st_size,sha256=sha256(part)) for part in bounded]
         external=[metadata(paper,'Searchable professional technical report'),metadata(report,'Final explanatory HTML report')]
-        publication_verification=None
-        if args.verification_file:
-            verification_path=args.verification_file.resolve(); verification=read_json(verification_path)
-            require(verification.get('schema_version')=='kernelbench_publication_byte_verification_v1'
-                    and verification.get('verified') is True and verification.get('working_tree_clean') is True
-                    and verification.get('source_commit')==args.source_commit,
-                    'Publication byte-verification evidence does not match this final source commit')
-            record=metadata(verification_path,'Post-commit saved-byte and optional clone checkout verification')
-            external.append(record)
-            publication_verification=dict(**record,source_commit=args.source_commit,verified=True,
-                clone_check_performed=verification.get('clone_check_performed') is True)
+        if publication_verification:
+            external.append(publication_verification)
+        if ci_verification:
+            external.append(ci_verification)
         require(all(item['bytes']<=args.max_asset_bytes for item in external),'Report exceeds per-asset limit')
         upload_assets += [{key:item[key] for key in ('path','bytes','sha256')} for item in external]
         historical=[]; historical_manifest=out/'DELIVERY_MANIFEST.json'
@@ -539,14 +764,26 @@ def build(args):
         manifest=dict(schema_version=SCHEMA,builder=BUILDER,created_utc=datetime.now(timezone.utc).isoformat(),repository=REPOSITORY,
             release_source_commit=args.source_commit,release_source_url=REPOSITORY+'/commit/'+args.source_commit,
             study_source_commit=args.study_source_commit,study_source_url=REPOSITORY+'/commit/'+args.study_source_commit,
-            ci=dict(url=args.ci_url,verification='Final source CI URL supplied by owner; exporter performs no network calls'),
-            strict_evaluation_validation='eval.compare_retry.load_retry_run passed independently for both completed studies',
+            ci=dict(url=args.ci_url,recorded_receipt=ci_verification,
+                    verification='Authenticated exact-source main CI receipt checked offline; publisher rechecks live API' if ci_verification else 'Owner-supplied CI URL; offline v2 compatibility mode'),
+            study_sources={run['study_key']:run['source_commit'] for run in runs},
+            strict_evaluation_validation='eval.compare_retry.load_retry_run passed independently for every completed study; no pooling across protocols',
             publication_byte_verification=publication_verification,
             verifier_regression={key:value for key,value in regression.items() if key!='directory'},
-            runs=[dict(name=run['name'],source_commit=run['environment']['source_commit'],model_id=run['environment']['model_id'],model_revision=run['cfg'].model_revision,
+            runs=[dict(name=run['name'],study_key=run['study_key'],source_commit=run['environment']['source_commit'],model_id=run['environment']['model_id'],model_revision=run['cfg'].model_revision,
                 config_hash=run['cfg'].config_hash(),sft_optimizer_steps=run['final']['state']['sft_optimizer_steps'],grpo_optimizer_steps=run['final']['state']['optimizer_step_count'],
+                grpo_groups=run['cfg'].max_steps,group_size=run['cfg'].group_size,total_rollouts=run['final']['state']['total_rollouts'],
+                sft_epochs=run['cfg'].sft_epochs,train_ops=run['cfg'].train_ops,seed=run['cfg'].seed,
+                fresh_heldout_ops=run['cfg'].heldout_ops,development_eval_ops=run['cfg'].development_eval_ops,
+                lora_r=run['cfg'].lora_r if run['cfg'].training_mode=='qlora_7b_nf4' else None,
+                lora_target_modules=run['cfg'].lora_target_modules if run['cfg'].training_mode=='qlora_7b_nf4' else None,
+                protocol=dict(path=run['protocol'].relative_to(repo).as_posix(),sha256=sha256(run['protocol'])),
                 final_checkpoint_sha256=run['final']['state']['trainable_weights_sha256'],sft_checkpoint_sha256=run['sft']['state']['trainable_weights_sha256'],
                 upstream_license_sha256=sha256(run['upstream_license']),frozen_base_integrity=run['frozen_base_integrity']) for run in runs],
+            v3_source_provenance=dict(path=v3['provenance_path'].relative_to(repo).as_posix(),sha256=sha256(v3['provenance_path']),
+                                      registration=v3['provenance']) if v3 is not None else None,
+            v3_upstream_model_evidence=v3_upstream,
+            protocols=[dict(path=path.relative_to(repo).as_posix(),sha256=sha256(path)) for path in protocols],
             protocol=dict(path=protocol.relative_to(repo).as_posix(),sha256=sha256(protocol)),packages=package_details,generated_files=staged_records,documents=external,
             website=dict(path=str(site),url=args.site_url,publication_verification='Hosting success is verified by owner, not by offline exporter',files=[metadata(path,'Static website asset') for path in sorted(site.rglob('*')) if path.is_file()]),
             historical_assets=historical,historical_manifest_sha256=sha256(historical_manifest) if historical_manifest.exists() else None,
@@ -588,6 +825,8 @@ def parser():
     result.add_argument('--source-commit',required=True)
     result.add_argument('--study-source-commit',default=STUDY_COMMIT)
     result.add_argument('--ci-url',required=True)
+    result.add_argument('--ci-verification-file',type=Path,help='Authenticated GitHub API receipt for completed successful publication-source main CI; mandatory with v3')
+    result.add_argument('--require-v3',action='store_true',help='Refuse a v2-only export; final v3 publication must include its independent study')
     result.add_argument('--run-dir',action='append',type=Path)
     result.add_argument('--protocol',type=Path)
     result.add_argument('--model-05b-dir',type=Path,help='Defaults to workspace/work/models/Qwen2.5-Coder-0.5B-Instruct')

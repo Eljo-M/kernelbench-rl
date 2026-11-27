@@ -1,0 +1,205 @@
+"""Post-completion CPU-only summary of existing v3 GRPO records; no generation."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+from datetime import datetime, timezone
+from pathlib import Path
+
+SOURCE = "2c174abe268495159c10d538c92d071e7733828d"
+CONFIG = "0dfb0a14abad3067"
+TIMING_KEYS = ("candidate_ms", "eager_ms", "compile_ms", "speedup_vs_eager", "speedup_vs_compile")
+UPDATE_KEYS = ("policy_updated", "optimizer_step_count", "sft_optimizer_steps",
+               "skipped_non_finite_grad", "skipped_non_finite_loss", "policy_loss",
+               "mean_kl", "weight_l2_delta", "trainable_weights_sha256",
+               "old_new_max_abs_logp_diff")
+
+
+def sha(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def read(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def rows(path: Path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def require(condition: bool, message: str):
+    if not condition:
+        raise ValueError(message)
+
+
+def token_sha(ids) -> str:
+    return hashlib.sha256(json.dumps(ids, separators=(",", ":")).encode()).hexdigest()
+
+
+def all_equal(values):
+    return all(value == values[0] for value in values[1:])
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, required=True)
+    parser.add_argument("--log", type=Path, required=True)
+    args = parser.parse_args()
+    repo = args.repo.resolve()
+    root = repo / "experiments/retry_v3"
+    directory = root / "laptop_7b"
+    destination = root / "training_update_analysis.json"
+    require(not destination.exists(), "Refusing to overwrite existing postrun analysis")
+    log_text = args.log.read_text(encoding="utf-8")
+    require("STUDY_COMPLETE" in log_text, "Whole study is not complete")
+    config = read(directory / "config.json")
+    stages = {}
+    for name in ("environment.json", "resume_verified.json", "heldout_environment.json", "sft_only_environment.json"):
+        record = read(directory / name)
+        require(record.get("completed_utc") and not record.get("error"), f"Incomplete/failed stage: {name}")
+        require(record.get("source_commit") == SOURCE and record.get("config_hash") == CONFIG, f"Identity mismatch: {name}")
+        require(record.get("source_code_dirty") is False, f"Recorded source was dirty: {name}")
+        stages[name] = record
+    environment = stages["environment.json"]
+    require(environment["steps"] == 16 and environment["sft_optimizer_steps"] == 88, "Unexpected training schedule")
+    resume = stages["resume_verified.json"]
+    require(resume.get("additional_training_steps") == 0 and resume.get("restored_model_checksum_verified") is True
+            and resume.get("restored_optimizer_and_rng") is True, "Restore proof mismatch")
+    for output, stage, count in (("heldout.jsonl", "heldout_environment.json", 39),
+                                  ("sft_only.jsonl", "sft_only_environment.json", 6)):
+        require(sha(directory / output) == stages[stage]["output_sha256"], f"Output digest mismatch: {output}")
+        require(len(rows(directory / output)) == count, f"Output count mismatch: {output}")
+    sft = rows(directory / "sft.jsonl")
+    require(len(sft) == 88, "SFT row count mismatch")
+    cache_counts = {}
+    for name, count in (("heldout.base.generations.jsonl", 30),
+                        ("heldout.trained.generations.jsonl", 6), ("sft_only.generations.jsonl", 6)):
+        cached = rows(directory / name)
+        require(len(cached) == count and all(r["config_hash"] == CONFIG for r in cached), "Generation cache count/config mismatch")
+        require(len({(r["method"], r["op_name"], r["sample_k"]) for r in cached}) == count, "Duplicate generation cache identity")
+        cache_counts[name] = count
+    generation_events = []
+    for line in log_text.splitlines():
+        if line.startswith("{"):
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if event.get("event") == "heldout_generation":
+                generation_events.append(event)
+    require(len(generation_events) == 42 and all(e.get("cached") is False for e in generation_events),
+            "Expected exactly 42 uncached generation events for this single-process attempt")
+    initial = read(directory / "frozen_base_initial.json")
+    frozen = read(directory / "frozen_base_verified.json")
+    require(frozen.get("verified") is True and frozen.get("training_completed") is True, "Frozen-base verification incomplete")
+    require(initial["before"] == frozen["before"] == frozen["after"], "Frozen-base byte proof mismatch")
+    require(frozen["config_hash"] == CONFIG, "Frozen-base config mismatch")
+    resume_base_files = sorted(directory.glob("frozen_base_verified.resume-*.json"))
+    require(bool(resume_base_files), "Missing separate frozen-base restore proof")
+    for path in resume_base_files:
+        proof = read(path)
+        require(proof.get("verified") is True and proof.get("resumed") is True
+                and proof.get("training_completed") is True and proof.get("config_hash") == CONFIG,
+                "Incomplete frozen-base restore proof")
+        require(proof["before"] == proof["after"] == initial["before"], "Restored frozen-base bytes differ")
+    train_path = directory / "train.jsonl"
+    train = rows(train_path)
+    require(len(train) == 32 and all(r.get("config_hash") == CONFIG and r.get("fixture") is False for r in train),
+            "Training row count/identity mismatch")
+    groups = []
+    previous_counter = 0
+    for step in range(1, 17):
+        group = [row for row in train if row["step"] == step]
+        require(len(group) == 2, f"Expected exactly two candidates at step {step}")
+        group.sort(key=lambda row: row["group_index"])
+        require([row["group_index"] for row in group] == [0, 1], "Candidate indices mismatch")
+        require(all(row["op_name"] == config["train_ops"][(step - 1) % 11] for row in group), "Frozen operation order mismatch")
+        for key in UPDATE_KEYS:
+            require(all_equal([row.get(key) for row in group]), f"Conflicting group update diagnostic: {step}/{key}")
+        row = group[0]
+        updated = row.get("policy_updated") is True
+        require(row["optimizer_step_count"] == previous_counter + int(updated), "Optimizer counter mismatch")
+        require(row["sft_optimizer_steps"] == 88, "SFT counter changed during GRPO")
+        previous_counter = row["optimizer_step_count"]
+        statuses = [r["status"] for r in group]
+        rewards = [r["reward"] for r in group]
+        advantages = [r["grpo_advantage"] for r in group]
+        require(all(math.isfinite(value) for value in rewards + advantages), "Non-finite recorded reward/advantage")
+        source_shas = [r["candidate_sha256"] for r in group]
+        require(all(hashlib.sha256(r["candidate_source"].encode()).hexdigest() == r["candidate_sha256"] for r in group),
+                "Candidate source SHA mismatch")
+        ids = [r["completion_token_ids"] for r in group]
+        timing = [{key: r.get(key) for key in TIMING_KEYS} for r in group]
+        item = dict(step=step, group_index=step, candidate_indices=[r["group_index"] for r in group],
+                    op_name=row["op_name"], statuses=statuses, rewards=rewards,
+                    candidate_sha256=source_shas, all_candidate_sha256_identical=all_equal(source_shas),
+                    all_completion_token_ids_identical=all_equal(ids),
+                    completion_token_ids_sha256=[token_sha(value) for value in ids],
+                    completion_token_counts=[len(value) for value in ids],
+                    advantages=advantages, grpo_advantages=advantages,
+                    has_nonzero_advantage=any(abs(value) > 1e-8 for value in advantages), timings=timing,
+                    timing_variation_observed=not all_equal([tuple(value[key] for key in TIMING_KEYS) for value in timing]),
+                    identical_code_pass_with_different_rewards=(all(s == "PASS" for s in statuses)
+                        and all_equal(source_shas) and not all_equal(rewards)),
+                    error_messages=[r.get("error_message") for r in group])
+        item.update({key: row.get(key) for key in UPDATE_KEYS})
+        groups.append(item)
+    require(previous_counter == environment["optimizer_steps"], "Final optimizer counter mismatch")
+    started = datetime.fromisoformat(environment["started_utc"])
+    completed = datetime.fromisoformat(environment["completed_utc"])
+    utc_seconds = (completed - started).total_seconds()
+    files = ["environment.json", "resume_verified.json", "heldout_environment.json", "sft_only_environment.json",
+             "train.jsonl", "sft.jsonl", "sft_summary.json", "heldout.jsonl", "sft_only.jsonl",
+             "frozen_base_initial.json", "frozen_base_verified.json", "config.json"]
+    files.extend(path.name for path in resume_base_files)
+    files.extend(cache_counts)
+    result = dict(analysis_version=1, source_commit=SOURCE, config_hash=CONFIG, source_code_dirty=False,
+                  created_utc=datetime.now(timezone.utc).isoformat(), analysis_only=True,
+                  analysis_script_sha256=sha(Path(__file__)),
+                  new_generation_performed=False, new_generation=False, training_output_sha256=sha(train_path),
+                  train_jsonl_sha256=sha(train_path),
+                  group_index_semantics="One-based GRPO step (1..16); raw train.jsonl group_index is a candidate index (0 or 1), preserved as candidate_indices.",
+                  diagnostic_semantics=dict(null="Not recorded in the original rows; no false/zero value is inferred.",
+                     duplicate_identity="Exact source SHA and exact completion token arrays; no semantic code equivalence is inferred.",
+                     timing_variation_observed="The recorded (candidate_ms, eager_ms, compile_ms, speedup_vs_eager, speedup_vs_compile) tuples differ within a group.",
+                     identical_code_pass_with_different_rewards="Both candidates PASS, their source SHA values are identical, and their recorded reward values differ. Token identity is tracked separately."),
+                  scope="Post-completion description of existing fixed-schedule training records; no rerun, tuning, generation or result replacement.",
+                  study_completion=dict(started_utc=environment["started_utc"],
+                     completed_utc=stages["sft_only_environment.json"]["completed_utc"],
+                     training_completed_utc=environment["completed_utc"],
+                     stage_completed_utc={name: stage["completed_utc"] for name, stage in stages.items()},
+                     source_code_dirty=environment["source_code_dirty"],
+                     checkpoint_weights_sha256=environment["trainable_weights_sha256"]),
+                  counts=dict(groups=16, candidates=32, passing_candidates=sum(r["status"] == "PASS" for r in train),
+                    sft_updates=88, grpo_updates=previous_counter,
+                    uncached_generations=len(generation_events), graded_evaluation_rows=45,
+                    nonzero_advantage_groups=sum(g["has_nonzero_advantage"] for g in groups),
+                    identical_source_and_token_groups=sum(g["all_candidate_sha256_identical"] and g["all_completion_token_ids_identical"] for g in groups),
+                    identical_code_pass_with_different_rewards_groups=sum(g["identical_code_pass_with_different_rewards"] for g in groups)),
+                  groups=groups,
+                  generation_cache_counts=cache_counts,
+                  artifact_sha256={str((directory / name).relative_to(repo)).replace("\\", "/"): sha(directory / name) for name in files},
+                  immutable_source_provenance_sha256=sha(root / "source_provenance.json"),
+                  source_ci_verified_sha256=sha(root / "source_ci_verified.json"),
+                  frozen_base_sha256=frozen["before"]["sha256"], frozen_base_verified=True,
+                  frozen_base_resume_proof_files=[path.name for path in resume_base_files],
+                  elapsed_observation=dict(utc_training_interval_seconds=utc_seconds,
+                     recorded_timer_seconds=environment["seconds"],
+                     utc_minus_timer_seconds=utc_seconds - environment["seconds"],
+                     operational_pause_sha256=sha(root / "operational_pause.json"),
+                     note="UTC and recorded timer values are preserved. Neither is a measurement of GPU compute; no OS-pause subtraction or performance normalization is applied."),
+                  interpretation_limits="Identical code and tokens with different PASS rewards can reflect timing variation. KL regularization, optimizer state/momentum, finite precision and reward variation may contribute to weight updates. This record does not decompose their causes or interpret every weight update as useful code learning.")
+    payload = json.dumps(result, indent=2, allow_nan=False) + "\n"
+    with destination.open("x", encoding="utf-8", newline="\n") as handle:
+        handle.write(payload)
+    print(json.dumps(dict(path=str(destination), sha256=sha(destination), counts=result["counts"]), indent=2))
+
+
+if __name__ == "__main__":
+    main()

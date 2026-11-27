@@ -5,3 +5,5 @@
 experiments/** -text
 docs/** -text
 paper/** -text
+*.pdf binary
+*.png binary

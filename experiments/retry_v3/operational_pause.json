@@ -1,0 +1,35 @@
+{
+  "source": "Read-only Windows System event-log inspection",
+  "source_commit": "2c174abe268495159c10d538c92d071e7733828d",
+  "recorded_utc": "2026-11-27T03:07:13.951466+00:00",
+  "scope": "OS low-power interruption during the fixed v3 training study, observed while GRPO group8 was active.",
+  "reported_sleep_time_utc": "2026-11-27T02:56:43.389338400Z",
+  "reported_wake_time_utc": "2026-11-27T03:04:22.104916300Z",
+  "reported_interval_seconds": 458.7155779,
+  "reason": "Battery",
+  "events": [
+    {
+      "provider": "Microsoft-Windows-Power-Troubleshooter",
+      "event_id": 1,
+      "event_time_utc": "2026-11-27T03:04:22.6581886Z",
+      "summary": "System returned from a low power state; reported sleep/wake interval above; wake source Unknown."
+    },
+    {
+      "provider": "Microsoft-Windows-Kernel-Power",
+      "event_id": 42,
+      "event_time_utc": "2026-11-27T02:56:49.4520016Z",
+      "summary": "System entering sleep; Sleep Reason: Battery."
+    },
+    {
+      "provider": "Microsoft-Windows-Kernel-Power",
+      "event_id": 107,
+      "event_time_utc": "2026-11-27T02:56:56.7174962Z",
+      "summary": "System resumed from sleep. Provider event time retained verbatim even though it precedes the Troubleshooter reported wake time."
+    }
+  ],
+  "user_report_after_resume": "Charger connected and laptop awake, as confirmed to the supervising chat.",
+  "elapsed_time_policy": "Original UTC timestamps and timer-reported env.seconds will remain unchanged. After completion, compare UTC elapsed time with env.seconds to assess whether the timer includes the OS pause. Do not treat the timer as GPU compute time. No artificial timing subtraction, performance adjustment, result replacement or protocol change is applied.",
+  "original_quality_records_preserved": true,
+  "source_provenance_modified": false,
+  "timer_sleep_inclusion_not_assumed": true
+}

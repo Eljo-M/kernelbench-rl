@@ -1,0 +1,1238 @@
+{
+  "analysis_version": 1,
+  "source_commit": "2c174abe268495159c10d538c92d071e7733828d",
+  "config_hash": "0dfb0a14abad3067",
+  "source_code_dirty": false,
+  "created_utc": "2026-11-27T04:32:05.031499+00:00",
+  "analysis_only": true,
+  "analysis_script_sha256": "27216098d28169b9e56b5e825888cd33b0b72a595a1fb34b4384f9f393748eac",
+  "new_generation_performed": false,
+  "new_generation": false,
+  "training_output_sha256": "2aba85f0f10a0c7cc88dcace090a822415d186bed57e742f676300388006fe19",
+  "train_jsonl_sha256": "2aba85f0f10a0c7cc88dcace090a822415d186bed57e742f676300388006fe19",
+  "group_index_semantics": "One-based GRPO step (1..16); raw train.jsonl group_index is a candidate index (0 or 1), preserved as candidate_indices.",
+  "diagnostic_semantics": {
+    "null": "Not recorded in the original rows; no false/zero value is inferred.",
+    "duplicate_identity": "Exact source SHA and exact completion token arrays; no semantic code equivalence is inferred.",
+    "timing_variation_observed": "The recorded (candidate_ms, eager_ms, compile_ms, speedup_vs_eager, speedup_vs_compile) tuples differ within a group.",
+    "identical_code_pass_with_different_rewards": "Both candidates PASS, their source SHA values are identical, and their recorded reward values differ. Token identity is tracked separately."
+  },
+  "scope": "Post-completion description of existing fixed-schedule training records; no rerun, tuning, generation or result replacement.",
+  "study_completion": {
+    "started_utc": "2026-11-27T02:09:09.596495+00:00",
+    "completed_utc": "2026-11-27T04:31:09.830001+00:00",
+    "training_completed_utc": "2026-11-27T03:31:48.584590+00:00",
+    "stage_completed_utc": {
+      "environment.json": "2026-11-27T03:31:48.584590+00:00",
+      "resume_verified.json": "2026-11-27T03:32:25.935828+00:00",
+      "heldout_environment.json": "2026-11-27T04:22:52.427685+00:00",
+      "sft_only_environment.json": "2026-11-27T04:31:09.830001+00:00"
+    },
+    "source_code_dirty": false,
+    "checkpoint_weights_sha256": "592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2"
+  },
+  "counts": {
+    "groups": 16,
+    "candidates": 32,
+    "passing_candidates": 31,
+    "sft_updates": 88,
+    "grpo_updates": 5,
+    "uncached_generations": 42,
+    "graded_evaluation_rows": 45,
+    "nonzero_advantage_groups": 5,
+    "identical_source_and_token_groups": 11,
+    "identical_code_pass_with_different_rewards_groups": 1
+  },
+  "groups": [
+    {
+      "step": 1,
+      "group_index": 1,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "rmsnorm_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61",
+        "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "b572c7c1db585502834d5b79fa2190506de8bb26d894ebcf95707917f3666124",
+        "b572c7c1db585502834d5b79fa2190506de8bb26d894ebcf95707917f3666124"
+      ],
+      "completion_token_counts": [
+        381,
+        381
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.007429999997839332,
+          "eager_ms": 0.0769520029425621,
+          "compile_ms": 0.14323300123214722,
+          "speedup_vs_eager": 10.356931758403768,
+          "speedup_vs_compile": 19.277658314104958
+        },
+        {
+          "candidate_ms": 0.00927500007674098,
+          "eager_ms": 0.0762070007622242,
+          "compile_ms": 0.009066999889910221,
+          "speedup_vs_eager": 8.216388154360164,
+          "speedup_vs_compile": 0.9775741040312912
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 0,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 2,
+      "group_index": 2,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "layernorm_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "9d5f4832ae46375be227fd8af728ccb55f69ed2866c4014cf1720ce1eba42a06",
+        "9d5f4832ae46375be227fd8af728ccb55f69ed2866c4014cf1720ce1eba42a06"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "f95db44d8c1b15632adcaa9177d90d82e1bcc1e25239ebff0d6765cf173ed213",
+        "f95db44d8c1b15632adcaa9177d90d82e1bcc1e25239ebff0d6765cf173ed213"
+      ],
+      "completion_token_counts": [
+        457,
+        457
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.011129999998956919,
+          "eager_ms": 0.15116100013256073,
+          "compile_ms": 0.02095900010317564,
+          "speedup_vs_eager": 13.581401630433714,
+          "speedup_vs_compile": 1.8831087246307165
+        },
+        {
+          "candidate_ms": 0.010843999683856964,
+          "eager_ms": 0.14285200089216232,
+          "compile_ms": 0.019368000328540802,
+          "speedup_vs_eager": 13.173368227299054,
+          "speedup_vs_compile": 1.7860568879740177
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 0,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 3,
+      "group_index": 3,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "swiglu_4096",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "df5f17e222a94386a1e949fbd0a5cfdad5ead28c44ee6f67fc2474d6287346bb",
+        "df5f17e222a94386a1e949fbd0a5cfdad5ead28c44ee6f67fc2474d6287346bb"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "23656226585c59da3629ff33bfe4260d1d645811e796792502fc49bfeb40cf9a",
+        "23656226585c59da3629ff33bfe4260d1d645811e796792502fc49bfeb40cf9a"
+      ],
+      "completion_token_counts": [
+        277,
+        277
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.017715999856591225,
+          "eager_ms": 0.256851002573967,
+          "compile_ms": 0.017430000007152557,
+          "speedup_vs_eager": 14.49825043199048,
+          "speedup_vs_compile": 0.9838564093613795
+        },
+        {
+          "candidate_ms": 0.018108000047504902,
+          "eager_ms": 0.25635699927806854,
+          "compile_ms": 0.017256000079214573,
+          "speedup_vs_eager": 14.157112801277684,
+          "speedup_vs_compile": 0.9529489747042648
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 0,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 4,
+      "group_index": 4,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "fused_add_rmsnorm_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "dae5ecbb4ffbf0ec37d69547728c96be766d3baa51a752ac01697fbdeba7a629",
+        "dae5ecbb4ffbf0ec37d69547728c96be766d3baa51a752ac01697fbdeba7a629"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "dafcf1a9e04f0376e666f9bfcb891d7a47e3c3813c22b3f9e549ae1143aa811e",
+        "dafcf1a9e04f0376e666f9bfcb891d7a47e3c3813c22b3f9e549ae1143aa811e"
+      ],
+      "completion_token_counts": [
+        447,
+        447
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.010292000137269497,
+          "eager_ms": 0.10761300101876259,
+          "compile_ms": 0.012482999823987484,
+          "speedup_vs_eager": 10.455985190776794,
+          "speedup_vs_compile": 1.2128837599587583
+        },
+        {
+          "candidate_ms": 0.01196100004017353,
+          "eager_ms": 0.10773800313472748,
+          "compile_ms": 0.01196100004017353,
+          "speedup_vs_eager": 9.007441081252969,
+          "speedup_vs_compile": 1.0
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 0,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 5,
+      "group_index": 5,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "fused_softmax_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "bbb4505f719bfc23639fec95581cb64622e1c4f02664599f0dc5244f01344eba",
+        "bbb4505f719bfc23639fec95581cb64622e1c4f02664599f0dc5244f01344eba"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "020e575aa80bbfdf88e93b3d01ad1997ae6c8048e9435944f3263492d05f8408",
+        "020e575aa80bbfdf88e93b3d01ad1997ae6c8048e9435944f3263492d05f8408"
+      ],
+      "completion_token_counts": [
+        319,
+        319
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.011251999996602535,
+          "eager_ms": 0.12203700095415115,
+          "compile_ms": 0.014026999939233065,
+          "speedup_vs_eager": 10.845805278261588,
+          "speedup_vs_compile": 1.246622817585178
+        },
+        {
+          "candidate_ms": 0.01065099984407425,
+          "eager_ms": 0.11572900041937828,
+          "compile_ms": 0.014564999844878912,
+          "speedup_vs_eager": 10.865552728720097,
+          "speedup_vs_compile": 1.3674772376400175
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 0,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 6,
+      "group_index": 6,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "log_softmax_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "12f74498349c38443d1f8bf4d755f54780bb0ecb7e82c073d1f3f137b446ee56",
+        "12f74498349c38443d1f8bf4d755f54780bb0ecb7e82c073d1f3f137b446ee56"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "9658ea67523a6e9d2a9104c98f6064893df1926fb24e673714d5569894e2c487",
+        "9658ea67523a6e9d2a9104c98f6064893df1926fb24e673714d5569894e2c487"
+      ],
+      "completion_token_counts": [
+        328,
+        328
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.010282000061124563,
+          "eager_ms": 0.09542499855160713,
+          "compile_ms": 0.012953000143170357,
+          "speedup_vs_eager": 9.280781752997802,
+          "speedup_vs_compile": 1.2597743693996497
+        },
+        {
+          "candidate_ms": 0.010541999712586403,
+          "eager_ms": 0.09367300197482109,
+          "compile_ms": 0.012974999845027924,
+          "speedup_vs_eager": 8.885695743567716,
+          "speedup_vs_compile": 1.2307911400848066
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 0,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 7,
+      "group_index": 7,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "rope_fwd_128",
+      "statuses": [
+        "PASS",
+        "RUNTIME_ERROR"
+      ],
+      "rewards": [
+        2.6270083964714193,
+        0.0
+      ],
+      "candidate_sha256": [
+        "d98d635db11789591db33fd6805783a909d89666bba01d19907ca051c97e84f7",
+        "bb8f786514325d1e5993502e10453aae3cec55a0e1c63f46d5570b850e5ac721"
+      ],
+      "all_candidate_sha256_identical": false,
+      "all_completion_token_ids_identical": false,
+      "completion_token_ids_sha256": [
+        "ffbd93c85f19a019856d149cea1878580143428d75dfb25412ca357912b4f9b8",
+        "4fd19448f467c36283fc833ef8714dc0e8dd5db2b44b0eb7c677bf6aaf8cdcdf"
+      ],
+      "completion_token_counts": [
+        563,
+        722
+      ],
+      "advantages": [
+        0.9999992386783081,
+        -0.9999992386783081
+      ],
+      "grpo_advantages": [
+        0.9999992386783081,
+        -0.9999992386783081
+      ],
+      "has_nonzero_advantage": true,
+      "timings": [
+        {
+          "candidate_ms": 0.03901099972426891,
+          "eager_ms": 0.12049399688839912,
+          "compile_ms": 0.010077000129967928,
+          "speedup_vs_eager": 3.088718508627178,
+          "speedup_vs_compile": 0.2583117633793676
+        },
+        {
+          "candidate_ms": 0.0,
+          "eager_ms": 0.0,
+          "compile_ms": 0.0,
+          "speedup_vs_eager": 0.0,
+          "speedup_vs_compile": 0.0
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        "canonical candidate error (AttributeError): 'Tensor' object has no attribute 'shaape'"
+      ],
+      "policy_updated": true,
+      "optimizer_step_count": 1,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": false,
+      "skipped_non_finite_loss": false,
+      "policy_loss": 0.012899011373519897,
+      "mean_kl": 0.3224732577800751,
+      "weight_l2_delta": 0.015083228647798111,
+      "trainable_weights_sha256": "ef975d0eca633ad5cfa5420d8ce51fc9f18621a239ed9578cd3b88d3fdf874f5",
+      "old_new_max_abs_logp_diff": 0.0
+    },
+    {
+      "step": 8,
+      "group_index": 8,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "matmul_bias_gelu_512",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        2.364662578040165,
+        2.0856722488503423
+      ],
+      "candidate_sha256": [
+        "ef1fcf9751cd0c233c2cebdaeb01fb40d1880fd74901652fb004ba2dc5364678",
+        "ef1fcf9751cd0c233c2cebdaeb01fb40d1880fd74901652fb004ba2dc5364678"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "3dd63729942b1c4a11db5374352aa0b0c21cbe9322ad8d44c705c7de8009dba7",
+        "3dd63729942b1c4a11db5374352aa0b0c21cbe9322ad8d44c705c7de8009dba7"
+      ],
+      "completion_token_counts": [
+        761,
+        761
+      ],
+      "advantages": [
+        0.9999928313441224,
+        -0.9999928313441256
+      ],
+      "grpo_advantages": [
+        0.9999928313441224,
+        -0.9999928313441256
+      ],
+      "has_nonzero_advantage": true,
+      "timings": [
+        {
+          "candidate_ms": 0.028163000009953976,
+          "eager_ms": 0.051332999020814896,
+          "compile_ms": 0.05621499940752983,
+          "speedup_vs_eager": 1.8227106133107864,
+          "speedup_vs_compile": 1.996058636780922
+        },
+        {
+          "candidate_ms": 0.028766999952495098,
+          "eager_ms": 0.05182499997317791,
+          "compile_ms": 0.039924999698996544,
+          "speedup_vs_eager": 1.8015434372287709,
+          "speedup_vs_compile": 1.3878749874831373
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": true,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": true,
+      "optimizer_step_count": 2,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": false,
+      "skipped_non_finite_loss": false,
+      "policy_loss": 0.009340852499008179,
+      "mean_kl": 0.2335209846496582,
+      "weight_l2_delta": 0.013766025458204038,
+      "trainable_weights_sha256": "69746ecbd8f2b12f48e9d9eb5bacfb6f9cba01b1a8ad310e3e69261d5e229916",
+      "old_new_max_abs_logp_diff": 0.0
+    },
+    {
+      "step": 9,
+      "group_index": 9,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "l2_normalize_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        3.516110717487695,
+        3.536526484520946
+      ],
+      "candidate_sha256": [
+        "92dfa5cdf0a669d6d8ac9e8e275b588974407f19c0fa3ee0725d3af4bd787005",
+        "09d36a69b6c455854f5a8346d6a1e935e559e7d01318eaa659a1a5734ae5ef17"
+      ],
+      "all_candidate_sha256_identical": false,
+      "all_completion_token_ids_identical": false,
+      "completion_token_ids_sha256": [
+        "abc22d8a2e06c867563d637faea077011ac21d2ebb874aa0d7b907b1156122b6",
+        "62b5511cf1967bf65f455aa760039fbec12938ef230fcce95d6d59a2f2147c45"
+      ],
+      "completion_token_counts": [
+        284,
+        326
+      ],
+      "advantages": [
+        -0.9999020460956018,
+        0.9999020460956018
+      ],
+      "grpo_advantages": [
+        -0.9999020460956018,
+        0.9999020460956018
+      ],
+      "has_nonzero_advantage": true,
+      "timings": [
+        {
+          "candidate_ms": 0.006330000003799796,
+          "eager_ms": 0.03620999865233898,
+          "compile_ms": 0.005959999980404973,
+          "speedup_vs_eager": 5.720378930584946,
+          "speedup_vs_compile": 0.9415481795935674
+        },
+        {
+          "candidate_ms": 0.0065119999926537275,
+          "eager_ms": 0.03778200037777424,
+          "compile_ms": 0.005930999992415309,
+          "speedup_vs_eager": 5.801904241461395,
+          "speedup_vs_compile": 0.910780098142836
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": true,
+      "optimizer_step_count": 3,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": false,
+      "skipped_non_finite_loss": false,
+      "policy_loss": 0.01480114459991455,
+      "mean_kl": 0.37002788484096527,
+      "weight_l2_delta": 0.014708627937804813,
+      "trainable_weights_sha256": "2f4e2753e146892ba486b42573c2d05b6dc6d3b51bd17102cc21046a4f8dbf0e",
+      "old_new_max_abs_logp_diff": 0.0
+    },
+    {
+      "step": 10,
+      "group_index": 10,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "fused_bias_silu_4096",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        3.7510001360396448,
+        3.605142582473979
+      ],
+      "candidate_sha256": [
+        "20716cfb46dcf626dfa2ada2419d65939954d72268d32a76f7356d87b0a944ed",
+        "cd29be1657abd7d27fe8448c4207dfdb9137b4c23d23e8c5a82180628190fa14"
+      ],
+      "all_candidate_sha256_identical": false,
+      "all_completion_token_ids_identical": false,
+      "completion_token_ids_sha256": [
+        "3ddbb1a3907d3e70822156355f344048ab8f7f0f575ad261555bd5111945f31b",
+        "b5dacf7428f8fdefeebe884ee0ba32d845ad20ce0258d7b3e13021669a56bd2b"
+      ],
+      "completion_token_counts": [
+        351,
+        330
+      ],
+      "advantages": [
+        0.9999862881796145,
+        -0.9999862881796145
+      ],
+      "grpo_advantages": [
+        0.9999862881796145,
+        -0.9999862881796145
+      ],
+      "has_nonzero_advantage": true,
+      "timings": [
+        {
+          "candidate_ms": 0.012469999957829714,
+          "eager_ms": 0.08394600078463554,
+          "compile_ms": 0.012155999895185232,
+          "speedup_vs_eager": 6.731836493064877,
+          "speedup_vs_compile": 0.9748195618519369
+        },
+        {
+          "candidate_ms": 0.013737000059336424,
+          "eager_ms": 0.08358300104737282,
+          "compile_ms": 0.012224000412970781,
+          "speedup_vs_eager": 6.084516319890761,
+          "speedup_vs_compile": 0.8898595297495595
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": true,
+      "optimizer_step_count": 4,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": false,
+      "skipped_non_finite_loss": false,
+      "policy_loss": 0.015781402587890625,
+      "mean_kl": 0.39453402161598206,
+      "weight_l2_delta": 0.017898438366401762,
+      "trainable_weights_sha256": "e78cca92886c4cd0266da9052d36c224ee967daeddc060cc5bb4b2cd5031c77e",
+      "old_new_max_abs_logp_diff": 0.0
+    },
+    {
+      "step": 11,
+      "group_index": 11,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "matmul_residual_add_512",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        1.5387478720707755,
+        1.7987002577297377
+      ],
+      "candidate_sha256": [
+        "81e22fd2580db16e685b178013bb988e530ba7e2a81f744bcb22b45496b5de8d",
+        "966c2807b8d79cb5dc79feac18aca5c5183d5727563b4dedd7194fa202ce6939"
+      ],
+      "all_candidate_sha256_identical": false,
+      "all_completion_token_ids_identical": false,
+      "completion_token_ids_sha256": [
+        "cb2309bf8e60275969392576ab759de712b77418de3e6673801827a42107b6fc",
+        "e981b55e8353252b55ef56963b8a8a93ee77fc9c359e4f4a42f0c9cf3889b392"
+      ],
+      "completion_token_counts": [
+        652,
+        681
+      ],
+      "advantages": [
+        -0.9999923063425341,
+        0.9999923063425341
+      ],
+      "grpo_advantages": [
+        -0.9999923063425341,
+        0.9999923063425341
+      ],
+      "has_nonzero_advantage": true,
+      "timings": [
+        {
+          "candidate_ms": 0.028012000024318695,
+          "eager_ms": 0.037882000207901,
+          "compile_ms": 0.03232399933040142,
+          "speedup_vs_eager": 1.3523489995364,
+          "speedup_vs_compile": 1.1539340033678156
+        },
+        {
+          "candidate_ms": 0.027418999932706356,
+          "eager_ms": 0.04337199963629246,
+          "compile_ms": 0.03315899893641472,
+          "speedup_vs_eager": 1.5818228142069033,
+          "speedup_vs_compile": 1.2093438498047293
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": true,
+      "optimizer_step_count": 5,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": false,
+      "skipped_non_finite_loss": false,
+      "policy_loss": 0.007675439119338989,
+      "mean_kl": 0.19188738614320755,
+      "weight_l2_delta": 0.016392443317942394,
+      "trainable_weights_sha256": "592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2",
+      "old_new_max_abs_logp_diff": 0.0
+    },
+    {
+      "step": 12,
+      "group_index": 12,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "rmsnorm_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61",
+        "1420520d9bfaf0e7846c4fadcee5928c6dc2ebeb787d448f591ffb39dac7dbf2"
+      ],
+      "all_candidate_sha256_identical": false,
+      "all_completion_token_ids_identical": false,
+      "completion_token_ids_sha256": [
+        "b572c7c1db585502834d5b79fa2190506de8bb26d894ebcf95707917f3666124",
+        "eb1be1da9b3403a76ef17b0cc1068fc98bfb5acb2fac9a85a539c04a1415bf7a"
+      ],
+      "completion_token_counts": [
+        381,
+        344
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.009606999810785055,
+          "eager_ms": 0.0784280002117157,
+          "compile_ms": 0.009949000086635351,
+          "speedup_vs_eager": 8.163630868782832,
+          "speedup_vs_compile": 1.0355990717795538
+        },
+        {
+          "candidate_ms": 0.009403999894857407,
+          "eager_ms": 0.07786799967288971,
+          "compile_ms": 0.009684000164270401,
+          "speedup_vs_eager": 8.280306310453273,
+          "speedup_vs_compile": 1.029774592996977
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 5,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 13,
+      "group_index": 13,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "layernorm_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "9d5f4832ae46375be227fd8af728ccb55f69ed2866c4014cf1720ce1eba42a06",
+        "9d5f4832ae46375be227fd8af728ccb55f69ed2866c4014cf1720ce1eba42a06"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "f95db44d8c1b15632adcaa9177d90d82e1bcc1e25239ebff0d6765cf173ed213",
+        "f95db44d8c1b15632adcaa9177d90d82e1bcc1e25239ebff0d6765cf173ed213"
+      ],
+      "completion_token_counts": [
+        457,
+        457
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.011174000333994627,
+          "eager_ms": 0.13873599469661713,
+          "compile_ms": 0.021472999826073647,
+          "speedup_vs_eager": 12.415964788773188,
+          "speedup_vs_compile": 1.921693143389875
+        },
+        {
+          "candidate_ms": 0.011316000018268824,
+          "eager_ms": 0.14151299744844437,
+          "compile_ms": 0.020182999782264233,
+          "speedup_vs_eager": 12.505567092610672,
+          "speedup_vs_compile": 1.7835807484694512
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 5,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 14,
+      "group_index": 14,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "swiglu_4096",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "df5f17e222a94386a1e949fbd0a5cfdad5ead28c44ee6f67fc2474d6287346bb",
+        "df5f17e222a94386a1e949fbd0a5cfdad5ead28c44ee6f67fc2474d6287346bb"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "23656226585c59da3629ff33bfe4260d1d645811e796792502fc49bfeb40cf9a",
+        "23656226585c59da3629ff33bfe4260d1d645811e796792502fc49bfeb40cf9a"
+      ],
+      "completion_token_counts": [
+        277,
+        277
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.018401999957859516,
+          "eager_ms": 0.2518890053033829,
+          "compile_ms": 0.02099199965596199,
+          "speedup_vs_eager": 13.688132044354276,
+          "speedup_vs_compile": 1.140745555050188
+        },
+        {
+          "candidate_ms": 0.017668000422418118,
+          "eager_ms": 0.2514140009880066,
+          "compile_ms": 0.25407201051712036,
+          "speedup_vs_eager": 14.22990689251959,
+          "speedup_vs_compile": 14.380348904380826
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 5,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 15,
+      "group_index": 15,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "fused_add_rmsnorm_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "dae5ecbb4ffbf0ec37d69547728c96be766d3baa51a752ac01697fbdeba7a629",
+        "dae5ecbb4ffbf0ec37d69547728c96be766d3baa51a752ac01697fbdeba7a629"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "dafcf1a9e04f0376e666f9bfcb891d7a47e3c3813c22b3f9e549ae1143aa811e",
+        "dafcf1a9e04f0376e666f9bfcb891d7a47e3c3813c22b3f9e549ae1143aa811e"
+      ],
+      "completion_token_counts": [
+        447,
+        447
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.006197999930009246,
+          "eager_ms": 0.06694899871945381,
+          "compile_ms": 0.0068969998974353075,
+          "speedup_vs_eager": 10.80171014447784,
+          "speedup_vs_compile": 1.1127783116036627
+        },
+        {
+          "candidate_ms": 0.005889000138267875,
+          "eager_ms": 0.06805700063705444,
+          "compile_ms": 0.007059000199660659,
+          "speedup_vs_eager": 11.556630843800926,
+          "speedup_vs_compile": 1.1986755024490312
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 5,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    },
+    {
+      "step": 16,
+      "group_index": 16,
+      "candidate_indices": [
+        0,
+        1
+      ],
+      "op_name": "fused_softmax_2048",
+      "statuses": [
+        "PASS",
+        "PASS"
+      ],
+      "rewards": [
+        4.0,
+        4.0
+      ],
+      "candidate_sha256": [
+        "bbb4505f719bfc23639fec95581cb64622e1c4f02664599f0dc5244f01344eba",
+        "bbb4505f719bfc23639fec95581cb64622e1c4f02664599f0dc5244f01344eba"
+      ],
+      "all_candidate_sha256_identical": true,
+      "all_completion_token_ids_identical": true,
+      "completion_token_ids_sha256": [
+        "020e575aa80bbfdf88e93b3d01ad1997ae6c8048e9435944f3263492d05f8408",
+        "020e575aa80bbfdf88e93b3d01ad1997ae6c8048e9435944f3263492d05f8408"
+      ],
+      "completion_token_counts": [
+        319,
+        319
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "grpo_advantages": [
+        0.0,
+        0.0
+      ],
+      "has_nonzero_advantage": false,
+      "timings": [
+        {
+          "candidate_ms": 0.006324999965727329,
+          "eager_ms": 0.05877400003373623,
+          "compile_ms": 0.00866999989375472,
+          "speedup_vs_eager": 9.292332071495537,
+          "speedup_vs_compile": 1.3707509787721768
+        },
+        {
+          "candidate_ms": 0.006244000047445297,
+          "eager_ms": 0.05834699980914593,
+          "compile_ms": 0.008545000106096268,
+          "speedup_vs_eager": 9.344490609512139,
+          "speedup_vs_compile": 1.3685137798152986
+        }
+      ],
+      "timing_variation_observed": true,
+      "identical_code_pass_with_different_rewards": false,
+      "error_messages": [
+        "",
+        ""
+      ],
+      "policy_updated": false,
+      "optimizer_step_count": 5,
+      "sft_optimizer_steps": 88,
+      "skipped_non_finite_grad": null,
+      "skipped_non_finite_loss": null,
+      "policy_loss": null,
+      "mean_kl": null,
+      "weight_l2_delta": null,
+      "trainable_weights_sha256": null,
+      "old_new_max_abs_logp_diff": null
+    }
+  ],
+  "generation_cache_counts": {
+    "heldout.base.generations.jsonl": 30,
+    "heldout.trained.generations.jsonl": 6,
+    "sft_only.generations.jsonl": 6
+  },
+  "artifact_sha256": {
+    "experiments/retry_v3/laptop_7b/environment.json": "9183a24c827c68bb7141d9afc1afd138a6153325a45522402057e91979c74ae0",
+    "experiments/retry_v3/laptop_7b/resume_verified.json": "8cd7aa3f8c27776adf4779e54347c8cd35799ad87b7b17aca7f34ec8b3c6bdc9",
+    "experiments/retry_v3/laptop_7b/heldout_environment.json": "814caca3cb7960046151cfce98f81593b336ef7572203008a5f9421b467a2e5e",
+    "experiments/retry_v3/laptop_7b/sft_only_environment.json": "28f55c50f5ae74fdeb67a2889caf6c3489ccb1286df34dae71a65abe6d5a2c26",
+    "experiments/retry_v3/laptop_7b/train.jsonl": "2aba85f0f10a0c7cc88dcace090a822415d186bed57e742f676300388006fe19",
+    "experiments/retry_v3/laptop_7b/sft.jsonl": "61fd211b54f8f60a6ebc850634d0094a4798bb56eb8563ae66b382f041b4708d",
+    "experiments/retry_v3/laptop_7b/sft_summary.json": "5164d8da8fbfa045e63226068738349cbd37b8be41adeb404ea509c4cb3918e4",
+    "experiments/retry_v3/laptop_7b/heldout.jsonl": "5b91eb9d2b7b1cf203c99f440af1b2bc0aefa5e4417292b98061be2c8a2c893f",
+    "experiments/retry_v3/laptop_7b/sft_only.jsonl": "57eedfd77d5b7b5cca1113834a60e5e7f605d96c5b28016b576914f257ed90a1",
+    "experiments/retry_v3/laptop_7b/frozen_base_initial.json": "e8d5b8705690a226c2827b39c8e9dd42a610aefd7da59dba114ee100c5cfffe7",
+    "experiments/retry_v3/laptop_7b/frozen_base_verified.json": "469bc44244947c2502284b14c8f5cdd3c04be89be46b0490cdaa5ca85ed9706a",
+    "experiments/retry_v3/laptop_7b/config.json": "4c486c16b47d9318d29651bb4b9a17393fe30b809128dba9f65e1d46a10f4252",
+    "experiments/retry_v3/laptop_7b/frozen_base_verified.resume-a6452ef5a109485e9f388e3eda3946b2.json": "c4f0d04d704a1d181544c551e4ca3b37498801ac46a82c6423b052ca872398ed",
+    "experiments/retry_v3/laptop_7b/heldout.base.generations.jsonl": "d59bdc267fa10dbf9bc55e81c219ab8de065b100b1abfd44c0aba3f07b88d869",
+    "experiments/retry_v3/laptop_7b/heldout.trained.generations.jsonl": "cdc83aa2caefaef1dbacb8b9efad1694ec49754ae1d51d57b3572d7d9d874d31",
+    "experiments/retry_v3/laptop_7b/sft_only.generations.jsonl": "de6e5977225219e7d8d101193e96621d7cdd20a37213db7677a2d427d06aa045"
+  },
+  "immutable_source_provenance_sha256": "09b9875304dd30afb1ac5eaae0ce3ebabe8b217eafd5269045326059b3bf67ed",
+  "source_ci_verified_sha256": "8e6a6494679062099f84d2dcaae4fdc8b02d20eb780267851b3d9ae990401f51",
+  "frozen_base_sha256": "d48e422062385542ae0e8004a0d4b84ed4eec67966d23bf1b94e85a30beaf700",
+  "frozen_base_verified": true,
+  "frozen_base_resume_proof_files": [
+    "frozen_base_verified.resume-a6452ef5a109485e9f388e3eda3946b2.json"
+  ],
+  "elapsed_observation": {
+    "utc_training_interval_seconds": 4958.988095,
+    "recorded_timer_seconds": 4958.953000000038,
+    "utc_minus_timer_seconds": 0.035094999961984286,
+    "operational_pause_sha256": "c37d82c50e8a07f1d9a0e956dbdbbdf369242fc36b05b85c916b0682f27801ae",
+    "note": "UTC and recorded timer values are preserved. Neither is a measurement of GPU compute; no OS-pause subtraction or performance normalization is applied."
+  },
+  "interpretation_limits": "Identical code and tokens with different PASS rewards can reflect timing variation. KL regularization, optimizer state/momentum, finite precision and reward variation may contribute to weight updates. This record does not decompose their causes or interpret every weight update as useful code learning."
+}

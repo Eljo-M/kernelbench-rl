@@ -1,0 +1,62 @@
+{
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "config_hash": "0dfb0a14abad3067",
+  "source_commit": "2c174abe268495159c10d538c92d071e7733828d",
+  "source_code_dirty": false,
+  "training_mode": "qlora_7b_nf4",
+  "dtype": "fp16",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "transformers": "4.57.6",
+  "cuda": "12.8",
+  "train_ops": [
+    "rmsnorm_2048",
+    "layernorm_2048",
+    "swiglu_4096",
+    "fused_add_rmsnorm_2048",
+    "fused_softmax_2048",
+    "log_softmax_2048",
+    "rope_fwd_128",
+    "matmul_bias_gelu_512",
+    "l2_normalize_2048",
+    "fused_bias_silu_4096",
+    "matmul_residual_add_512"
+  ],
+  "heldout_ops": [
+    "cosine_similarity_1024",
+    "fused_bias_gelu_4096",
+    "matmul_bias_silu_512"
+  ],
+  "development_eval_ops": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "generation_engine": "hf_eager",
+  "sampling": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_new_tokens": 1536
+  },
+  "best_of_k": 8,
+  "qlora_cpu_offload": true,
+  "checkpoint_root": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\outputs\\kernelbench-rl\\checkpoints\\retry_v3_laptop_7b",
+  "train_output": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\outputs\\kernelbench-rl\\experiments\\retry_v3\\laptop_7b\\train.jsonl",
+  "training_schedule": "8 training-only supervised epochs then 16 on-policy GRPO groups",
+  "started_utc": "2026-11-27T02:09:09.596495+00:00",
+  "prior_attempts": [],
+  "training_performed": true,
+  "resumed_from": "",
+  "completed_utc": "2026-11-27T03:31:48.584590+00:00",
+  "steps": 16,
+  "optimizer_steps": 5,
+  "sft_optimizer_steps": 88,
+  "trainable_weights_sha256": "592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2",
+  "seconds": 4958.953000000038,
+  "peak_allocated_bytes": 5685026816,
+  "peak_reserved_bytes": 6312427520
+}

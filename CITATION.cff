@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite the technical report."
+title: "KernelBench-RL"
+version: "0.2.0"
+date-released: 2026-11-26
+authors:
+  - family-names: "Mustafaj"
+    given-names: "Eljo"
+repository-code: "https://github.com/Eljo-M/kernelbench-rl"
+url: "https://eljo-m.github.io/kernelbench-rl/"
+preferred-citation:
+  type: report
+  authors:
+    - family-names: "Mustafaj"
+      given-names: "Eljo"
+  title: "KernelBench-RL: Verification, Execution Feedback, and Reproducible GPU Kernel Synthesis"
+  year: 2026
+  url: "https://eljo-m.github.io/kernelbench-rl/paper.html"

@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory=$true)][string]$ReceiptPath
 )
 $ErrorActionPreference='Stop'
+if(Test-Path -LiteralPath $ReceiptPath){throw 'Preserve the earlier Pages configuration receipt; select a new ReceiptPath'}
 if($SourceCommit -notmatch '^[a-f0-9]{40}$'){throw 'A full source commit is required'}
 $author=git -C $RepoRoot show -s --format='%an <%ae>|%cn <%ce>' $SourceCommit
 if($LASTEXITCODE -ne 0 -or $author -cne 'Eljo-M <mustafajeljo@gmail.com>|Eljo-M <mustafajeljo@gmail.com>'){throw 'Unexpected source author/committer'}
@@ -23,7 +24,15 @@ try {
     if($repo.private -or -not $repo.permissions.admin){throw 'Expected Eljo-M administrative access to the existing public repository'}
     $main=Invoke-RestMethod -Uri ($api+'/commits/main') -Headers $headers
     if($main.sha -cne $SourceCommit){throw 'Public main does not match the reviewed source commit'}
-    foreach($path in @('docs/index.html','docs/paper.html','docs/assets/kernelbench-rl-paper.pdf','docs/.nojekyll')){
+    $ciRuns=Invoke-RestMethod -Uri ($api+'/actions/runs?head_sha='+$SourceCommit+'&branch=main&per_page=100') -Headers $headers
+    $green=@($ciRuns.workflow_runs | Where-Object {$_.head_sha -ceq $SourceCommit -and $_.head_branch -ceq 'main' -and $_.name -ceq 'KernelBench-RL CI' -and $_.status -ceq 'completed' -and $_.conclusion -ceq 'success'})
+    if(-not $green.Count){throw 'Exact-source main CI is not successfully complete'}
+    $configurationText=git -C $RepoRoot show ($SourceCommit+':docs/project-config.json')
+    if($LASTEXITCODE -ne 0){throw 'Committed website configuration missing'}
+    $configuration=($configurationText -join [char]10) | ConvertFrom-Json
+    $pdfPath=[string]$configuration.paper_pdf_path
+    if($configuration.draft -ne $false -or $configuration.public_base_url.TrimEnd('/') -cne 'https://eljo-m.github.io/kernelbench-rl' -or -not $pdfPath -or $pdfPath.StartsWith('/') -or $pdfPath.Contains('..') -or $pdfPath.Contains(':') -or $pdfPath.Contains('\')){throw 'Committed website origin/PDF configuration is not ready'}
+    foreach($path in @('docs/index.html','docs/paper.html',('docs/'+$pdfPath),'docs/robots.txt','docs/sitemap.xml','docs/.nojekyll')){
         git -C $RepoRoot cat-file -e ($SourceCommit+':'+$path)
         if($LASTEXITCODE -ne 0){throw ('Publication input missing in source commit: '+$path)}
     }
@@ -40,7 +49,7 @@ try {
         $pages=Invoke-RestMethod -Method Post -Uri ($api+'/pages') -Headers $headers -ContentType 'application/json' -Body $payload
         Write-Output 'Created public GitHub Pages publication from the reviewed main/docs source'
     }
-    $receipt=[ordered]@{authenticated_login='Eljo-M';source_commit=$SourceCommit;url=$pages.html_url;status=$pages.status;source=$pages.source;created_or_verified_utc=[DateTime]::UtcNow.ToString('o');note='Publication status and public content must be verified after the Pages build.'}
+    $receipt=[ordered]@{schema_version='kernelbench_pages_configuration_v1';verified=$false;publication_complete=$false;phase='configuration_only_pending_public_verification';authenticated_login='Eljo-M';source_commit=$SourceCommit;url=$pages.html_url;status=$pages.status;source=$pages.source;paper_pdf_path=$pdfPath;created_or_verified_utc=[DateTime]::UtcNow.ToString('o');note='Run verify-pages.ps1; configuration or pending build is never a completed-publication proof.'}
     $receipt | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $ReceiptPath -Encoding utf8
-    Write-Output ('PAGES_PUBLICATION '+$pages.html_url+' status='+$pages.status)
+    Write-Output ('PAGES_CONFIGURED '+$pages.html_url+' status='+$pages.status+' public_verification=pending')
 } finally {$credentialMap.Clear()}

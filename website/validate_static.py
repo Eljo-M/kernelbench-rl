@@ -23,6 +23,44 @@ class Page(HTMLParser):
             if attr in a: self.links.append(a[attr])
 
 
+def retry_errors(retry):
+    """Validate optional cohort identity metadata without changing results."""
+    errors=[]; keys=set()
+    for run in retry.get('runs',[]):
+        if 'short_label' in run and (not isinstance(run['short_label'],str) or not run['short_label'].strip()): errors.append('invalid retry short label')
+        for field,length in (('config_hash',16),('model_revision',40)):
+            if field in run and (not isinstance(run[field],str) or not re.fullmatch('[0-9a-f]{'+str(length)+'}',run[field])): errors.append('invalid retry '+field)
+        if 'notes' in run and (not isinstance(run['notes'],list) or not all(isinstance(note,str) for note in run['notes'])): errors.append('invalid retry prose notes')
+        key=run.get('study_key')
+        if key is not None:
+            if key not in {'v2/laptop','v2/laptop_7b','v3/laptop_7b'} or key in keys:
+                errors.append('duplicate/unknown retry study_key')
+            keys.add(key)
+            if run.get('protocol_version')!=key.split('/')[0]: errors.append('retry protocol/study_key mismatch')
+            if not isinstance(run.get('cohort_label'),str) or not run['cohort_label'].strip(): errors.append('missing retry cohort label')
+            if 'cohort_ops' not in run: errors.append('named retry study lacks cohort workload identities')
+        operators=run.get('cohort_ops')
+        if operators is not None:
+            if not isinstance(operators,dict) or set(operators)!={'fresh','development'}:
+                errors.append('invalid retry cohort_ops inventory'); continue
+            valid={}
+            for cohort,names in operators.items():
+                if not isinstance(names,list) or not names or not all(isinstance(name,str) and name for name in names) or len(set(names))!=len(names):
+                    errors.append('duplicate/invalid retry cohort workload'); continue
+                valid[cohort]=set(names)
+                methods=run.get('cohorts',{}).get(cohort,[])
+                if not methods or any(method.get('total')!=len(names) for method in methods):
+                    errors.append('cohort workloads do not match method denominators')
+            if set(valid)=={'fresh','development'} and valid['fresh']&valid['development']:
+                errors.append('fresh/development retry workloads overlap')
+        for methods in run.get('cohorts',{}).values():
+            for method in methods:
+                passed,total,budget=(method.get(key) for key in ('passed','total','budget'))
+                if type(passed) is not int or type(total) is not int or type(budget) is not int or not 0<=passed<=total or total<=0 or budget<=0:
+                    errors.append('invalid retry method count/budget')
+    return errors
+
+
 def validate(root):
     pages={path.name: Page(path) for path in root.glob('*.html')}; errors=[]
     for page in pages.values():
@@ -46,6 +84,7 @@ def validate(root):
         for precision in ('fp32','bf16'):
             if op['precision'][precision]['total']!=3: errors.append('unexpected seed count '+op['name'])
     if data['retry']['status']=='pending' and (data['retry']['published_results'] or data['retry']['runs']): errors.append('pending retry contains results')
+    errors+=retry_errors(data['retry'])
     if pages['paper.html'].meta.get('citation_author')!='Eljo Mustafaj': errors.append('incorrect paper author')
     if not config['draft']:
         expected=config['public_base_url']+'/'+config['paper_pdf_path']

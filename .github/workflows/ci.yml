@@ -10,13 +10,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - run: pip install -e ".[dev]"
       - run: python3 -m unittest discover -s tests -v
       - run: python3 -m kernels.op_registry --verify
       - run: python3 eval/benchmark_report.py --input eval/sample_traces.jsonl --out /tmp/kb_out
+      - name: Validate both completed v2 studies from committed evidence
+        run: |
+          python3 -m eval.compare_retry \
+            --run-dir experiments/retry_v2/laptop \
+            --run-dir experiments/retry_v2/laptop_7b \
+            --out /tmp/kb_retry_comparison
+      - name: Validate the completed independent v3 study against its own protocol
+        run: |
+          python3 -m eval.compare_retry \
+            --protocol experiments/retry_v3/protocol.json \
+            --run-dir experiments/retry_v3/laptop_7b \
+            --out /tmp/kb_retry_v3_comparison
+      - name: Validate the public static website and evidence
+        run: python3 website/validate_static.py docs
+      - name: Compile publication sources without executing model code
+        run: python3 -m compileall -q paper website tools/publication
+      - name: Check website JavaScript syntax
+        run: node --check docs/assets/app.js
+      - name: Verify saved artifact bytes and recorded upstream provenance
+        run: python3 tools/publication/verify_publication_artifacts.py --repo . --require-v3 --expected-commit "$GITHUB_SHA" --output /tmp/kb_publication_artifact_verification.json
 
   torch-training-tests:
     runs-on: ubuntu-latest
