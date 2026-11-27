@@ -1,0 +1,11 @@
+{"event": "dataset_preflight_result", "case": 1, "total": 11, "op_name": "rmsnorm_2048", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 2, "total": 11, "op_name": "layernorm_2048", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 3, "total": 11, "op_name": "swiglu_4096", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 4, "total": 11, "op_name": "fused_add_rmsnorm_2048", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 5, "total": 11, "op_name": "fused_softmax_2048", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 6, "total": 11, "op_name": "log_softmax_2048", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 7, "total": 11, "op_name": "rope_fwd_128", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 8, "total": 11, "op_name": "matmul_bias_gelu_512", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 9, "total": 11, "op_name": "l2_normalize_2048", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 10, "total": 11, "op_name": "fused_bias_silu_4096", "status": "PASS", "error_message": ""}
+{"event": "dataset_preflight_result", "case": 11, "total": 11, "op_name": "matmul_residual_add_512", "status": "PASS", "error_message": ""}

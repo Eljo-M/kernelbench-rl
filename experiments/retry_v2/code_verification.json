@@ -1,0 +1,18 @@
+{
+  "verified_source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+  "local_regression": {
+    "tests": 183,
+    "seconds": 78.675,
+    "result": "OK",
+    "log_sha256": "2cc86e0403c3fd4b071fa89f60194dfd8a8802a95275cf44c89da18b01bab712",
+    "log_last_write_utc": "2026-11-26T23:48:04.6330108Z",
+    "note": "Local suite ran before the source commit was created; reviewed Python source was unchanged when committed. GitHub CI independently tested the published commit."
+  },
+  "github_ci": {
+    "id": 45913444748,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/Eljo-M/kernelbench-rl/actions/runs/45913444748",
+    "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e"
+  }
+}

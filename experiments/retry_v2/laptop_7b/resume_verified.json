@@ -1,0 +1,58 @@
+{
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "config_hash": "aac728c27b3b726c",
+  "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+  "source_code_dirty": false,
+  "training_mode": "qlora_7b_nf4",
+  "dtype": "fp16",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "transformers": "4.57.6",
+  "cuda": "12.8",
+  "train_ops": [
+    "rmsnorm_2048",
+    "layernorm_2048",
+    "swiglu_4096",
+    "fused_add_rmsnorm_2048",
+    "fused_softmax_2048",
+    "log_softmax_2048",
+    "rope_fwd_128",
+    "matmul_bias_gelu_512"
+  ],
+  "heldout_ops": [
+    "l2_normalize_2048",
+    "fused_bias_silu_4096",
+    "matmul_residual_add_512"
+  ],
+  "development_eval_ops": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "generation_engine": "hf_eager",
+  "sampling": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_new_tokens": 1536
+  },
+  "best_of_k": 8,
+  "qlora_cpu_offload": true,
+  "checkpoint_root": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\outputs\\kernelbench-rl\\checkpoints\\retry_v2_laptop_7b",
+  "train_output": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\outputs\\kernelbench-rl\\experiments\\retry_v2\\laptop_7b\\train.jsonl",
+  "training_schedule": "4 training-only supervised epochs then 8 on-policy GRPO groups",
+  "checkpoint_step": 8,
+  "checkpoint_weights_sha256": "25537324dbd97f50e7af20cbf808e0aa4215d62236dc9b5f301d6d8e9b51ff08",
+  "checkpoint_identity": "checkpoint:8:25537324dbd97f50e7af20cbf808e0aa4215d62236dc9b5f301d6d8e9b51ff08",
+  "optimizer_steps": 1,
+  "sft_optimizer_steps": 32,
+  "started_utc": "2026-11-27T00:50:23.906543+00:00",
+  "prior_attempts": [],
+  "completed_utc": "2026-11-27T00:51:03.069811+00:00",
+  "restored_model_checksum_verified": true,
+  "restored_optimizer_and_rng": true,
+  "additional_training_steps": 0
+}

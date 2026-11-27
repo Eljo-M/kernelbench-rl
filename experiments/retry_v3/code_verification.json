@@ -1,0 +1,12 @@
+{
+  "schema_version": "kernelbench_host_code_verification_v1",
+  "recorded_utc": "2026-11-27T02:01:21.547802+00:00",
+  "tests_run": 185,
+  "failures": 0,
+  "errors": 0,
+  "elapsed_seconds": 87.465,
+  "command": "python -m unittest discover -s tests -v",
+  "log_path": "experiments/retry_v3/host_regression_tests.txt",
+  "log_sha256": "0826713df91f184c14ca93618d9fe2744f8b6713b89c465cb40eecd683a08c4a",
+  "scope": "Local host code regression tests against reviewed working source before the prospective source commit. GPU quality evidence is separate. Fixture rollouts are synthetic tests, not experiment records. Exact-commit hosted CI is independently recorded after source publication."
+}

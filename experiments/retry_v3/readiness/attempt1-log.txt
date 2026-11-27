@@ -1,0 +1,20 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]C:\Users\musta\Documents\Codex\2026-11-26\um-i\work\gpu-venv\Lib\site-packages\bitsandbytes\backends\cuda\ops.py:212: FutureWarning: _check_is_size will be removed in a future PyTorch release along with guard_size_oblivious.     Use _check(i >= 0) instead.
+  torch._check_is_size(blocksize)
+
+Loading checkpoint shards:  25%|##5       | 1/4 [00:08<00:25,  8.36s/it]
+Loading checkpoint shards:  50%|#####     | 2/4 [00:17<00:17,  8.74s/it]
+Loading checkpoint shards:  75%|#######5  | 3/4 [00:24<00:07,  7.94s/it]
+Loading checkpoint shards: 100%|##########| 4/4 [00:25<00:00,  5.31s/it]
+Loading checkpoint shards: 100%|##########| 4/4 [00:25<00:00,  6.41s/it]
+Some parameters are on the meta device because they were offloaded to the cpu.
+{"event": "model_ready", "elapsed_seconds": 32.73399999999674, "trainable_parameters": 40370176, "memory": {"cuda_free_bytes": 3655335936, "cuda_total_bytes": 8546484224, "cuda_allocated_bytes": 3543770624, "cuda_reserved_bytes": 3611295744, "peak_cuda_allocated_bytes": 3543770624, "peak_cuda_reserved_bytes": 3611295744, "ram_available_bytes": 4759269376, "ram_total_bytes": 33413771264, "process_rss_bytes": 6425088000}}
+{"event": "case_start", "elapsed_seconds": 40.20300000003772, "label": "actual_longest_sft", "is_synthetic": false, "is_quality_metric": false, "operator_prompt": "matmul_bias_gelu_512", "prompt_tokens": 885, "completion_tokens": 761, "full_sequence_tokens": 1646, "memory": {"cuda_free_bytes": 3655335936, "cuda_total_bytes": 8546484224, "cuda_allocated_bytes": 3543770624, "cuda_reserved_bytes": 3611295744, "peak_cuda_allocated_bytes": 3543770624, "peak_cuda_reserved_bytes": 3611295744, "ram_available_bytes": 4734107648, "ram_total_bytes": 33413771264, "process_rss_bytes": 6440235008}}
+Traceback (most recent call last):
+  File "C:\Users\musta\Documents\Codex\2026-11-26\um-i\work\probe_retry_v3_readiness.py", line 106, in <module>
+    event('case_success',**record)
+  File "C:\Users\musta\Documents\Codex\2026-11-26\um-i\work\probe_retry_v3_readiness.py", line 44, in event
+    def event(name,**values):print(json.dumps(dict(event=name,elapsed_seconds=time.monotonic()-started,**values)),flush=True)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: dict() got multiple values for keyword argument 'elapsed_seconds'

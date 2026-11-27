@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized website retry evidence; populate only from final compare_retry JSON",
+  "type": "object",
+  "required": ["status", "published_results", "note", "runs"],
+  "properties": {
+    "status": {"enum": ["pending", "running", "partial", "completed"]},
+    "published_results": {"type": "boolean"},
+    "note": {"type": "string"},
+    "runs": {"type": "array", "items": {"type": "object", "required": ["label", "hardware", "training_mode", "status", "cohorts"], "properties": {
+      "label": {"type": "string"}, "hardware": {"type": "string"}, "training_mode": {"type": "string"},
+      "status": {"enum": ["partial", "completed"]}, "source_commit": {"type": "string"},
+      "sft_updates": {"type": "integer", "minimum": 0}, "optimizer_updates": {"type": "integer", "minimum": 0},
+      "cohorts": {"type": "object", "properties": {
+        "fresh": {"$ref": "#/$defs/methods"}, "development": {"$ref": "#/$defs/methods"}
+      }, "additionalProperties": false}
+    }}}
+  },
+  "$defs": {"methods": {"type": "array", "items": {"type": "object", "required": ["method", "passed", "total", "budget"], "properties": {
+    "method": {"type": "string"}, "passed": {"type": "integer", "minimum": 0}, "total": {"type": "integer", "minimum": 1}, "budget": {"type": "integer", "minimum": 1}
+  }}}}
+}

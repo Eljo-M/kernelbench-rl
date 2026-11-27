@@ -1,0 +1,107 @@
+{
+  "config_hash": "0dfb0a14abad3067",
+  "copied_utc": "2026-11-27T02:04:49.969513+00:00",
+  "source_commit_at_copy": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+  "source_code_dirty_at_copy": true,
+  "changed_python_paths": [
+    "tests/test_artifact_line_endings.py",
+    "tools/publication/export_retry.py",
+    "tools/publication/finalize_retry_text.py",
+    "tools/publication/verify_model_snapshots.py",
+    "tools/publication/verify_publication_artifacts.py",
+    "website/build_data.py",
+    "website/configure.py",
+    "website/validate_static.py"
+  ],
+  "untracked_python_paths": [],
+  "is_quality_experiment": false,
+  "is_model_benchmark": false,
+  "scope": "Hardware capacity readiness and verified training-source dataset preflight only. No new heldout prompts, heldout target-source lookups or quality generation.",
+  "initialization": "Fresh pinned pretrained NF4 base plus seed242 rank16 alpha32 LoRA across all7decoder linear projections; readiness weights discarded, no checkpoint retained.",
+  "accepted_readiness_attempt": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "reporting_failed",
+      "error": "TypeError from duplicate elapsed_seconds logging keyword after actual1646token case succeeded; synthetic case not run",
+      "settings_changed": false
+    },
+    {
+      "attempt": 2,
+      "status": "passed",
+      "change_from_attempt1": "Work-harness logging payload merge and distinct output path only; same model/config/rank/seed.",
+      "actual_longest_sft_tokens": 1646,
+      "synthetic_max_budget_tokens": 2484
+    }
+  ],
+  "dataset_preflight": {
+    "dtype": "fp16",
+    "seed": 242,
+    "independent_seed": 10242,
+    "operator_count": 11,
+    "passed": 11,
+    "includes_canonical_stress_independent_and_post_timing_checks": true
+  },
+  "evidence_files": [
+    {
+      "original_workspace_path": "work\\retry-v3-readiness\\result.json",
+      "artifact_path": "experiments/retry_v3/readiness/attempt1-result.json",
+      "sha256": "d1299d342267a251a03e532635884a2009959a48317aa7e22e19be0420cfc2eb",
+      "bytes": 5791
+    },
+    {
+      "original_workspace_path": "work\\retry-v3-readiness.attempt1.log",
+      "artifact_path": "experiments/retry_v3/readiness/attempt1-log.txt",
+      "sha256": "fa8e3e0e41c83127d90c93d96c2ca886f648941577bdce61ed73f6ad32c26d4e",
+      "bytes": 2493
+    },
+    {
+      "original_workspace_path": "work\\probe_retry_v3_readiness.attempt1.py",
+      "artifact_path": "experiments/retry_v3/readiness/attempt1-harness.py.txt",
+      "sha256": "ea110266d1cb823b63db0cc5686cbfc34dd2a098a9380eb68307edb6d34bd69a",
+      "bytes": 8169
+    },
+    {
+      "original_workspace_path": "work\\retry-v3-readiness-attempt2\\result.json",
+      "artifact_path": "experiments/retry_v3/readiness/attempt2-result.json",
+      "sha256": "9b12a4b3be313f2bb7cf094071c40340427369c23174dd710515609ea99de384",
+      "bytes": 7474
+    },
+    {
+      "original_workspace_path": "work\\retry-v3-readiness.attempt2.log",
+      "artifact_path": "experiments/retry_v3/readiness/attempt2-log.txt",
+      "sha256": "240d18b57ef98f0284f7a509970e646ba6b23acb2379f64470e93b09e67ef27d",
+      "bytes": 4955
+    },
+    {
+      "original_workspace_path": "work\\probe_retry_v3_readiness.py",
+      "artifact_path": "experiments/retry_v3/readiness/attempt2-harness.py.txt",
+      "sha256": "9dbaf5a8d11692cc76c3f42786b43d758eb5cf67740b52d34699a6745d984334",
+      "bytes": 8229
+    },
+    {
+      "original_workspace_path": "work\\retry-v3-dataset-preflight\\environment.json",
+      "artifact_path": "experiments/retry_v3/readiness/dataset-preflight-environment.json",
+      "sha256": "21b005ef480ccdcb4b703f13d0daaaee677d87f166907f497e47fa41d63cd549",
+      "bytes": 1683
+    },
+    {
+      "original_workspace_path": "work\\retry-v3-dataset-preflight.log",
+      "artifact_path": "experiments/retry_v3/readiness/dataset-preflight-log.txt",
+      "sha256": "42b82cd6a51367e063fb3b01a25a84fd8b0c75830c6c9a0cc33d09fedfe5c91f",
+      "bytes": 1474
+    },
+    {
+      "original_workspace_path": "work\\preflight_retry_v3_dataset.py",
+      "artifact_path": "experiments/retry_v3/readiness/dataset-preflight-harness.py.txt",
+      "sha256": "2d1dbff7271607012706ea22c6ce7dbcf8a66ff5f17091713af26a9ed068c6eb",
+      "bytes": 3084
+    },
+    {
+      "original_workspace_path": "work\\retry-v3-dataset-preflight\\records.jsonl",
+      "artifact_path": "experiments/retry_v3/laptop_7b/dataset_preflight.jsonl",
+      "sha256": "d864ea8092f0ceeef54b5e7ade14ff1b8cf553d958e1a197ceffa19e65214f88",
+      "bytes": 26121
+    }
+  ]
+}

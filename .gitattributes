@@ -1,2 +1,7 @@
 * text=auto
 *.sh text eol=lf
+# Saved scientific artifacts contain byte-bound output/proof checksums.
+# Preserve their exact bytes across Windows/Linux clones and source archives.
+experiments/** -text
+docs/** -text
+paper/** -text

@@ -1,0 +1,121 @@
+"""v3 adapter-capacity readiness only: no heldout prompt or quality generation."""
+from __future__ import annotations
+from datetime import datetime,timezone
+import gc,hashlib,json,os,subprocess,sys,time
+from pathlib import Path
+workspace=Path(__file__).resolve().parents[1]
+repo=workspace/'outputs/kernelbench-rl'
+sys.path.insert(0,str(repo));os.chdir(repo)
+import psutil
+import torch
+from peft import LoraConfig,get_peft_model
+from transformers import AutoTokenizer
+from rl_trainer.experiment_config import ExperimentConfig
+from rl_trainer.model_loading import load_quantized_base
+from rl_trainer.supervised_warmup import build_supervised_dataset
+from rl_trainer.gpu_train_grpo import compute_selected_token_logps,all_grads_finite
+from rl_trainer.checkpointing import compute_trainable_weights_sha256
+from rl_trainer.frozen_base_integrity import hash_frozen_base
+
+out=workspace/'work/retry-v3-readiness'
+if out.exists():raise RuntimeError('Refusing to overwrite readiness evidence')
+out.mkdir()
+config_path=workspace/'work/retry_v3_7b_config.json'
+result_path=out/'result.json'
+started=time.monotonic()
+def utc():return datetime.now(timezone.utc).isoformat()
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+source_paths=['rl_trainer/model_loading.py','rl_trainer/qlora_grpo.py','rl_trainer/gpu_train_grpo.py',
+              'rl_trainer/supervised_warmup.py','rl_trainer/objective.py','sandbox_runner/gpu_worker.py',
+              'sandbox_runner/gpu_verifier.py','sandbox_runner/gpu_source_policy.py']
+source_hashes={name:sha(repo/name) for name in source_paths}
+changed=subprocess.check_output(['git','diff','--name-only','HEAD','--','*.py'],text=True).splitlines()
+untracked=subprocess.check_output(['git','ls-files','--others','--exclude-standard','--','*.py'],text=True).splitlines()
+result=dict(is_readiness_probe=True,is_quality_experiment=False,heldout_generation_performed=False,
+    source_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+    source_code_dirty=bool(changed or untracked),changed_python_paths=changed,untracked_python_paths=untracked,
+    source_hashes=source_hashes,config_file_sha256=sha(config_path),started_utc=utc(),cases=[],checkpoint_saved=False)
+def memory():
+    free,total=torch.cuda.mem_get_info();ram=psutil.virtual_memory()
+    return dict(cuda_free_bytes=free,cuda_total_bytes=total,cuda_allocated_bytes=torch.cuda.memory_allocated(),
+        cuda_reserved_bytes=torch.cuda.memory_reserved(),peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated(),
+        peak_cuda_reserved_bytes=torch.cuda.max_memory_reserved(),ram_available_bytes=ram.available,
+        ram_total_bytes=ram.total,process_rss_bytes=psutil.Process().memory_info().rss)
+def event(name,**values):print(json.dumps(dict(event=name,elapsed_seconds=time.monotonic()-started,**values)),flush=True)
+try:
+    cfg=ExperimentConfig.from_json(config_path)
+    result.update(config_hash=cfg.config_hash(),seed=cfg.seed)
+    torch.set_num_threads(4);torch.manual_seed(cfg.seed)
+    torch.cuda.reset_peak_memory_stats()
+    result['gpu']=torch.cuda.get_device_name(0)
+    result['memory_before']=memory()
+    tokenizer=AutoTokenizer.from_pretrained(cfg.model_name_or_path,revision=cfg.model_revision,local_files_only=True,trust_remote_code=False)
+    examples=build_supervised_dataset(cfg,tokenizer,max_tokens=cfg.sft_max_tokens)
+    longest=max(examples,key=lambda ex:len(ex.prompt_ids)+len(ex.completion_ids))
+    longest_prompt=max(examples,key=lambda ex:len(ex.prompt_ids))
+    base=load_quantized_base(cfg,gradient_checkpointing=True)
+    policy=get_peft_model(base,LoraConfig(r=cfg.lora_r,lora_alpha=cfg.lora_alpha,lora_dropout=0,
+        target_modules=list(cfg.lora_target_modules),task_type='CAUSAL_LM',bias='none'))
+    params=[p for p in policy.parameters() if p.requires_grad]
+    count=sum(p.numel() for p in params)
+    assert count==40370176,count
+    assert all(p.device.type=='cuda' for p in params)
+    assert policy.get_input_embeddings().weight.device.type==policy.get_output_embeddings().weight.device.type=='cpu'
+    optimizer=torch.optim.AdamW(params,lr=cfg.sft_learning_rate)
+    result.update(trainable_parameters=count,trainable_parameter_tensors=len(params),dtype=cfg.dtype,
+        adapter_targets=list(cfg.lora_target_modules),adapter_rank=cfg.lora_r,adapter_alpha=cfg.lora_alpha,
+        device_placement=base._kernelbench_device_placement,memory_after_load=memory())
+    event('model_ready',trainable_parameters=count,memory=result['memory_after_load'])
+    frozen_before=hash_frozen_base(policy)
+    result['frozen_before']=frozen_before
+    synthetic=(longest.completion_ids*((cfg.max_new_tokens+len(longest.completion_ids)-1)//len(longest.completion_ids)))[:cfg.max_new_tokens]
+    cases=[('actual_longest_sft',longest.op_name,longest.prompt_ids,longest.completion_ids,False),
+           ('synthetic_worst_generation_budget',longest_prompt.op_name,longest_prompt.prompt_ids,synthetic,True)]
+    for label,op_name,prompt_ids,completion_ids,is_synthetic in cases:
+        gc.collect();torch.cuda.empty_cache();torch.cuda.reset_peak_memory_stats()
+        case_start=time.monotonic()
+        record=dict(label=label,is_synthetic=is_synthetic,is_quality_metric=False,operator_prompt=op_name,
+                    prompt_tokens=len(prompt_ids),completion_tokens=len(completion_ids),full_sequence_tokens=len(prompt_ids)+len(completion_ids))
+        result['cases'].append(record)
+        event('case_start',**record,memory=memory())
+        before=compute_trainable_weights_sha256(params)
+        policy.eval()
+        with torch.no_grad():old=compute_selected_token_logps(policy,prompt_ids,completion_ids,'cpu')
+        policy.train()
+        optimizer.zero_grad(set_to_none=True)
+        current=compute_selected_token_logps(policy,prompt_ids,completion_ids,'cpu')
+        alignment=float((old-current.detach()).abs().max())
+        assert alignment<=cfg.onpolicy_logp_tolerance,alignment
+        loss=-current.mean();assert bool(torch.isfinite(loss))
+        loss.backward()
+        assert all_grads_finite(params)
+        with_grad=sum(int(p.grad is not None) for p in params)
+        nonzero=sum(int(p.grad is not None and bool(torch.any(p.grad!=0))) for p in params)
+        assert with_grad==len(params) and nonzero>0,(with_grad,nonzero,len(params))
+        norm=torch.nn.utils.clip_grad_norm_(params,cfg.max_grad_norm,error_if_nonfinite=True)
+        optimizer.step()
+        after=compute_trainable_weights_sha256(params)
+        assert after!=before
+        state_tensors=[v for state in optimizer.state.values() for v in state.values() if isinstance(v,torch.Tensor)]
+        record.update(success=True,finite_loss=float(loss.detach()),finite_gradients=True,grad_norm=float(norm),
+            parameter_tensors_with_grad=with_grad,nonzero_gradient_parameter_tensors=nonzero,
+            old_new_max_abs_logp_diff=alignment,adapter_before_sha256=before,adapter_after_sha256=after,
+            parameter_update_verified=True,optimizer_state_tensor_count=len(state_tensors),
+            optimizer_state_bytes=sum(t.numel()*t.element_size() for t in state_tensors),
+            memory=memory(),elapsed_seconds=time.monotonic()-case_start)
+        event('case_success',**record)
+        optimizer.zero_grad(set_to_none=True)
+        del old,current,loss,norm,state_tensors
+    result['frozen_after']=hash_frozen_base(policy)
+    assert result['frozen_before']==result['frozen_after']
+    assert source_hashes=={name:sha(repo/name) for name in source_paths}
+    assert result['config_file_sha256']==sha(config_path)
+    result.update(success=True,frozen_base_integrity_verified=True,completed_utc=utc(),elapsed_seconds=time.monotonic()-started)
+    event('readiness_complete',success=True,elapsed_seconds=result['elapsed_seconds'])
+except BaseException as exc:
+    result.update(success=False,error_type=type(exc).__name__,error=str(exc),failed_utc=utc(),elapsed_seconds=time.monotonic()-started)
+    try:result['memory_at_failure']=memory()
+    except Exception:pass
+    raise
+finally:
+    with result_path.open('x') as stream:stream.write(json.dumps(result,indent=2,allow_nan=False)+'\n')

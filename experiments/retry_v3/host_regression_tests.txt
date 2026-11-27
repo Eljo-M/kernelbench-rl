@@ -1,0 +1,318 @@
+test_minus_text_preserves_saved_crlf_blob_and_both_checkouts (test_artifact_line_endings.ArtifactLineEndingTests.test_minus_text_preserves_saved_crlf_blob_and_both_checkouts) ... ok
+test_text_auto_crlf_roundtrip_can_hide_lf_blob_hash_break (test_artifact_line_endings.ArtifactLineEndingTests.test_text_auto_crlf_roundtrip_can_hide_lf_blob_hash_break) ... ok
+test_duplicate_final_rows_rejected (test_compare_heldout.TestCompareHeldout.test_duplicate_final_rows_rejected) ... ok
+test_local_model_snapshot_alias_and_recomputed_configuration_identity (test_compare_heldout.TestCompareHeldout.test_local_model_snapshot_alias_and_recomputed_configuration_identity) ... ok
+test_mismatched_config_hash_dtype_seed_and_pass_unavailable_gpu_rejected (test_compare_heldout.TestCompareHeldout.test_mismatched_config_hash_dtype_seed_and_pass_unavailable_gpu_rejected) ... ok
+test_mixed_real_gpu_hardware_rejected_even_on_failed_row (test_compare_heldout.TestCompareHeldout.test_mixed_real_gpu_hardware_rejected_even_on_failed_row) ... ok
+test_pass_rows_require_positive_consistent_measured_timings (test_compare_heldout.TestCompareHeldout.test_pass_rows_require_positive_consistent_measured_timings) ... ok
+test_valid_two_run_comparison_excludes_val_fixture_oracle_and_preserves_denominators (test_compare_heldout.TestCompareHeldout.test_valid_two_run_comparison_excludes_val_fixture_oracle_and_preserves_denominators) ... ok
+test_validation_leakage_only_selection_val_rows_rejected (test_compare_heldout.TestCompareHeldout.test_validation_leakage_only_selection_val_rows_rejected) ... ok
+test_verifier_emits_schema_valid_strict_json_for_all_failure_paths (test_contract.EvaluationContractTests.test_verifier_emits_schema_valid_strict_json_for_all_failure_paths) ... ok
+test_checkpoint_resume_verifies_both_hash_roles_and_loads_legacy_metadata (test_cpu_master_checkpoint_identity.TestCpuMasterCheckpointIdentity.test_checkpoint_resume_verifies_both_hash_roles_and_loads_legacy_metadata) ... ok
+Wrote held-out comparison artifacts to C:\Users\musta\AppData\Local\Temp\tmpwqnxsf95\out
+{"event": "step_start", "step": 1, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 1, "statuses": ["PASS", "COMPILE_ERROR"], "rewards": [1.0, 0.0], "optimizer_step_count": 1, "policy_updated": true, "skipped_non_finite_grad": false, "skipped_non_finite_loss": false, "policy_loss": 0.0, "mean_kl": 0.0, "weight_l2_delta": 0.00010001659393310547, "trainable_weights_sha256": "e00e5eb9444182f352323374ef4e08ebcb784725fdd4fd612d7730540b3e0c8c", "optimizer_master_weights_sha256": "cb1f77652eb25e53110b376b9aef55d679b2526031dbadc03c5b31e8b0735a3d"}
+test_loop_carries_actual_grpo_master_update_into_returned_checkpoint_state (test_cpu_master_checkpoint_identity.TestCpuMasterCheckpointIdentity.test_loop_carries_actual_grpo_master_update_into_returned_checkpoint_state) ... ok
+{"event": "step_start", "step": 1, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 1, "statuses": ["COMPILE_ERROR", "COMPILE_ERROR"], "rewards": [0.0, 0.0], "optimizer_step_count": 0}
+test_loop_carries_post_sft_master_identity_through_no_update_and_resume (test_cpu_master_checkpoint_identity.TestCpuMasterCheckpointIdentity.test_loop_carries_post_sft_master_identity_through_no_update_and_resume) ... ok
+test_real_bf16_update_reports_model_and_master_hashes_separately (test_cpu_master_checkpoint_identity.TestCpuMasterCheckpointIdentity.test_real_bf16_update_reports_model_and_master_hashes_separately) ... ok
+test_empty_input_has_complete_zero_summary (test_evaluation.TestEvaluation.test_empty_input_has_complete_zero_summary) ... ok
+test_failed_candidates_stay_in_compile_comparison_denominator (test_evaluation.TestEvaluation.test_failed_candidates_stay_in_compile_comparison_denominator) ... ok
+test_failed_cheating_and_untimed_records_do_not_inflate_speedup (test_evaluation.TestEvaluation.test_failed_cheating_and_untimed_records_do_not_inflate_speedup) ... ok
+test_malformed_jsonl_reports_filename_and_line (test_evaluation.TestEvaluation.test_malformed_jsonl_reports_filename_and_line) ... ok
+test_method_level_backend_and_fixture_groups_stay_separate (test_evaluation.TestEvaluation.test_method_level_backend_and_fixture_groups_stay_separate) ... ok
+test_numpy_never_has_torch_compile_baseline (test_evaluation.TestEvaluation.test_numpy_never_has_torch_compile_baseline) ... ok
+test_precision_device_and_timing_modes_are_not_pooled (test_evaluation.TestEvaluation.test_precision_device_and_timing_modes_are_not_pooled) ... ok
+test_report_artifacts_and_embedded_html_cannot_execute_trace_source (test_evaluation.TestEvaluation.test_report_artifacts_and_embedded_html_cannot_execute_trace_source) ... ok
+test_report_excludes_validation_candidates_used_for_selection (test_evaluation.TestEvaluation.test_report_excludes_validation_candidates_used_for_selection) ... ok
+test_seed_intervals_resample_seeds_and_require_complete_metadata (test_evaluation.TestEvaluation.test_seed_intervals_resample_seeds_and_require_complete_metadata) ... ok
+test_viewer_selection_accepts_training_source_alias (test_evaluation.TestEvaluation.test_viewer_selection_accepts_training_source_alias) ... ok
+test_invalid_csv_is_actionable (test_evaluation.TestNsightParser.test_invalid_csv_is_actionable) ... ok
+test_long_form_groups_launches_and_preserves_tensor_denominator (test_evaluation.TestNsightParser.test_long_form_groups_launches_and_preserves_tensor_denominator) ... ok
+test_raw_csv_unit_row (test_evaluation.TestNsightParser.test_raw_csv_unit_row) ... ok
+test_si_unit_conversion_and_missing_values (test_evaluation.TestNsightParser.test_si_unit_conversion_and_missing_values) ... ok
+test_embedded_venv_scripts_compile_cleanly (test_free_t4_notebook.TestFreeT4Notebook.test_embedded_venv_scripts_compile_cleanly) ... ok
+test_honest_disclaimers_and_hygiene (test_free_t4_notebook.TestFreeT4Notebook.test_honest_disclaimers_and_hygiene) ... ok
+test_nbformat_structure_and_static_python_compile (test_free_t4_notebook.TestFreeT4Notebook.test_nbformat_structure_and_static_python_compile) ... ok
+test_safe_defaults_pinned_versions_and_zero_paid_or_drive_dependencies (test_free_t4_notebook.TestFreeT4Notebook.test_safe_defaults_pinned_versions_and_zero_paid_or_drive_dependencies) ... ok
+{"event": "frozen_base_before_verified", "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "tensor_payload_bytes": 56, "quantization_state_roots": 1, "is_resuming": false}
+{"event": "frozen_base_after_verified", "verified": true, "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "proof_path": "C:\\Users\\musta\\AppData\\Local\\Temp\\tmpjd65vye4\\frozen_base_verified.json"}
+{"event": "frozen_base_before_verified", "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "tensor_payload_bytes": 56, "quantization_state_roots": 1, "is_resuming": true}
+{"event": "frozen_base_after_verified", "verified": true, "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "proof_path": "C:\\Users\\musta\\AppData\\Local\\Temp\\tmpjd65vye4\\frozen_base_verified.resume-141afb1698c2446aadbb05b811b4d548.json"}
+test_completed_proof_and_resume_preserve_original_evidence (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_completed_proof_and_resume_preserve_original_evidence) ... ok
+{"event": "frozen_base_before_verified", "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "tensor_payload_bytes": 56, "quantization_state_roots": 1, "is_resuming": false}
+{"event": "frozen_base_after_verified", "verified": false, "sha256": "770645e0b385cc3eb3b814c11c218703abefe1b116c12042753a7c1c3b215b08", "proof_path": "C:\\Users\\musta\\AppData\\Local\\Temp\\tmpchq_xcjl\\frozen_base_verified.json"}
+test_failed_integrity_is_written_and_then_raised (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_failed_integrity_is_written_and_then_raised) ... ok
+test_hash_excludes_trainable_but_covers_buffers_and_nested_quantization (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_hash_excludes_trainable_but_covers_buffers_and_nested_quantization) ... ok
+test_meta_and_unavailable_frozen_state_fail_closed (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_meta_and_unavailable_frozen_state_fail_closed) ... ok
+test_noncontiguous_payload_is_streamed_in_logical_order (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_noncontiguous_payload_is_streamed_in_logical_order) ... ok
+{"event": "frozen_base_before_verified", "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "tensor_payload_bytes": 56, "quantization_state_roots": 1, "is_resuming": false}
+{"event": "frozen_base_after_verified", "verified": true, "sha256": "f4019c231e4f4cf9b7247097acef66bd4731a8721350d9f0ab75e1087d837c5c", "proof_path": "C:\\Users\\musta\\AppData\\Local\\Temp\\tmpcnya1pcr\\frozen_base_verified.json"}
+test_resume_rejects_changed_base_and_mismatched_identity (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_resume_rejects_changed_base_and_mismatched_identity) ... ok
+test_shape_dtype_and_bfloat16_stored_bytes_are_hashed (test_frozen_base_integrity.TestFrozenBaseIntegrity.test_shape_dtype_and_bfloat16_stored_bytes_are_hashed) ... ok
+test_delayed_mutation_cannot_receive_timing_or_reward (test_gpu_output_contract.GpuOutputContractTests.test_delayed_mutation_cannot_receive_timing_or_reward) ... ok
+test_dtype_shape_finiteness_and_values_use_real_cpu_tensors (test_gpu_output_contract.GpuOutputContractTests.test_dtype_shape_finiteness_and_values_use_real_cpu_tensors) ... ok
+test_exact_device_is_checked_before_value_comparison (test_gpu_output_contract.GpuOutputContractTests.test_exact_device_is_checked_before_value_comparison) ... ok
+test_last_captured_output_is_checked_after_replays (test_gpu_output_contract.GpuOutputContractTests.test_last_captured_output_is_checked_after_replays) ... ok
+test_valid_benchmark_preserves_measured_time_and_inputs (test_gpu_output_contract.GpuOutputContractTests.test_valid_benchmark_preserves_measured_time_and_inputs) ... ok
+test_all_30_real_triton_baselines_pass_strict_policy (test_gpu_source_policy.TestGpuSourcePolicy.test_all_30_real_triton_baselines_pass_strict_policy) ... ok
+test_allows_legitimate_host_helper_launching_triton_kernel (test_gpu_source_policy.TestGpuSourcePolicy.test_allows_legitimate_host_helper_launching_triton_kernel) ... ok
+test_allows_pure_jit_math_helpers_with_a_real_launched_kernel (test_gpu_source_policy.TestGpuSourcePolicy.test_allows_pure_jit_math_helpers_with_a_real_launched_kernel) ... ok
+test_rejects_chained_and_annotated_torch_alias_fallbacks (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_chained_and_annotated_torch_alias_fallbacks) ... ok
+test_rejects_dummy_noop_triton_launch_plus_torch_fallback (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_dummy_noop_triton_launch_plus_torch_fallback) ... ok
+test_rejects_nested_helper_doing_tensor_fallback (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_nested_helper_doing_tensor_fallback) ... ok
+test_rejects_output_memoization_dunder_escape_and_forbidden_imports (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_output_memoization_dunder_escape_and_forbidden_imports) ... ok
+test_rejects_persistent_function_attribute_and_default_argument_caches (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_persistent_function_attribute_and_default_argument_caches) ... ok
+test_rejects_plain_torch_matmul_mean_rsqrt_fallback (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_plain_torch_matmul_mean_rsqrt_fallback) ... ok
+test_rejects_torch_alias_and_from_import_fallback (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_torch_alias_and_from_import_fallback) ... ok
+test_rejects_unlaunched_valid_jit_kernel (test_gpu_source_policy.TestGpuSourcePolicy.test_rejects_unlaunched_valid_jit_kernel) ... ok
+test_finite_timeout_seed_and_dtype_validation (test_gpu_verifier.TestGpuVerifierAndWorker.test_finite_timeout_seed_and_dtype_validation) ... ok
+test_load_candidate_from_real_temp_file_supports_inspect_getsource (test_gpu_verifier.TestGpuVerifierAndWorker.test_load_candidate_from_real_temp_file_supports_inspect_getsource) ... ok
+test_real_isolated_child_worker_runs_via_repo_root_bootstrap (test_gpu_verifier.TestGpuVerifierAndWorker.test_real_isolated_child_worker_runs_via_repo_root_bootstrap) ... ok
+test_sanitized_env_strips_unlisted_vars (test_gpu_verifier.TestGpuVerifierAndWorker.test_sanitized_env_strips_unlisted_vars) ... ok
+test_strict_payload_and_returncode_validation_rejects_partial_or_mismatched_dicts (test_gpu_verifier.TestGpuVerifierAndWorker.test_strict_payload_and_returncode_validation_rejects_partial_or_mismatched_dicts) ... ok
+test_supervisor_handles_timeout_and_oom_with_source_hash (test_gpu_verifier.TestGpuVerifierAndWorker.test_supervisor_handles_timeout_and_oom_with_source_hash) ... ok
+test_chat_template_applied_consistently_and_recorded (test_live_run_audit.TestLiveRunAuditFixes.test_chat_template_applied_consistently_and_recorded) ... ok
+test_chunked_selected_logps_matches_full_log_softmax_exactly (test_live_run_audit.TestLiveRunAuditFixes.test_chunked_selected_logps_matches_full_log_softmax_exactly) ... ok
+test_contract_derived_prompt_contains_exact_signature_shapes_and_dtypes (test_live_run_audit.TestLiveRunAuditFixes.test_contract_derived_prompt_contains_exact_signature_shapes_and_dtypes) ... ok
+test_full_parameter_adafactor_update_and_checkpoint_resume (test_live_run_audit.TestLiveRunAuditFixes.test_full_parameter_adafactor_update_and_checkpoint_resume) ... ok
+test_real_tiny_torch_backward_logits_to_keep_weight_delta_and_qlora_resume (test_live_run_audit.TestLiveRunAuditFixes.test_real_tiny_torch_backward_logits_to_keep_weight_delta_and_qlora_resume) ... ok
+test_diagnose_logps_records_cache_diff_repeatability_and_initial_checkpoint_checksum (test_logp_cache_and_diagnostic.TestForwardKwargDetectionAndDiagnostic.test_diagnose_logps_records_cache_diff_repeatability_and_initial_checkpoint_checksum) ... ok
+test_forward_kwarg_detection_across_plain_peft_and_kwargs_wrappers (test_logp_cache_and_diagnostic.TestForwardKwargDetectionAndDiagnostic.test_forward_kwarg_detection_across_plain_peft_and_kwargs_wrappers) ... ok
+test_real_torch_use_cache_false_reaches_forward_preserves_config_and_matches_full_autograd (test_logp_cache_and_diagnostic.TestForwardKwargDetectionAndDiagnostic.test_real_torch_use_cache_false_reaches_forward_preserves_config_and_matches_full_autograd) ... ok
+test_cheat_detection_blocks_functional_and_os (test_pipeline.TestKernelBenchPipeline.test_cheat_detection_blocks_functional_and_os) ... ok
+test_dry_run_and_report_generation (test_pipeline.TestKernelBenchPipeline.test_dry_run_and_report_generation) ... ok
+test_grpo_advantage_normalization (test_pipeline.TestKernelBenchPipeline.test_grpo_advantage_normalization) ... ok
+test_numerical_mismatch_rejected (test_pipeline.TestKernelBenchPipeline.test_numerical_mismatch_rejected) ... ok
+test_reward_monotonicity (test_pipeline.TestKernelBenchPipeline.test_reward_monotonicity) ... ok
+test_valid_rmsnorm_passes_and_scores_positive (test_pipeline.TestKernelBenchPipeline.test_valid_rmsnorm_passes_and_scores_positive) ... ok
+CPU fixture verification completed: 4 rollouts written to C:\Users\musta\AppData\Local\Temp\tmp7ug7s_sf\dry.jsonl
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "PASS"}
+{"event": "heldout_grade", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "PASS"}
+test_best_of_k_uses_validation_seed_and_regrades_independent_test_seed (test_portability_fixes.TestPortabilityFixes.test_best_of_k_uses_validation_seed_and_regrades_independent_test_seed) ... ok
+test_config_hash_changes_with_cpu_master_adamw_flag (test_portability_fixes.TestPortabilityFixes.test_config_hash_changes_with_cpu_master_adamw_flag) ... ok
+test_cpu_master_adamw_updates_bf16_at_1e6_and_resumes_exact_state (test_portability_fixes.TestPortabilityFixes.test_cpu_master_adamw_updates_bf16_at_1e6_and_resumes_exact_state) ... ok
+test_failed_checkpoint_never_replaces_latest_or_exposes_partial_weights (test_portability_fixes.TestPortabilityFixes.test_failed_checkpoint_never_replaces_latest_or_exposes_partial_weights) ... ok
+{"event": "heldout_generation", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "sample_k": 0, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "sample_k": 1, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "sample_k": 0, "cached": true}
+{"event": "heldout_generation", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "sample_k": 1, "cached": true}
+{"event": "heldout_generation", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "sample_k": 2, "cached": false}
+{"event": "heldout_generation", "method": "base_best_of_4", "op_name": "rmsnorm_4096", "sample_k": 3, "cached": false}
+test_interrupted_generation_resumes_only_missing_samples_and_validates_identity (test_portability_fixes.TestPortabilityFixes.test_interrupted_generation_resumes_only_missing_samples_and_validates_identity) ... ok
+test_objective_delegation_does_not_swallow_exceptions (test_portability_fixes.TestPortabilityFixes.test_objective_delegation_does_not_swallow_exceptions) ... ok
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_2", "op_name": "rmsnorm_4096", "phase": "heldout_test_oracle", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_2", "op_name": "rmsnorm_4096", "phase": "heldout_test_oracle", "status": "PASS"}
+test_oracle_same_seed_mode_is_explicitly_labeled (test_portability_fixes.TestPortabilityFixes.test_oracle_same_seed_mode_is_explicitly_labeled) ... ok
+test_resume_archives_uncheckpointed_steps_and_checks_every_config_hash (test_portability_fixes.TestPortabilityFixes.test_resume_archives_uncheckpointed_steps_and_checks_every_config_hash) ... ok
+test_adapter_checkpoint_save_load_and_incompatible_overwrite_refusal (test_qlora_grpo.TestQloraAndOnPolicyInvariants.test_adapter_checkpoint_save_load_and_incompatible_overwrite_refusal) ... ok
+test_clipped_grpo_objective_clips_ratio_and_penalizes_kl (test_qlora_grpo.TestQloraAndOnPolicyInvariants.test_clipped_grpo_objective_clips_ratio_and_penalizes_kl) ... ok
+{"event": "step_start", "step": 1, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 1, "statuses": ["NUMERICAL_MISMATCH", "NUMERICAL_MISMATCH"], "rewards": [0.15, 0.15], "optimizer_step_count": 0}
+test_policy_updated_false_logged_when_all_advantages_zero (test_qlora_grpo.TestQloraAndOnPolicyInvariants.test_policy_updated_false_logged_when_all_advantages_zero) ... ok
+test_qlora_selects_trainable_adapters_and_uses_disable_adapter_for_ref (test_qlora_grpo.TestQloraAndOnPolicyInvariants.test_qlora_selects_trainable_adapters_and_uses_disable_adapter_for_ref) ... ok
+test_strict_on_policy_rejects_temperature_or_top_p_warping (test_qlora_grpo.TestQloraAndOnPolicyInvariants.test_strict_on_policy_rejects_temperature_or_top_p_warping) ... ok
+test_t4_7b_qlora_preset_defaults_and_config_hash_sensitivity (test_qlora_grpo.TestQloraAndOnPolicyInvariants.test_t4_7b_qlora_preset_defaults_and_config_hash_sensitivity) ... ok
+test_missing_identity_fields_and_wrong_training_cursor_are_rejected (test_recover_initial_batch.TestRecoverInitialBatch.test_missing_identity_fields_and_wrong_training_cursor_are_rejected) ... ok
+{"event": "recovery_logp_verified", "sample": 0, "max_old_err": 0.0, "max_ref_err": 0.0}
+test_probability_verification_uses_no_grad_and_finite_tolerance (test_recover_initial_batch.TestRecoverInitialBatch.test_probability_verification_uses_no_grad_and_finite_tolerance) ... ok
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 1.1601582784734288}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 1.157423985289362}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 0.9819473969668244}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 1.0689428852176703}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 1.0081949062294508}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 1.117607344257867}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 1.0074666805574488}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "PASS", "reward": 0.9786539396687601}
+{"event": "recovery_grade", "op_name": "rmsnorm_2048", "status": "NUMERICAL_MISMATCH", "reward": 0.15}
+{"event": "recovery_logp_verified", "sample": 0, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 1, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 2, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 3, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 4, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 5, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 6, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 7, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 8, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 9, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 10, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 11, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 12, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 13, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 14, "max_old_err": 0.0, "max_ref_err": 0.0}
+{"event": "recovery_logp_verified", "sample": 15, "max_old_err": 0.0, "max_ref_err": 0.0}
+test_real_tiny_torch_8group_16sample_single_step_recovery (test_recover_initial_batch.TestRecoverInitialBatch.test_real_tiny_torch_8group_16sample_single_step_recovery) ... ok
+test_refuses_non_empty_out_dir (test_recover_initial_batch.TestRecoverInitialBatch.test_refuses_non_empty_out_dir) ... ok
+{"event": "recovery_logp_verified", "sample": 0, "max_old_err": 0.0010000000000000009, "max_ref_err": 0.0}
+test_stale_policy_rejected_before_any_update (test_recover_initial_batch.TestRecoverInitialBatch.test_stale_policy_rejected_before_any_update) ... ok
+test_validation_rejects_updated_mismatched_duplicate_nonfinite_and_corrupt_rows (test_recover_initial_batch.TestRecoverInitialBatch.test_validation_rejects_updated_mismatched_duplicate_nonfinite_and_corrupt_rows) ... ok
+test_both_final_cohorts_reject_identity_and_checkpoint_mutations (test_retry_comparison.TestRetryComparison.test_both_final_cohorts_reject_identity_and_checkpoint_mutations) ... ok
+test_cohort_contradictions_are_errors_not_heldout_promotions (test_retry_comparison.TestRetryComparison.test_cohort_contradictions_are_errors_not_heldout_promotions) ... ok
+test_distinct_models_and_hardware_remain_separate_never_pooled (test_retry_comparison.TestRetryComparison.test_distinct_models_and_hardware_remain_separate_never_pooled) ... ok
+test_empty_generated_source_is_preserved_as_a_failed_attempt (test_retry_comparison.TestRetryComparison.test_empty_generated_source_is_preserved_as_a_failed_attempt) ... ok
+test_every_fresh_method_operator_identity_and_seed_is_required (test_retry_comparison.TestRetryComparison.test_every_fresh_method_operator_identity_and_seed_is_required) ... ok
+test_existing_comparator_excludes_all_six_passing_development_rows (test_retry_comparison.TestRetryComparison.test_existing_comparator_excludes_all_six_passing_development_rows) ... ok
+test_full_retry_inventory_keeps_sft_and_development_separate (test_retry_comparison.TestRetryComparison.test_full_retry_inventory_keeps_sft_and_development_separate) ... ok
+test_preregistered_config_hash_and_inference_budget_must_match (test_retry_comparison.TestRetryComparison.test_preregistered_config_hash_and_inference_budget_must_match) ... ok
+test_selection_inventory_and_winner_source_are_verified (test_retry_comparison.TestRetryComparison.test_selection_inventory_and_winner_source_are_verified) ... ok
+test_sft_file_requires_all_six_and_only_its_registered_method (test_retry_comparison.TestRetryComparison.test_sft_file_requires_all_six_and_only_its_registered_method) ... ok
+test_sft_manifest_matches_main_model_hardware_config_and_step_zero (test_retry_comparison.TestRetryComparison.test_sft_manifest_matches_main_model_hardware_config_and_step_zero) ... ok
+test_sft_only_and_hybrid_success_counts_are_independent (test_retry_comparison.TestRetryComparison.test_sft_only_and_hybrid_success_counts_are_independent) ... ok
+test_all_invalid_group_cannot_update_from_failure_class_differences (test_retry_protocol.RetryProtocolTests.test_all_invalid_group_cannot_update_from_failure_class_differences) ... ok
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "l2_normalize_2048", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "rmsnorm_4096", "phase": "development_test", "status": "PASS"}
+{"event": "heldout_grade", "method": "base_best_of_2", "op_name": "l2_normalize_2048", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_2", "op_name": "l2_normalize_2048", "phase": "selection_val", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "base_best_of_2", "op_name": "l2_normalize_2048", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "trained_checkpoint", "op_name": "l2_normalize_2048", "phase": "heldout_test", "status": "COMPILE_ERROR"}
+{"event": "heldout_grade", "method": "trained_checkpoint", "op_name": "rmsnorm_4096", "phase": "development_test", "status": "PASS"}
+test_inspected_regressions_never_enter_fresh_denominator (test_retry_protocol.RetryProtocolTests.test_inspected_regressions_never_enter_fresh_denominator) ... ok
+test_logp_guard_aborts_before_optimizer_mutation (test_retry_protocol.RetryProtocolTests.test_logp_guard_aborts_before_optimizer_mutation) ... ok
+test_numpy_specification_includes_recursive_mathematical_helpers (test_retry_protocol.RetryProtocolTests.test_numpy_specification_includes_recursive_mathematical_helpers) ... ok
+test_old_run_hashes_preserved_and_active_protocol_hashed (test_retry_protocol.RetryProtocolTests.test_old_run_hashes_preserved_and_active_protocol_hashed) ... ok
+test_overflowing_gradient_norm_never_runs_an_optimizer_step (test_retry_protocol.RetryProtocolTests.test_overflowing_gradient_norm_never_runs_an_optimizer_step) ... ok
+test_prompt_states_dtype_host_device_and_enforced_policy (test_retry_protocol.RetryProtocolTests.test_prompt_states_dtype_host_device_and_enforced_policy) ... ok
+test_sft_checkpoint_resume_preserves_phase_count_without_repeating_warmup (test_retry_protocol.RetryProtocolTests.test_sft_checkpoint_resume_preserves_phase_count_without_repeating_warmup) ... ok
+test_checkpoint_save_and_resume_restores_rng_and_rejects_mismatch (test_rl_gpu_bridge.TestRlGpuBridgeAndCheckpointing.test_checkpoint_save_and_resume_restores_rng_and_rejects_mismatch) ... ok
+test_experiment_config_defaults_and_leakage_guard (test_rl_gpu_bridge.TestRlGpuBridgeAndCheckpointing.test_experiment_config_defaults_and_leakage_guard) ... ok
+{"event": "step_start", "step": 1, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 1, "statuses": ["PASS", "NUMERICAL_MISMATCH"], "rewards": [0.9989396783340978, 0.15], "optimizer_step_count": 1, "policy_updated": true, "policy_loss": -0.2, "mean_kl": 0.01}
+{"event": "step_start", "step": 2, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 2, "statuses": ["PASS", "NUMERICAL_MISMATCH"], "rewards": [0.9941872488292267, 0.15], "optimizer_step_count": 2, "policy_updated": true, "policy_loss": -0.2, "mean_kl": 0.01}
+{"event": "step_start", "step": 3, "op_name": "rmsnorm_2048"}
+{"event": "step_complete", "step": 3, "statuses": ["PASS", "NUMERICAL_MISMATCH"], "rewards": [1.239203070264387, 0.15], "optimizer_step_count": 2}
+test_gpu_training_loop_offload_hooks_and_checkpoint_resume (test_rl_gpu_bridge.TestRlGpuBridgeAndCheckpointing.test_gpu_training_loop_offload_hooks_and_checkpoint_resume) ... ok
+{"event": "heldout_grade", "method": "base_pass1", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "NUMERICAL_MISMATCH"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "selection_val", "status": "PASS"}
+{"event": "heldout_grade", "method": "base_best_of_8", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "PASS"}
+{"event": "heldout_grade", "method": "trained_checkpoint", "op_name": "rmsnorm_4096", "phase": "heldout_test", "status": "PASS"}
+test_heldout_evaluator_logs_policy_updated_false_and_metadata (test_rl_gpu_bridge.TestRlGpuBridgeAndCheckpointing.test_heldout_evaluator_logs_policy_updated_false_and_metadata) ... ok
+test_completed_output_and_checkpoint_counts_are_identity_checked (test_study_resume.StudyResumeTests.test_completed_output_and_checkpoint_counts_are_identity_checked) ... ok
+test_interrupted_evaluation_archives_output_and_keeps_generation_cache (test_study_resume.StudyResumeTests.test_interrupted_evaluation_archives_output_and_keeps_generation_cache) ... ok
+test_interrupted_grpo_uses_main_checkpoint_and_preserves_partial_log (test_study_resume.StudyResumeTests.test_interrupted_grpo_uses_main_checkpoint_and_preserves_partial_log) ... ok
+test_interrupted_sft_control_resumes_its_cache_without_retraining (test_study_resume.StudyResumeTests.test_interrupted_sft_control_resumes_its_cache_without_retraining) ... ok
+test_interrupted_sft_without_checkpoint_cannot_silently_restart (test_study_resume.StudyResumeTests.test_interrupted_sft_without_checkpoint_cannot_silently_restart) ... ok
+test_interrupted_training_resumes_completed_sft_without_repeating_it (test_study_resume.StudyResumeTests.test_interrupted_training_resumes_completed_sft_without_repeating_it) ... ok
+test_opt_in_resume_skips_all_completed_matching_stages (test_study_resume.StudyResumeTests.test_opt_in_resume_skips_all_completed_matching_stages) ... ok
+test_resume_refuses_stale_source_config_model_or_revision (test_study_resume.StudyResumeTests.test_resume_refuses_stale_source_config_model_or_revision) ... ok
+test_resume_without_manifest_and_dirty_source_refuse_before_writes (test_study_resume.StudyResumeTests.test_resume_without_manifest_and_dirty_source_refuse_before_writes) ... ok
+test_load_verified_sources_covers_all_30_ops_and_never_touches_heldout (test_supervised_warmup.TestSupervisedWarmup.test_load_verified_sources_covers_all_30_ops_and_never_touches_heldout) ... ok
+{"event": "supervised_step", "epoch": 1, "step": 1, "op_name": "rmsnorm_2048", "prompt_tokens": 1604, "completion_tokens": 1129, "loss": 4.988509, "grad_norm": 0.400795, "learning_rate": 0.005, "prompt_sha256": "65a5acc04efac0402bae4f19b3909cca0064c93d34287cb2bbd31535a0deea32", "source_sha256": "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61", "chat_template_applied": true}
+{"event": "supervised_step", "epoch": 2, "step": 2, "op_name": "rmsnorm_2048", "prompt_tokens": 1604, "completion_tokens": 1129, "loss": 4.939953, "grad_norm": 0.39817, "learning_rate": 0.005, "prompt_sha256": "65a5acc04efac0402bae4f19b3909cca0064c93d34287cb2bbd31535a0deea32", "source_sha256": "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61", "chat_template_applied": true}
+test_real_tiny_torch_warmup_masks_prompt_tokens_restores_lr_and_preserves_cache_flag (test_supervised_warmup.TestSupervisedWarmup.test_real_tiny_torch_warmup_masks_prompt_tokens_restores_lr_and_preserves_cache_flag) ... ok
+test_rejects_overlap_bad_policy_and_overlength_without_truncation (test_supervised_warmup.TestSupervisedWarmup.test_rejects_overlap_bad_policy_and_overlength_without_truncation) ... ok
+test_zero_epochs_is_clean_noop_without_mutating_config_or_cache (test_supervised_warmup.TestSupervisedWarmup.test_zero_epochs_is_clean_noop_without_mutating_config_or_cache) ... ok
+test_bf16_canonical_and_stress_match_quantized_input_numpy (test_torch_references.TestTorchReferences.test_bf16_canonical_and_stress_match_quantized_input_numpy) ... ok
+test_fp32_canonical_and_stress_match_numpy (test_torch_references.TestTorchReferences.test_fp32_canonical_and_stress_match_numpy) ... ok
+test_input_conversion_rejects_unknown_dtype (test_torch_references.TestTorchReferences.test_input_conversion_rejects_unknown_dtype) ... ok
+test_quantized_reference_rejects_floating_weights (test_torch_references.TestTorchReferences.test_quantized_reference_rejects_floating_weights) ... ok
+test_references_cover_all_thirty_baseline_entries (test_torch_references.TestTorchReferences.test_references_cover_all_thirty_baseline_entries) ... ok
+test_blocks_eval_exec_and_dunder_escape (test_track1_sandbox.TestTrack1SandboxHardening.test_blocks_eval_exec_and_dunder_escape) ... ok
+test_blocks_global_cache_memoization_cheat (test_track1_sandbox.TestTrack1SandboxHardening.test_blocks_global_cache_memoization_cheat) ... ok
+test_blocks_in_place_input_mutation (test_track1_sandbox.TestTrack1SandboxHardening.test_blocks_in_place_input_mutation) ... ok
+test_missing_entrypoint_is_compile_error (test_track1_sandbox.TestTrack1SandboxHardening.test_missing_entrypoint_is_compile_error) ... ok
+test_multi_shape_stress_catches_hardcoded_dimensions (test_track1_sandbox.TestTrack1SandboxHardening.test_multi_shape_stress_catches_hardcoded_dimensions) ... ok
+test_softmax_overflow_stability_stress_test (test_track1_sandbox.TestTrack1SandboxHardening.test_softmax_overflow_stability_stress_test) ... ok
+test_benchmark_compiled_reference_validates_correctness_and_keeps_raw_timing (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_benchmark_compiled_reference_validates_correctness_and_keeps_raw_timing) ... ok
+test_bf16_quantized_input_roundtrip_avoids_false_quantization_blame (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_bf16_quantized_input_roundtrip_avoids_false_quantization_blame) ... ok
+test_cli_invalid_args_and_overwrite_guard (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_cli_invalid_args_and_overwrite_guard) ... [ERROR] Unknown or non-baseline operator(s): ['nonexistent_op']. Valid baseline ops: ['block_sparse_attn_256', 'causal_masked_softmax_1024', 'cosine_similarity_1024', 'fp8_e4m3_simulated_scaled_gemm_512', 'fused_add_rmsnorm_2048', 'fused_bias_gelu_4096', 'fused_bias_silu_4096', 'fused_cross_entropy_4096', 'fused_dropout_residual_2048', 'fused_scale_mask_2048', 'fused_softmax_2048', 'geglu_4096', 'gqa_decode_attn_kv512', 'group_norm_64x32', 'int4_groupwise_dequant_gemm_512', 'int8_weight_only_gemm_512', 'l2_normalize_2048', 'layernorm_2048', 'log_softmax_2048', 'matmul_bias_gelu_512', 'matmul_bias_silu_512', 'matmul_residual_add_512', 'paged_kv_gather_attn_256', 'rmsnorm_2048', 'rmsnorm_4096', 'rope_fwd_128', 'scaled_dot_product_attn_128', 'selective_scan_ssm_256', 'swiglu_4096', 'topk_moe_router_dispatch_64']
+[ERROR] Output file already exists: C:\Users\musta\AppData\Local\Temp\tmpoqg7cxn0\existing.jsonl. Pass --overwrite to replace it.
+ok
+test_cuda_cli_fails_clearly_without_cuda_and_writes_no_fake_traces (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_cuda_cli_fails_clearly_without_cuda_and_writes_no_fake_traces) ... [ERROR] No CUDA GPU detected (torch.cuda.is_available() is False). Refusing to emit CPU traces.
+ok
+test_exception_classification_compile_oom_and_runtime (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_exception_classification_compile_oom_and_runtime) ... ok
+test_integer_quantization_inputs_stay_integer_in_dtype_plan (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_integer_quantization_inputs_stay_integer_in_dtype_plan) ... ok
+test_strict_failure_json_serialization_forbids_nan_and_inf (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_strict_failure_json_serialization_forbids_nan_and_inf) ... ok
+test_tolerances_for_fp32_and_bf16 (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_tolerances_for_fp32_and_bf16) ... ok
+test_torch_references_cover_all_30_triton_baselines (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_torch_references_cover_all_30_triton_baselines) ... ok
+test_triton_baselines_enforce_ieee_dot_and_contiguous (test_track2_cuda_cli.TestTrack2CudaCliAndTorchRefs.test_triton_baselines_enforce_ieee_dot_and_contiguous) ... ok
+test_all_19_triton_baselines_pass_ast_ieee_no_tanh_and_anti_cheat (test_track2_extended.TestTrack2Extended19Ops.test_all_19_triton_baselines_pass_ast_ieee_no_tanh_and_anti_cheat) ... ok
+test_cpu_pytorch_vs_numpy_equivalence_all_19_ops_fp32_and_bf16 (test_track2_extended.TestTrack2Extended19Ops.test_cpu_pytorch_vs_numpy_equivalence_all_19_ops_fp32_and_bf16) ... ok
+test_exact_19_remaining_ops_covered_with_zero_overlap (test_track2_extended.TestTrack2Extended19Ops.test_exact_19_remaining_ops_covered_with_zero_overlap) ... ok
+test_integer_inputs_preserved_across_quantized_and_indexed_extended_ops (test_track2_extended.TestTrack2Extended19Ops.test_integer_inputs_preserved_across_quantized_and_indexed_extended_ops) ... ok
+test_signed_scan_prefix_form_handles_zero_and_mixed_inputs (test_track2_extended.TestTrack2Extended19Ops.test_signed_scan_prefix_form_handles_zero_and_mixed_inputs) ... ok
+test_all_30_operators_deterministic_and_finite (test_track2_kernels.TestTrack2OperatorRegistryAndBaselines.test_all_30_operators_deterministic_and_finite) ... ok
+test_analytical_roofline_metrics_positive (test_track2_kernels.TestTrack2OperatorRegistryAndBaselines.test_analytical_roofline_metrics_positive) ... ok
+test_operator_counts_by_tier (test_track2_kernels.TestTrack2OperatorRegistryAndBaselines.test_operator_counts_by_tier) ... ok
+test_triton_baselines_registered_valid_syntax_and_no_cheat (test_track2_kernels.TestTrack2OperatorRegistryAndBaselines.test_triton_baselines_registered_valid_syntax_and_no_cheat) ... ok
+test_verifier_compatibility_across_levels (test_track2_kernels.TestTrack2OperatorRegistryAndBaselines.test_verifier_compatibility_across_levels) ... ok
+test_advantages_handle_equal_and_invalid_rewards (test_training.TestTraining.test_advantages_handle_equal_and_invalid_rewards) ... ok
+test_config_rejects_invalid_limits (test_training.TestTraining.test_config_rejects_invalid_limits) ... ok
+test_dry_run_is_strict_fixture_json (test_training.TestTraining.test_dry_run_is_strict_fixture_json) ... ok
+test_grading_is_bounded_and_ordered (test_training.TestTraining.test_grading_is_bounded_and_ordered) ... ok
+test_objective_mask_clipping_and_kl (test_training.TestTraining.test_objective_mask_clipping_and_kl) ... ok
+test_search_repair_keeps_group_provenance (test_training.TestTraining.test_search_repair_keeps_group_provenance) ... ok
+test_source_extraction (test_training.TestTraining.test_source_extraction) ... ok
+test_torch_objective_matches_numpy_and_updates_parameters (test_training.TestTraining.test_torch_objective_matches_numpy_and_updates_parameters) ... ok
+test_training_refuses_unsupported_repairs_before_model_load (test_training.TestTraining.test_training_refuses_unsupported_repairs_before_model_load) ... ok
+test_training_updates_local_tiny_policy_and_saves_checkpoint (test_training.TestTraining.test_training_updates_local_tiny_policy_and_saves_checkpoint)
+Exercise orchestration/autograd with a tiny local fixture; no model download. ... ok
+test_vllm_url_validation_and_async_order (test_training.TestTraining.test_vllm_url_validation_and_async_order) ... ok
+test_cached_output_cannot_pass_fresh_timing_inputs (test_verifier.VerifierBoundaryTests.test_cached_output_cannot_pass_fresh_timing_inputs) ... ok
+test_delayed_input_mutation_cannot_pass_timing (test_verifier.VerifierBoundaryTests.test_delayed_input_mutation_cannot_pass_timing) ... ok
+test_file_and_introspection_access_rejected (test_verifier.VerifierBoundaryTests.test_file_and_introspection_access_rejected) ... ok
+test_infinite_candidate_is_killed (test_verifier.VerifierBoundaryTests.test_infinite_candidate_is_killed) ... ok
+test_input_mutation_cannot_corrupt_reference (test_verifier.VerifierBoundaryTests.test_input_mutation_cannot_corrupt_reference) ... ok
+test_numpy_namespace_mutation_rejected (test_verifier.VerifierBoundaryTests.test_numpy_namespace_mutation_rejected) ... ok
+test_strict_json_and_missing_compiler_measurement (test_verifier.VerifierBoundaryTests.test_strict_json_and_missing_compiler_measurement) ... ok
+test_syntax_error_is_a_compile_failure (test_verifier.VerifierBoundaryTests.test_syntax_error_is_a_compile_failure) ... ok
+test_timeout_validation (test_verifier.VerifierBoundaryTests.test_timeout_validation) ... ok
+test_unknown_operator_and_invalid_seed_rejected_before_worker (test_verifier.VerifierBoundaryTests.test_unknown_operator_and_invalid_seed_rejected_before_worker) ... ok
+
+----------------------------------------------------------------------
+Ran 185 tests in 87.465s
+
+OK
+[OK] L1 rmsnorm_2048                       shape=(512, 2048)        AI=  0.62 FLOP/B
+[OK] L1 rmsnorm_4096                       shape=(256, 4096)        AI=  0.62 FLOP/B
+[OK] L1 layernorm_2048                     shape=(512, 2048)        AI=  0.87 FLOP/B
+[OK] L1 swiglu_4096                        shape=(512, 4096)        AI=  0.42 FLOP/B
+[OK] L1 geglu_4096                         shape=(512, 4096)        AI=  0.75 FLOP/B
+[OK] L1 fused_add_rmsnorm_2048             shape=(512, 2048)        AI=  0.50 FLOP/B
+[OK] L1 fused_bias_gelu_4096               shape=(512, 4096)        AI=  1.12 FLOP/B
+[OK] L1 fused_bias_silu_4096               shape=(512, 4096)        AI=  0.62 FLOP/B
+[OK] L1 fused_dropout_residual_2048        shape=(512, 2048)        AI=  0.19 FLOP/B
+[OK] L1 fused_scale_mask_2048              shape=(512, 2048)        AI=  0.17 FLOP/B
+[OK] L1 l2_normalize_2048                  shape=(512, 2048)        AI=  0.50 FLOP/B
+[OK] L1 cosine_similarity_1024             shape=(512,)             AI=  0.75 FLOP/B
+[OK] L2 fused_softmax_2048                 shape=(512, 2048)        AI=  0.62 FLOP/B
+[OK] L2 causal_masked_softmax_1024         shape=(32, 128, 128)     AI=  0.75 FLOP/B
+[OK] L2 log_softmax_2048                   shape=(512, 2048)        AI=  0.62 FLOP/B
+[OK] L2 fused_cross_entropy_4096           shape=(256,)             AI=  1.25 FLOP/B
+[OK] L2 rope_fwd_128                       shape=(8, 16, 128, 64)   AI=  0.37 FLOP/B
+[OK] L2 matmul_bias_gelu_512               shape=(256, 512)         AI= 64.50 FLOP/B
+[OK] L2 matmul_bias_silu_512               shape=(256, 512)         AI= 64.25 FLOP/B
+[OK] L2 matmul_residual_add_512            shape=(256, 512)         AI= 51.25 FLOP/B
+[OK] L2 scaled_dot_product_attn_128        shape=(4, 8, 128, 64)    AI= 32.62 FLOP/B
+[OK] L2 group_norm_64x32                   shape=(16, 32, 64)       AI=  0.87 FLOP/B
+[OK] L3 int8_weight_only_gemm_512          shape=(128, 512)         AI= 85.44 FLOP/B
+[OK] L3 int4_groupwise_dequant_gemm_512    shape=(128, 512)         AI=101.07 FLOP/B
+[OK] L3 fp8_e4m3_simulated_scaled_gemm_512 shape=(128, 512)         AI=113.84 FLOP/B
+[OK] L3 block_sparse_attn_256              shape=(2, 4, 256, 64)    AI= 16.00 FLOP/B
+[OK] L3 gqa_decode_attn_kv512              shape=(4, 16, 1, 64)     AI=  2.02 FLOP/B
+[OK] L3 paged_kv_gather_attn_256           shape=(4, 8, 64)         AI=  0.51 FLOP/B
+[OK] L3 selective_scan_ssm_256             shape=(8, 256, 64)       AI=  0.40 FLOP/B
+[OK] L3 topk_moe_router_dispatch_64        shape=(256, 64)          AI= 16.87 FLOP/B
+
+Verified 30 operators (L1=12, L2=10, L3=8).
+CPU fixture verification completed: 4 rollouts written to C:\Users\musta\AppData\Local\Temp\tmp2cdg97ss\dry.jsonl

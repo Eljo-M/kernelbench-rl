@@ -1,0 +1,18 @@
+{
+  "reviewer_tool": "Gemini native app, existing project conversation",
+  "conversation_url": "https://gemini.google.com/app/16baec040825e572",
+  "reviewed_source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+  "record_type": "Manually transcribed audit summary, not experiment output",
+  "findings": [
+    "Separate fixed handwritten baseline performance from learned program quality.",
+    "The custom 30-operator suite is not the complete official KernelBench benchmark.",
+    "The three fresh test operators share structural families with training operators; do not claim unseen-family out-of-distribution generalization.",
+    "Report exact pass counts, paired per-operator outcomes, single-seed scope and actual SFT/GRPO optimizer counts.",
+    "The SFT-only control is essential; base-to-hybrid changes cannot establish an RL-only gain.",
+    "Both tracks intentionally use the original pre-SFT base as KL reference. The anchor differs from a post-SFT reference and must be documented.",
+    "CPU-vocabulary 7B readiness peak is a one-example fit measurement, not the peak or quality result of the complete study.",
+    "Static source policy and child-process checks are empirical development guards, not formal equivalence or OS security proofs.",
+    "Frame production uses as potential applications; no deployed inference or energy saving has been measured."
+  ],
+  "resolution": "Retain the frozen schedule, explicitly document the original-base KL anchor, shared-family test scope and readiness/full-study distinction in the manuscript and website. No metrics inferred from the audit."
+}

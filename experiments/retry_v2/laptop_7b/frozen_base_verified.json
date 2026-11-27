@@ -1,0 +1,50 @@
+{
+  "proof_version": 1,
+  "config_hash": "aac728c27b3b726c",
+  "model_identity": {
+    "model_name_or_path": "../../work/models/Qwen2.5-Coder-7B-Instruct",
+    "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+    "training_mode": "qlora_7b_nf4"
+  },
+  "before": {
+    "hash_version": "frozen_stored_tensors_v1",
+    "sha256": "1171869e138385fde36c76e636c483c456d5ec61ee6e42be73ef77cea27ddcdc",
+    "frozen_parameter_tensors": 339,
+    "frozen_parameter_bytes": 7623956480,
+    "buffer_tensors": 1,
+    "buffer_bytes": 256,
+    "quantization_state_roots": 196,
+    "quantization_state_tensors": 980,
+    "quantization_state_bytes": 103764752,
+    "quantization_metadata_values": 2548,
+    "tensor_payload_bytes": 7727721488,
+    "buffer_scope": "all registered buffers, including nonpersistent buffers",
+    "quantization_scope": "available parameter/module quant_state; nested state and metadata included",
+    "trainable_parameters_excluded": true,
+    "tensor_order": "sorted names; logical row-major stored dtype"
+  },
+  "after": {
+    "hash_version": "frozen_stored_tensors_v1",
+    "sha256": "1171869e138385fde36c76e636c483c456d5ec61ee6e42be73ef77cea27ddcdc",
+    "frozen_parameter_tensors": 339,
+    "frozen_parameter_bytes": 7623956480,
+    "buffer_tensors": 1,
+    "buffer_bytes": 256,
+    "quantization_state_roots": 196,
+    "quantization_state_tensors": 980,
+    "quantization_state_bytes": 103764752,
+    "quantization_metadata_values": 2548,
+    "tensor_payload_bytes": 7727721488,
+    "buffer_scope": "all registered buffers, including nonpersistent buffers",
+    "quantization_scope": "available parameter/module quant_state; nested state and metadata included",
+    "trainable_parameters_excluded": true,
+    "tensor_order": "sorted names; logical row-major stored dtype"
+  },
+  "verified": true,
+  "training_completed": true,
+  "phase": "before_and_after_current_sft_grpo_invocation",
+  "resumed": false,
+  "is_quality_metric": false,
+  "initial_evidence_file": "frozen_base_initial.json",
+  "scope": "frozen parameter bytes/dtype/shapes, registered buffers, available NF4 quantization state"
+}

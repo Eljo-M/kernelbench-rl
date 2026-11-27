@@ -1,0 +1,54 @@
+{
+  "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+  "source_code_dirty": false,
+  "source_hashes": {
+    "sandbox_runner/gpu_worker.py": "28beaacbbcd85a5c4d7fad36addd8973636084a30e64fb73d9e4dfc6b0c59d51",
+    "sandbox_runner/gpu_verifier.py": "1b9572119f6294a5935f07d8d58096568347b9700fdacd38445fabe85eaf25e4",
+    "sandbox_runner/gpu_source_policy.py": "6712c40af7ce3ec3bcd8ac90e5f98bd1aa3998bd1ebeeafe31605cf4ec5851a1",
+    "kernels/op_registry.py": "cc745c35ee2e181b05cf6ab93b451d840fb2463092aa22d93941c0c85a21d631",
+    "kernels/triton_baselines.py": "7ea2efa41d421eddf4041187033d14ddba081193cf3eaa65a25f367e7c2e359b",
+    "kernels/triton_extended.py": "1aceeb42d24eb2b3ad364df674723dea556a3dbbd9e8580d509362ef153f7db7",
+    "kernels/torch_references.py": "c7071daa061c9914218716c2ce07ebd4df022f33611969ea9d7c91d510342468"
+  },
+  "seed": 142,
+  "independent_seed": 10142,
+  "warmup_iters": 5,
+  "bench_iters": 30,
+  "timeout_secs": 120,
+  "backend": "triton",
+  "operator_count": 30,
+  "dtypes": [
+    "fp32",
+    "bf16"
+  ],
+  "total_cases": 60,
+  "method": "handwritten_baseline_strict_regression",
+  "procedure": "Sequential grade_candidate through actual supervised child gpu_worker with canonical, stress, independent and post-timing output guards",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "cuda": "12.8",
+  "versions": {
+    "triton-windows": "3.6.0.post26",
+    "transformers": "4.57.6",
+    "accelerate": "1.16.0",
+    "bitsandbytes": "0.49.0",
+    "peft": "0.18.0"
+  },
+  "is_quality_experiment": false,
+  "is_historical_benchmark_replacement": false,
+  "caches": {
+    "TRITON_CACHE_DIR": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\work\\triton-cache",
+    "TORCHINDUCTOR_CACHE_DIR": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\work\\inductor-cache"
+  },
+  "started_utc": "2026-11-27T01:40:16.427135+00:00",
+  "status": "completed",
+  "prior_attempts": [],
+  "completed_cases": 60,
+  "status_counts": {
+    "PASS": 60
+  },
+  "completed_utc": "2026-11-27T01:49:14.723375+00:00",
+  "all_cases_passed": true,
+  "rows_sha256": "b9a4fd899a0b4d5827acb0921c14c22cf4589df46b1cefb2bd7da5863775fce5",
+  "last_invocation_seconds": 538.3119999999763
+}

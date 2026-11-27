@@ -1,0 +1,97 @@
+{
+  "schema_version": "kernelbench_frozen_followup_protocol_v1",
+  "registered_utc": "2026-11-27T01:59:21.782044+00:00",
+  "status": "FROZEN_BEFORE_TRAINING_AND_PROSPECTIVE_GENERATION",
+  "goal": "A bounded stronger 7B training follow-up with a new prospective evaluation; no guaranteed pass count.",
+  "initialization": "Fresh rank16 all-seven-projection adapters on the pinned original NF4 base; no v2 adapter transfer or optimizer resume.",
+  "fresh_heldout_ops": [
+    "cosine_similarity_1024",
+    "fused_bias_gelu_4096",
+    "matmul_bias_silu_512"
+  ],
+  "development_regressions": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "train_ops": [
+    "rmsnorm_2048",
+    "layernorm_2048",
+    "swiglu_4096",
+    "fused_add_rmsnorm_2048",
+    "fused_softmax_2048",
+    "log_softmax_2048",
+    "rope_fwd_128",
+    "matmul_bias_gelu_512",
+    "l2_normalize_2048",
+    "fused_bias_silu_4096",
+    "matmul_residual_add_512"
+  ],
+  "retired_v2_test_now_training_seen": [
+    "l2_normalize_2048",
+    "fused_bias_silu_4096",
+    "matmul_residual_add_512"
+  ],
+  "development_note": "Original inspected v1 tests remain development-only. Former v2 fresh tests are now training targets and receive no v3 evaluation credit.",
+  "prospective_exposure_note": "No prior model-generated or SFT-target records for the new trio were found in audited repository artifacts. Public fixed contracts/references/baselines existed. No pretraining or external-interaction cleanliness claim.",
+  "exposure_inventory_sha256": "3bcff6b555288de6b7c163efaa626e084635ffcf07fb232425b1faacaf542fa4",
+  "exposure_inventory_path": "experiments/retry_v3/exposure_inventory.json",
+  "training_source": "Only the eleven configured curated fixed Triton sources, prepared with coding-assistant support. New held-out and development sources excluded from SFT targets.",
+  "prompt": "Unchanged contract_v2 with identical template per method; no new held-out target solutions or diagnostics in model training.",
+  "sampling": "Raw on-policy temperature=1, top_p=1, top_k=0; max_new_tokens=1536 for all arms. No selective extension.",
+  "schedule": "Eight supervised epochs of eleven examples (88 updates), then sixteen groups of two GRPO samples. The configured order is retained; the first five operators receive a second GRPO group.",
+  "training_reward": "Correctness-gated existing speed-sensitive PASS reward; all non-PASS rewards zero. Equal rewards have zero relative advantage. Actual optimizer updates are measured, not inferred from group counts.",
+  "reference_policy": "Original pre-SFT frozen quantized base through disabled adapters; not an SFT-checkpoint KL anchor.",
+  "adapter": {
+    "rank": 16,
+    "alpha": 32,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "expected_trainable_parameters": 40370176
+  },
+  "learning_rates": {
+    "sft": 0.0001,
+    "grpo": 2e-05
+  },
+  "inference_budgets": {
+    "base_pass1": 1,
+    "base_best_of_8_fresh_only": 8,
+    "sft_only_checkpoint": 1,
+    "trained_checkpoint": 1
+  },
+  "expected_inventory": {
+    "training_rollouts": 32,
+    "main_evaluation_rows": 39,
+    "selection_rows": 24,
+    "fresh_main_final_rows": 9,
+    "development_main_final_rows": 6,
+    "sft_control_rows": 6
+  },
+  "config_hashes": {
+    "laptop_7b": "0dfb0a14abad3067"
+  },
+  "run_schedules": {
+    "laptop_7b": {
+      "max_steps": 16,
+      "sft_epochs": 8,
+      "group_size": 2
+    }
+  },
+  "stopping_rule": "One frozen schedule from fresh initialization. Complete training before new test inspection; retain all scheduled evaluation methods and failures. No replacing tasks, selecting a better checkpoint after fresh tests, or retuning to achieve 3/3.",
+  "resources": "Existing laptop RTX5060 and public pinned model files only; no paid service, additional account, quota bypass, or rented GPU.",
+  "readiness_gate": "Actual expanded-adapter longest-training-example and synthetic maximum-context finite backward/update probes plus eleven FP16 fixed-target strict checks must pass before training. Probe weights are discarded; probes are not quality results.",
+  "comparison_limit": "New tasks, seed, rank, modules and training schedule differ from v2. V2 and v3 are unpaired and never pooled. Each within-v3 control uses its own identical inference contract and budget labels.",
+  "limitations": [
+    "N=3, one model seed and single fixed-source corpus; no significance or universal correctness claim.",
+    "Shared-family compositional transfer under public contracts, not unseen-family OOD.",
+    "Tiny-corpus SFT may memorize; sparse reward variance and original-base KL can limit useful GRPO updates.",
+    "No causal SFT necessity, RL-only improvement, model-scale threshold, full-parameter 7B, FSDP, or convergence claim."
+  ]
+}

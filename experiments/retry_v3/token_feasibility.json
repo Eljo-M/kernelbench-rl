@@ -1,0 +1,103 @@
+{
+  "is_readiness_preflight": true,
+  "launched_training": false,
+  "config_hash": "0dfb0a14abad3067",
+  "start_from": "fresh rank16 all7-linear LoRA from pinned pretrained base; not v2adapter warmstart or optimizer resume",
+  "training_example_count": 11,
+  "supervised_updates": 88,
+  "expected_trainable_parameters": 40370176,
+  "examples": [
+    {
+      "op_name": "rmsnorm_2048",
+      "prompt_tokens": 852,
+      "completion_tokens": 381,
+      "full_tokens": 1233,
+      "source_sha256": "aef250e78a3ac789d865f69ceead5ac7e878905902d5287a6bab70d491120f61",
+      "prompt_sha256": "4adfff108aa7e77d0b447120d1dea74aa59f1213cb4dfe0d7e1fc94b9615d7d9"
+    },
+    {
+      "op_name": "layernorm_2048",
+      "prompt_tokens": 904,
+      "completion_tokens": 457,
+      "full_tokens": 1361,
+      "source_sha256": "9d5f4832ae46375be227fd8af728ccb55f69ed2866c4014cf1720ce1eba42a06",
+      "prompt_sha256": "a68cd741c75a66decfb203285f383e4ccf9aac03de6ffaecca04f6f179d8f99e"
+    },
+    {
+      "op_name": "swiglu_4096",
+      "prompt_tokens": 860,
+      "completion_tokens": 277,
+      "full_tokens": 1137,
+      "source_sha256": "df5f17e222a94386a1e949fbd0a5cfdad5ead28c44ee6f67fc2474d6287346bb",
+      "prompt_sha256": "5424fd0e215600e1d22e803f368be7ae877970c8679f982d1e4b3a511e9534a1"
+    },
+    {
+      "op_name": "fused_add_rmsnorm_2048",
+      "prompt_tokens": 901,
+      "completion_tokens": 447,
+      "full_tokens": 1348,
+      "source_sha256": "dae5ecbb4ffbf0ec37d69547728c96be766d3baa51a752ac01697fbdeba7a629",
+      "prompt_sha256": "4ac8b2bf07036e963c14ddb5cbf9a681b263c52a901b04c527ff23f92070d612"
+    },
+    {
+      "op_name": "fused_softmax_2048",
+      "prompt_tokens": 784,
+      "completion_tokens": 319,
+      "full_tokens": 1103,
+      "source_sha256": "bbb4505f719bfc23639fec95581cb64622e1c4f02664599f0dc5244f01344eba",
+      "prompt_sha256": "a449c4fa3a635f5fd265c047ce0b1085635a55e402d9a384e5ecd2c892567c20"
+    },
+    {
+      "op_name": "log_softmax_2048",
+      "prompt_tokens": 795,
+      "completion_tokens": 328,
+      "full_tokens": 1123,
+      "source_sha256": "12f74498349c38443d1f8bf4d755f54780bb0ecb7e82c073d1f3f137b446ee56",
+      "prompt_sha256": "c14c00dd55505f8b2a6c0a3ecf6b96701f0312f7734d56354c0ec6a019bf7be6"
+    },
+    {
+      "op_name": "rope_fwd_128",
+      "prompt_tokens": 948,
+      "completion_tokens": 563,
+      "full_tokens": 1511,
+      "source_sha256": "d98d635db11789591db33fd6805783a909d89666bba01d19907ca051c97e84f7",
+      "prompt_sha256": "5b0609cc77f5dc1a055e00a7fca00e92a56015dd146b69f2d2e5551473edaa09"
+    },
+    {
+      "op_name": "matmul_bias_gelu_512",
+      "prompt_tokens": 885,
+      "completion_tokens": 761,
+      "full_tokens": 1646,
+      "source_sha256": "ef1fcf9751cd0c233c2cebdaeb01fb40d1880fd74901652fb004ba2dc5364678",
+      "prompt_sha256": "1ec382e237dcfc8b1f505c8da0131401f8580bdb5dec4dcd8aa56556aa177c82"
+    },
+    {
+      "op_name": "l2_normalize_2048",
+      "prompt_tokens": 815,
+      "completion_tokens": 288,
+      "full_tokens": 1103,
+      "source_sha256": "6c3174c932390840d0583bd7d2be55812b024f35142f0d7ba687114775631e08",
+      "prompt_sha256": "346ef9df3a0d7b79a19a1ac6a417e47ab4146eb91421c74dec443623d9aaa76c"
+    },
+    {
+      "op_name": "fused_bias_silu_4096",
+      "prompt_tokens": 857,
+      "completion_tokens": 330,
+      "full_tokens": 1187,
+      "source_sha256": "cd29be1657abd7d27fe8448c4207dfdb9137b4c23d23e8c5a82180628190fa14",
+      "prompt_sha256": "782ec86ba8054a8598bac817bdf73bf047580d6eba4da1d3044375bb839085ba"
+    },
+    {
+      "op_name": "matmul_residual_add_512",
+      "prompt_tokens": 841,
+      "completion_tokens": 652,
+      "full_tokens": 1493,
+      "source_sha256": "81e22fd2580db16e685b178013bb988e530ba7e2a81f744bcb22b45496b5de8d",
+      "prompt_sha256": "d06c262feaa757b3e5cd21be2e4437090c406d45a7257138812a53afd8e69ff8"
+    }
+  ],
+  "all_targets_within_generation_budget": true,
+  "static_source_policy_passed": true,
+  "fp16_gpu_preflight_pending": true,
+  "new_heldout_training_sources_not_accessed": true
+}

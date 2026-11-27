@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kernelbench-rl"
-version = "0.1.0"
-description = "Autonomous CUDA/Triton GPU Kernel Optimizer via Execution-Feedback GRPO"
+version = "0.2.0"
+description = "Execution-feedback GPU kernel synthesis and reproducible verification"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -34,6 +34,12 @@ gpu = [
 ]
 serving = [
     "vllm>=0.6; sys_platform == 'linux'",
+]
+publication = [
+    "reportlab>=4.4,<5",
+    "pypdf>=6,<7",
+    "Pillow>=11,<14",
+    "huggingface-hub>=0.36,<0.37",
 ]
 dev = [
     "pytest>=8.0",

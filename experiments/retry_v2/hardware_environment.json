@@ -1,0 +1,17 @@
+{
+  "checked_utc": "2026-11-27T00:43:20.2080927Z",
+  "scope": "Current laptop hardware descriptor, recorded during the corrected studies; excludes serial numbers, hostname and network identifiers",
+  "cpu": {
+    "Name": "AMD Ryzen AI 7 350 w/ Radeon 860M              ",
+    "NumberOfCores": 8,
+    "NumberOfLogicalProcessors": 16
+  },
+  "reported_physical_memory_bytes": 33413771264,
+  "os": {
+    "Caption": "Microsoft Windows 11 Home",
+    "Version": "10.0.26200",
+    "BuildNumber": "26200"
+  },
+  "gpu_csv": "NVIDIA GeForce RTX 5060 Laptop GPU, 581.91, 8151 MiB",
+  "torch_cpu_threads": 4
+}

@@ -1,0 +1,42 @@
+from datetime import datetime,timezone
+import hashlib,json,os,subprocess,sys,time
+from collections import Counter
+from pathlib import Path
+workspace=Path(__file__).resolve().parents[1];repo=workspace/'outputs/kernelbench-rl'
+sys.path.insert(0,str(repo));os.chdir(repo)
+from kernels.triton_baselines import TRITON_BASELINES
+from rl_trainer.experiment_config import ExperimentConfig
+from sandbox_runner.gpu_verifier import grade_candidate
+out=workspace/'work/retry-v3-dataset-preflight'
+if out.exists():raise RuntimeError('Refusing to overwrite dataset-preflight evidence')
+out.mkdir()
+cfg=ExperimentConfig.from_json(workspace/'work/retry_v3_7b_config.json')
+changed=subprocess.check_output(['git','diff','--name-only','HEAD','--','*.py'],text=True).splitlines()
+untracked=subprocess.check_output(['git','ls-files','--others','--exclude-standard','--','*.py'],text=True).splitlines()
+guards=['sandbox_runner/gpu_worker.py','sandbox_runner/gpu_verifier.py','sandbox_runner/gpu_source_policy.py']
+source_hashes={name:hashlib.sha256((repo/name).read_bytes()).hexdigest() for name in guards}
+env=dict(is_dataset_preflight=True,is_quality_experiment=False,config_hash=cfg.config_hash(),
+ source_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),source_code_dirty=bool(changed or untracked),
+ changed_python_paths=changed,untracked_python_paths=untracked,source_hashes=source_hashes,
+ dtype=cfg.dtype,seed=cfg.seed,independent_seed=cfg.seed+10000,train_ops=cfg.train_ops,
+ heldout_training_source_lookup_performed=False,started_utc=datetime.now(timezone.utc).isoformat())
+started=time.monotonic();rows=[]
+try:
+ with (out/'records.jsonl').open('x',encoding='utf-8') as stream:
+  for index,op in enumerate(cfg.train_ops):
+   source=TRITON_BASELINES[op]
+   row=grade_candidate(op,source,backend='triton',float_dtype=cfg.dtype,seed=cfg.seed,independent_seed=cfg.seed+10000,
+    warmup=cfg.warmup_iters,iters=cfg.bench_iters,timeout_secs=cfg.worker_timeout_secs,
+    method='v3_training_dataset_preflight',run_id=f'v3-training-preflight-{index}-{op}',stress_test=True)
+   row.update(is_dataset_preflight=True,is_quality_experiment=False,config_hash=cfg.config_hash())
+   stream.write(json.dumps(row,allow_nan=False)+'\n');stream.flush();rows.append(row)
+   print(json.dumps(dict(event='dataset_preflight_result',case=index+1,total=len(cfg.train_ops),op_name=op,status=row['status'],error_message=row.get('error_message',''))),flush=True)
+ env.update(completed_utc=datetime.now(timezone.utc).isoformat(),status_counts=dict(Counter(row['status'] for row in rows)),
+  all_passed=len(rows)==len(cfg.train_ops) and all(row['status']=='PASS' for row in rows),
+  rows_sha256=hashlib.sha256((out/'records.jsonl').read_bytes()).hexdigest())
+ assert source_hashes=={name:hashlib.sha256((repo/name).read_bytes()).hexdigest() for name in guards}
+except BaseException as exc:
+ env.update(error_type=type(exc).__name__,error=str(exc));raise
+finally:
+ env['elapsed_seconds']=time.monotonic()-started
+ (out/'environment.json').write_text(json.dumps(env,indent=2,allow_nan=False)+'\n')

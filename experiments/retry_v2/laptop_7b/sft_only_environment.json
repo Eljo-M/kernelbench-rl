@@ -1,0 +1,70 @@
+{
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "model_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "config_hash": "aac728c27b3b726c",
+  "source_commit": "cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e",
+  "source_code_dirty": false,
+  "training_mode": "qlora_7b_nf4",
+  "dtype": "fp16",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "triton": "3.6.0",
+  "transformers": "4.57.6",
+  "cuda": "12.8",
+  "train_ops": [
+    "rmsnorm_2048",
+    "layernorm_2048",
+    "swiglu_4096",
+    "fused_add_rmsnorm_2048",
+    "fused_softmax_2048",
+    "log_softmax_2048",
+    "rope_fwd_128",
+    "matmul_bias_gelu_512"
+  ],
+  "heldout_ops": [
+    "l2_normalize_2048",
+    "fused_bias_silu_4096",
+    "matmul_residual_add_512"
+  ],
+  "development_eval_ops": [
+    "rmsnorm_4096",
+    "int8_weight_only_gemm_512",
+    "scaled_dot_product_attn_128"
+  ],
+  "generation_engine": "hf_eager",
+  "sampling": {
+    "do_sample": true,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_new_tokens": 1536
+  },
+  "best_of_k": 8,
+  "qlora_cpu_offload": true,
+  "checkpoint_root": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\outputs\\kernelbench-rl\\checkpoints\\retry_v2_laptop_7b",
+  "train_output": "C:\\Users\\musta\\Documents\\Codex\\2026-11-26\\um-i\\outputs\\kernelbench-rl\\experiments\\retry_v2\\laptop_7b\\train.jsonl",
+  "training_schedule": "4 training-only supervised epochs then 8 on-policy GRPO groups",
+  "checkpoint_step": 0,
+  "checkpoint_weights_sha256": "c0216d947043e140a9158e077f414e0efb1f44456214ca978ef54ca3fb3e8c90",
+  "checkpoint_identity": "checkpoint:0:c0216d947043e140a9158e077f414e0efb1f44456214ca978ef54ca3fb3e8c90",
+  "optimizer_steps": 0,
+  "sft_optimizer_steps": 32,
+  "started_utc": "2026-11-27T01:31:04.773465+00:00",
+  "prior_attempts": [],
+  "completed_utc": "2026-11-27T01:38:46.804110+00:00",
+  "summary": {
+    "sft_only_checkpoint": {
+      "ops": 3.0,
+      "development_passed": 1,
+      "development_total": 3,
+      "selection_method": "single_sample",
+      "pass_rate": 66.67,
+      "fast_1x_rate": 66.67,
+      "fast_compile_rate": 66.67,
+      "geomean_speedup_vs_eager": 6.4038,
+      "mean_reward": 2.6452
+    }
+  },
+  "output_sha256": "81c8714bb994ecaedc36e2c5eafbe1b514e33c87f410e2cfcd3bcb019ccbb012",
+  "seconds": 462.0320000000065
+}

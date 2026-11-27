@@ -1,0 +1,23 @@
+{
+  "schema_version": "kernelbench_assistant_review_note_v1",
+  "recorded_utc": "2026-11-27T02:02:46.017001+00:00",
+  "is_experiment_output": false,
+  "provenance": "Manual transcription/summary of observed Gemini native-app review; not an API export or GPU result.",
+  "conversation_url": "https://gemini.google.com/app/d372cf50060a2365",
+  "review_scope": "Prospective v3 protocol before training or fresh generation",
+  "accepted_points": [
+    "Fresh pinned-base initialization and new untouched-by-generated-record trio, with previous v2 tests training-seen.",
+    "Shared-family compositional transfer under public fixed contracts.",
+    "Tiny fixed-source corpus can memorize; N=3 and one seed give low statistical resolution.",
+    "Original-base KL and sparse reward variance may limit useful GRPO updates.",
+    "Actual SFT-only control, per-operator outcomes and performed update counts required.",
+    "Memory-only readiness evidence is separate from inference time and quality."
+  ],
+  "clarifications_and_rejected_overclaims": [
+    "PASS reward is the existing bounded speed-sensitive reward, not binary1; every non-PASS training reward is zero.",
+    "All-PASS groups can still have speed-related reward variance.",
+    "No model-scale threshold or causal SFT/RL result is established.",
+    "No guaranteed3/3 or adaptive replacement of failed fresh tasks."
+  ],
+  "coding_attribution": "Gemini previously provided the supervised warmup module; Codex reviewed/integrated it and implemented surrounding verification, execution, analysis and publication code."
+}
