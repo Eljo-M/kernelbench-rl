@@ -1,5 +1,37 @@
 # Publication and provenance tools
 
+## Current presentation and preserved full study
+
+The current `docs/` website presents two selected successful case studies.
+**2/2 featured kernels verified** counts these examples, not the complete
+held-out pass rate. The separate paper is under `paper/case-studies/`; its
+public PDF is `docs/assets/kernelbench-rl-case-studies.pdf`. This presentation
+change creates no new experiment or aggregate accuracy estimate.
+
+The complete v0.2 website is preserved outside served `docs/` in
+`website/archive-v0.2/`. CI requires every byte there to match the original
+`docs/` blobs at `9e1c103bf4d3afe7cd5078868e9a00b4f1fdba65`. The original
+full-study manuscript/PDF, plots, experiment records, attribution, history and
+release assets remain unchanged. The full-study artifact checker routes only
+its website reads to this mirror; all scientific and byte checks are unchanged.
+
+Current maintenance checks both views independently:
+
+```text
+python website/validate_archive.py --repo .
+python website/validate_static.py website/archive-v0.2
+python tools/publication/verify_publication_artifacts.py --repo . --require-v3 --output WORKSPACE/work/full-study-verification.json
+python website/validate_showcase.py --repo . --site docs
+```
+
+The reconstruction/export commands below document the original complete-study
+workflow. Use a separate checkout of its reviewed source and separate staging
+directories. Do not run the old finalizer, data builder or exporter over the
+selected-case site or immutable mirror. Do not overwrite existing release
+archives or receipts. Site maintenance requires a new reviewed commit, CI and
+public byte-verification receipt; it does not move the original release tag or
+change which source executed the studies.
+
 Author: **Eljo Mustafaj**. GitHub identity: **Eljo-M**. No institutional affiliation, journal acceptance or DOI is implied. Publication dates must use the author's actual local calendar date in America/New_York, supplied explicitly to the finalizer; a UTC artifact timestamp is not a publication date.
 
 The two v2 studies executed from frozen source `cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e`. The independent v3 7B study executed from `2c174abe268495159c10d538c92d071e7733828d`, registered with config `0dfb0a14abad3067`; its source is derived from the pinned `experiments/retry_v3/source_provenance.json`. The later final publication HEAD also contains completed traces, audits, the paper, website and publication helpers. Each executed-study source and the final publication HEAD are distinct provenance fields. Publication tooling must not relabel a study as having executed from a later report/documentation commit.
@@ -50,7 +82,7 @@ python tools/publication/export_retry.py --workspace-root WORKSPACE --source-com
 
 `--validate-only` checks readiness without packaging. The full exporter requires the original two v2 studies and any registered v3 study, and validates strict fresh/development comparisons, phase/update counters, checkpoint/output identities and the separate verifier regression. It stages versioned source, raw evidence, final/SFT-only checkpoint, website and upstream-license packages; verifies CRCs, traversal, shard splitting and SHA-256; then writes `RETRY_DELIVERY_MANIFEST.json` and `retry-release-assets.json`. Assets are strictly below 2 GiB, or split with explicit reassembly/checksum metadata. `--rebuild` is limited to unchanged files owned by an earlier retry-export manifest. Existing historical exports and `DELIVERY_MANIFEST.json` are never overwritten. A companion upstream-license ZIP supplies original licenses/attribution for unchanged historical model bundles.
 
-The final workflow preserves the full Python test discovery and dedicated real tiny-Torch/Rust tests. Additional CPU checks regenerate strict retry comparisons from committed files, validate `docs`, compile publication scripts and syntax-check JavaScript on Node 22. CI never downloads model weights, hashes the 15 GB snapshots, provisions resources or runs GPU jobs. Paper render/browser verification and live hosting/release verification remain separate checks.
+The final workflow preserves full Python discovery and dedicated tiny-Torch/Rust tests. CPU checks regenerate strict comparisons, validate the exact original site mirror and selected-case presentation separately, compile publication scripts and syntax-check both JavaScript assets on Node 22. CI never downloads model weights, hashes the 15 GB snapshots, provisions resources or runs GPU jobs. Paper render/browser verification and live hosting/release verification remain separate checks.
 
 `verify_publication_artifacts.py` adds a CPU-only consistency check of completed stage-output hashes, frozen-base original/resume proof bytes, figure/config/SFT-log hashes, the paper/website PDF identity, and recorded full upstream model-hash evidence against the unchanged copied expected metadata. It reads Git HEAD/status for provenance but never creates a clone unless requested. Final CI runs the explicit `--require-v3` check into `/tmp` without accessing local model weights. It requires the follow-up figure/source sidecars and saved SFT evaluation identity, but does not reopen excluded checkpoint metadata/tensors. The Python CI checkout fetches full history for the frozen-source ancestry/protocol-blob checks.
 

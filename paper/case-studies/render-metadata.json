@@ -1,0 +1,506 @@
+{
+  "pages": 5,
+  "renderer": "ReportLab",
+  "native_vector_figures": 3,
+  "font_files": [
+    "C:\\Windows\\Fonts\\segoeui.ttf",
+    "C:\\Windows\\Fonts\\segoeuib.ttf",
+    "C:\\Windows\\Fonts\\segoeuii.ttf",
+    "C:\\Windows\\Fonts\\georgia.ttf",
+    "C:\\Windows\\Fonts\\georgiab.ttf"
+  ],
+  "source_manuscript_sha256": "8c658a9b97576633825d17a80e0f87c23d4b9e755763c6077426fe4fb0dbf850",
+  "pdf_sha256": "1892bf14a026b424820bcd9b78c9924914238e40dc7b2ae26bbb0e3e58925843",
+  "pdf_bytes": 104860,
+  "layout_blocks": [
+    {
+      "page": 1,
+      "x": 48,
+      "y": 769.3897637795277,
+      "width": 499.27559055118115,
+      "height": 11.5,
+      "label": "kicker"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 663.3897637795277,
+      "width": 499.27559055118115,
+      "height": 96,
+      "label": "exact paper title"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 631.9897637795277,
+      "width": 499.27559055118115,
+      "height": 14.4,
+      "label": "body"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 557.9897637795277,
+      "width": 499.27559055118115,
+      "height": 57,
+      "label": "highlight band"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 534.4897637795277,
+      "width": 499.27559055118115,
+      "height": 11.5,
+      "label": "kicker"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 428.6897637795277,
+      "width": 499.27559055118115,
+      "height": 100.8,
+      "label": "body"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 334.6897637795277,
+      "width": 499.27559055118115,
+      "height": 82,
+      "label": "vector verification pipeline"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 308.28976377952773,
+      "width": 499.27559055118115,
+      "height": 23.4,
+      "label": "caption"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 223.28976377952773,
+      "width": 499.27559055118115,
+      "height": 72.0,
+      "label": "body"
+    },
+    {
+      "page": 1,
+      "x": 48,
+      "y": 146.28976377952773,
+      "width": 499.27559055118115,
+      "height": 65,
+      "label": "featured case cards"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 769.3897637795277,
+      "width": 499.27559055118115,
+      "height": 11.5,
+      "label": "kicker"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 735.3897637795277,
+      "width": 499.27559055118115,
+      "height": 28,
+      "label": "h1"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 716.1897637795277,
+      "width": 499.27559055118115,
+      "height": 11.2,
+      "label": "tiny"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 664.9897637795276,
+      "width": 499.27559055118115,
+      "height": 43.2,
+      "label": "body"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 603.9897637795276,
+      "width": 499.27559055118115,
+      "height": 51,
+      "label": "highlight band"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 463.9897637795276,
+      "width": 499.27559055118115,
+      "height": 128,
+      "label": "vector GELU dataflow"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 452.2897637795276,
+      "width": 499.27559055118115,
+      "height": 11.7,
+      "label": "caption"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 384.6897637795276,
+      "width": 499.27559055118115,
+      "height": 57.6,
+      "label": "body"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 275.6897637795276,
+      "width": 499.27559055118115,
+      "height": 99,
+      "label": "timing table"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 241.2897637795276,
+      "width": 499.27559055118115,
+      "height": 23.4,
+      "label": "caption"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 206.0897637795276,
+      "width": 499.27559055118115,
+      "height": 25.2,
+      "label": "small"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 157.0897637795276,
+      "width": 499.27559055118115,
+      "height": 39,
+      "label": "complete source hash"
+    },
+    {
+      "page": 2,
+      "x": 48,
+      "y": 121.8897637795276,
+      "width": 499.27559055118115,
+      "height": 25.2,
+      "label": "small"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 769.3897637795277,
+      "width": 499.27559055118115,
+      "height": 11.5,
+      "label": "kicker"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 735.3897637795277,
+      "width": 499.27559055118115,
+      "height": 28,
+      "label": "h1"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 716.1897637795277,
+      "width": 499.27559055118115,
+      "height": 11.2,
+      "label": "tiny"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 664.9897637795276,
+      "width": 499.27559055118115,
+      "height": 43.2,
+      "label": "body"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 616.9897637795276,
+      "width": 499.27559055118115,
+      "height": 38,
+      "label": "highlight band"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 446.9897637795276,
+      "width": 499.27559055118115,
+      "height": 158,
+      "label": "vector tiled matmul dataflow"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 428.2897637795276,
+      "width": 499.27559055118115,
+      "height": 11.7,
+      "label": "caption"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 360.6897637795276,
+      "width": 499.27559055118115,
+      "height": 57.6,
+      "label": "body"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 251.6897637795276,
+      "width": 499.27559055118115,
+      "height": 99,
+      "label": "timing table"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 217.2897637795276,
+      "width": 499.27559055118115,
+      "height": 23.4,
+      "label": "caption"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 169.4897637795276,
+      "width": 499.27559055118115,
+      "height": 37.8,
+      "label": "small"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 120.4897637795276,
+      "width": 499.27559055118115,
+      "height": 39,
+      "label": "complete source hash"
+    },
+    {
+      "page": 3,
+      "x": 48,
+      "y": 85.2897637795276,
+      "width": 499.27559055118115,
+      "height": 25.2,
+      "label": "small"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 769.3897637795277,
+      "width": 499.27559055118115,
+      "height": 11.5,
+      "label": "kicker"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 735.3897637795277,
+      "width": 499.27559055118115,
+      "height": 28,
+      "label": "h1"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 656.5897637795277,
+      "width": 499.27559055118115,
+      "height": 66.8,
+      "label": "verification step 1"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 585.7897637795278,
+      "width": 499.27559055118115,
+      "height": 66.8,
+      "label": "verification step 2"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 514.9897637795278,
+      "width": 499.27559055118115,
+      "height": 66.8,
+      "label": "verification step 3"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 456.7897637795278,
+      "width": 499.27559055118115,
+      "height": 54.2,
+      "label": "verification step 4"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 385.9897637795278,
+      "width": 499.27559055118115,
+      "height": 66.8,
+      "label": "verification step 5"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 361.9897637795278,
+      "width": 499.27559055118115,
+      "height": 16,
+      "label": "h2"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 306.5897637795278,
+      "width": 499.27559055118115,
+      "height": 50.4,
+      "label": "small"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 200.7897637795278,
+      "width": 499.27559055118115,
+      "height": 92.8,
+      "label": "hardware software table"
+    },
+    {
+      "page": 4,
+      "x": 48,
+      "y": 163.5897637795278,
+      "width": 499.27559055118115,
+      "height": 25.2,
+      "label": "small"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 769.3897637795277,
+      "width": 499.27559055118115,
+      "height": 11.5,
+      "label": "kicker"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 735.3897637795277,
+      "width": 499.27559055118115,
+      "height": 28,
+      "label": "h1"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 652.3897637795277,
+      "width": 499.27559055118115,
+      "height": 72.0,
+      "label": "body"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 603.5897637795277,
+      "width": 499.27559055118115,
+      "height": 37.8,
+      "label": "small"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 577.5897637795277,
+      "width": 499.27559055118115,
+      "height": 16,
+      "label": "h2"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 405.58976377952774,
+      "width": 499.27559055118115,
+      "height": 165.0,
+      "label": "provenance identity ledger"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 350.18976377952777,
+      "width": 499.27559055118115,
+      "height": 50.4,
+      "label": "small"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 322.18976377952777,
+      "width": 499.27559055118115,
+      "height": 16,
+      "label": "h2"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 289.9897637795278,
+      "width": 499.27559055118115,
+      "height": 24.2,
+      "label": "reference"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 258.7897637795278,
+      "width": 499.27559055118115,
+      "height": 24.2,
+      "label": "reference"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 239.6897637795278,
+      "width": 499.27559055118115,
+      "height": 12.1,
+      "label": "reference"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 208.4897637795278,
+      "width": 499.27559055118115,
+      "height": 24.2,
+      "label": "reference"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 177.28976377952782,
+      "width": 499.27559055118115,
+      "height": 24.2,
+      "label": "reference"
+    },
+    {
+      "page": 5,
+      "x": 48,
+      "y": 145.8897637795278,
+      "width": 499.27559055118115,
+      "height": 22.4,
+      "label": "tiny"
+    }
+  ],
+  "bounds_check": "All content blocks remained on-page and above the footer; visual inspection is separately required."
+}

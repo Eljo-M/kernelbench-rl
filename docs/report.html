@@ -1,1 +1,224 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KernelBench-RL corrected study report</title><style>body{font:17px/1.65 system-ui;max-width:1100px;margin:3rem auto;padding:0 1.5rem;color:#102235}p{max-width:90ch}table{border-collapse:collapse;width:100%;min-width:650px;font-size:15px;margin:0}th,td{padding:.7rem;border-bottom:1px solid #bbc9d5;text-align:left;vertical-align:top}th{font-weight:650}code{overflow-wrap:anywhere;word-break:break-word}a{color:#006a7b}.note{background:#eaf2f6;padding:1rem}h1{line-height:1.15}caption{text-align:left;font-weight:700;padding:0 0 1rem}.report-table-scroll{overflow-x:auto;max-width:100%;margin:2rem 0;-webkit-overflow-scrolling:touch}.report-table-scroll:focus-visible{outline:3px solid #087ba3;outline-offset:4px}@media(max-width:600px){body{margin:2rem auto;padding:0 1rem}table{font-size:14px}th,td{padding:.65rem}}@media print{body{max-width:none;margin:0;padding:0;font:10.5pt/1.5 Georgia,serif;color:black}.report-table-scroll{overflow:visible;margin:1.2rem 0}table{min-width:0;width:100%;table-layout:fixed;font-size:9pt}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid}th,td{padding:.35rem;overflow-wrap:anywhere;word-break:break-word}h1,h2,h3,caption{break-after:avoid}a{color:black}.note{border:1px solid #bbb;background:white}code{font-size:8.5pt}}</style><h1>KernelBench-RL: corrected study report</h1><p>Eljo Mustafaj · 2026-11-26</p><p class="note">The corrected v2 0.49B full-parameter FP32 study completed 32 supervised updates and 0 GRPO optimizer updates; fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 0/3, Hybrid pass@1 0/3. The corrected v2 7B QLoRA rank 8 / NF4 / FP16 decoder / CPU vocabulary study completed 32 supervised updates and 1 GRPO optimizer update; fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 2/3, Hybrid pass@1 2/3. The corrected v3 7B QLoRA rank 16 / NF4 / FP16 decoder / CPU vocabulary study completed 88 supervised updates and 5 GRPO optimizer updates; fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 2/3, Hybrid pass@1 2/3.</p><p>These are bounded, single-attempt empirical results. The hybrid includes supervised training. Curated fixed-baseline performance is separate: those implementations were prepared with coding-assistant support and are distinct from programs sampled by the evaluated policies. No formal security or functional proof, statistical significance, production speedup, or full-parameter 7B result is claimed.</p><p>The v2 7B SFT-only and hybrid checkpoints each passed 2/3 fresh held-out operators. The identical passing operators were fused_bias_silu_4096, l2_normalize_2048. No incremental GRPO held-out correctness gain over the SFT-only control was observed in this single configured attempt.</p><h2>Separate prospective v3 follow-up</h2><p>V3 fresh held-out counts were Base pass@1 0/3, Base best-of-8 0/3, SFT-only pass@1 2/3, Hybrid pass@1 2/3. Development counts were Base pass@1 0/3, SFT-only pass@1 1/3, Hybrid pass@1 1/3. The SFT-only and hybrid arms have the same passing-operator set; no incremental GRPO held-out correctness gain over SFT was observed in this attempt.</p><p>V3 uses fresh base/adapters, rank 16, a longer schedule and a new fresh trio. Former v2 fresh operators are v3 training targets. V2 and v3 are unpaired; no pooling, model-capacity or causal SFT/GRPO claim is supported.</p><div class="report-table-scroll" role="region" tabindex="0" aria-label="V2 fresh held-out results, separated by model track."><table><caption>V2 fresh held-out results, separated by model track.</caption><thead><tr><th scope="col">Model / training</th><th scope="col">Method</th><th scope="col">Budget</th><th scope="col">Pass / N</th><th scope="col">Fast / N (eager)</th></tr></thead><tbody><tr><td>v2 0.49B FP32</td><td>Base pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 0.49B FP32</td><td>Base best-of-8</td><td>8</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 0.49B FP32</td><td>SFT-only pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 0.49B FP32</td><td>Hybrid pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 7B rank 8</td><td>Base pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 7B rank 8</td><td>Base best-of-8</td><td>8</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 7B rank 8</td><td>SFT-only pass@1</td><td>1</td><td>2/3</td><td>2/3</td></tr><tr><td>v2 7B rank 8</td><td>Hybrid pass@1</td><td>1</td><td>2/3</td><td>2/3</td></tr></tbody></table></div><div class="report-table-scroll" role="region" tabindex="0" aria-label="V2 previously inspected development results, separated by model track."><table><caption>V2 previously inspected development results, separated by model track.</caption><thead><tr><th scope="col">Model / training</th><th scope="col">Method</th><th scope="col">Budget</th><th scope="col">Pass / N</th><th scope="col">Fast / N (eager)</th></tr></thead><tbody><tr><td>v2 0.49B FP32</td><td>Base pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 0.49B FP32</td><td>SFT-only pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 0.49B FP32</td><td>Hybrid pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 7B rank 8</td><td>Base pass@1</td><td>1</td><td>0/3</td><td>0/3</td></tr><tr><td>v2 7B rank 8</td><td>SFT-only pass@1</td><td>1</td><td>1/3</td><td>1/3</td></tr><tr><td>v2 7B rank 8</td><td>Hybrid pass@1</td><td>1</td><td>1/3</td><td>1/3</td></tr></tbody></table></div><div class="report-table-scroll" role="region" tabindex="0" aria-label="Paired fresh-operator outcomes, retaining every failure."><table><caption>Paired fresh-operator outcomes, retaining every failure.</caption><thead><tr><th scope="col">Model</th><th scope="col">Operator</th><th scope="col">Base @1</th><th scope="col">Best @8</th><th scope="col">SFT @1</th><th scope="col">Hybrid @1</th></tr></thead><tbody><tr><td>v2 0.49B FP32</td><td>l2_normalize_2048</td><td>POLICY</td><td>COMPILE</td><td>COMPILE</td><td>COMPILE</td></tr><tr><td>v2 0.49B FP32</td><td>fused_bias_silu_4096</td><td>POLICY</td><td>COMPILE</td><td>COMPILE</td><td>COMPILE</td></tr><tr><td>v2 0.49B FP32</td><td>matmul_residual_add_512</td><td>POLICY</td><td>COMPILE</td><td>COMPILE</td><td>COMPILE</td></tr><tr><td>v2 7B rank 8</td><td>l2_normalize_2048</td><td>POLICY</td><td>NUMERIC</td><td>PASS</td><td>PASS</td></tr><tr><td>v2 7B rank 8</td><td>fused_bias_silu_4096</td><td>COMPILE</td><td>COMPILE</td><td>PASS</td><td>PASS</td></tr><tr><td>v2 7B rank 8</td><td>matmul_residual_add_512</td><td>COMPILE</td><td>COMPILE</td><td>NUMERIC</td><td>RUNTIME</td></tr></tbody></table></div><div class="report-table-scroll" role="region" tabindex="0" aria-label="V3 7B rank 16: prospective fresh held-out."><table><caption>V3 7B rank 16: prospective fresh held-out.</caption><thead><tr><th scope="col">Method</th><th scope="col">Budget</th><th scope="col">Pass / N</th><th scope="col">Fast / N (eager)</th><th scope="col">Failures</th></tr></thead><tbody><tr><td>Base pass@1</td><td>1</td><td>0/3</td><td>0/3</td><td>COMPILE_ERROR=3</td></tr><tr><td>Base best-of-8</td><td>8</td><td>0/3</td><td>0/3</td><td>COMPILE_ERROR=3</td></tr><tr><td>SFT-only pass@1</td><td>1</td><td>2/3</td><td>2/3</td><td>COMPILE_ERROR=1</td></tr><tr><td>Hybrid pass@1</td><td>1</td><td>2/3</td><td>2/3</td><td>COMPILE_ERROR=1</td></tr></tbody></table></div><div class="report-table-scroll" role="region" tabindex="0" aria-label="V3 7B rank 16: previously inspected development."><table><caption>V3 7B rank 16: previously inspected development.</caption><thead><tr><th scope="col">Method</th><th scope="col">Budget</th><th scope="col">Pass / N</th><th scope="col">Fast / N (eager)</th><th scope="col">Failures</th></tr></thead><tbody><tr><td>Base pass@1</td><td>1</td><td>0/3</td><td>0/3</td><td>CHEAT=2, COMPILE_ERROR=1</td></tr><tr><td>SFT-only pass@1</td><td>1</td><td>1/3</td><td>1/3</td><td>CHEAT=1, COMPILE_ERROR=1</td></tr><tr><td>Hybrid pass@1</td><td>1</td><td>1/3</td><td>1/3</td><td>COMPILE_ERROR=2</td></tr></tbody></table></div><h2>Traceable evidence</h2><p><a href="https://github.com/Eljo-M/kernelbench-rl/tree/main/experiments/retry_v2">Raw traces, frozen protocol and strict comparison</a> · <a href="https://github.com/Eljo-M/kernelbench-rl/blob/main/RESULTS.md">Historical baseline and model results</a></p><p><a href="https://github.com/Eljo-M/kernelbench-rl/tree/main/experiments/retry_v3">Separate v3 traces, prospective protocol, source provenance and strict comparison</a></p><h3>v2 0.49B full-parameter FP32</h3><p>Study source <code>cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e</code>; config <code>76f5ae26c4334710</code>. Recorded training-stage elapsed timer 607.42 s; parent-process peak allocated CUDA memory 4.741 GiB. Elapsed time is not GPU compute time. This PyTorch allocator peak excludes child-worker and other applications' device allocations.</p><p>Final trainable tensor SHA-256: <code>3f63aaff6dd8077f8f6a974fda3bdc10bc0ea73439550fd1f1252801bcbb523d</code>.</p><h3>v2 7B QLoRA rank 8 / NF4 / FP16 decoder / CPU vocabulary</h3><p>Study source <code>cc4dcc94859c5e0d8658a6224bbbf667a93bdb7e</code>; config <code>aac728c27b3b726c</code>. Recorded training-stage elapsed timer 2079.19 s; parent-process peak allocated CUDA memory 4.692 GiB. Elapsed time is not GPU compute time. This PyTorch allocator peak excludes child-worker and other applications' device allocations.</p><p>Final trainable tensor SHA-256: <code>25537324dbd97f50e7af20cbf808e0aa4215d62236dc9b5f301d6d8e9b51ff08</code>.</p><h3>v3 7B QLoRA rank 16 / NF4 / FP16 decoder / CPU vocabulary</h3><p>Study source <code>2c174abe268495159c10d538c92d071e7733828d</code>; config <code>0dfb0a14abad3067</code>. Recorded training-stage elapsed timer 4958.95 s; parent-process peak allocated CUDA memory 5.295 GiB. Elapsed time is not GPU compute time. This PyTorch allocator peak excludes child-worker and other applications' device allocations.</p><p>Final trainable tensor SHA-256: <code>592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2</code>.</p><p>Recorded Windows power-event evidence reports a sleep/wake interval from 2026-11-27 02:56:43.389 UTC to 2026-11-27 03:04:22.105 UTC (458.716 seconds), with the sleep reason reported as Battery. The saved provider timestamps, including the separately noted resume-event time anomaly, remain unchanged. The recorded elapsed timer (4958.953 seconds) agrees with the UTC start-to-completion interval (4958.988 seconds) to 0.035 seconds; this observed agreement indicates that it includes the documented sleep interval. Training-stage duration remains the original elapsed-timer measurement, not GPU compute time. No pause subtraction or derived GPU-only training duration is reported.</p><p>The completed-run analysis identifies 1 of 16 GRPO groups (8) in which the same verified candidate-source SHA-256 received different PASS rewards across repeated measurements; 1 of these groups also had identical completion-token sequences. Of these same-source groups, 1 performed optimizer updates. These comparisons distinguish measured rewards for identical source rather than distinct candidate programs. Timing/reference variation, KL regularization, optimizer state and finite precision can contribute to parameter behavior; this analysis does not causally decompose them. Optimizer-step counts and tensor changes therefore document activity, not automatically useful kernel learning.</p><p>All numerical failures are retained. The three fresh operators share families with training operators. The original pre-SFT base anchors reference regularization. Source checks and process timeouts are development guards. Checkpoint reload evidence does not imply statistical reproducibility across new training runs.</p></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Verification receipts · KernelBench-RL case studies</title><meta name="description" content="Inspect the exact source, numerical checks and saved timings for the two selected GPU-kernel case studies."><meta name="robots" content="index,follow"><link rel="canonical" href="https://eljo-m.github.io/kernelbench-rl/report.html"><meta name="theme-color" content="#10263b"><link rel="stylesheet" href="assets/styles.css?v=0.3.0"></head><body><a class="skip" href="#main">Skip to content</a><header class="header wrap"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>KernelBench-RL</a><nav aria-label="Main navigation"><a href="index.html#cases">Case studies</a><a href="index.html#use">Use the kernels</a><a href="report.html" aria-current="page">Evidence</a><a href="paper.html">Paper</a></nav></header><main id="main"><div class="wrap"><header class="page-hero"><p class="eyebrow">Saved evidence · Source integrity</p><h1>Two kernels. Inspectable receipts.</h1><p class="lead">The source, numerical result and timing values behind each selected example. All measurements below come from the saved GPU evaluations.</p></header></div><section class="scope-band" aria-label="Scope of featured evidence"><div class="scope-row wrap"><p class="scope-metric"><strong id="featured-verified-count">2/2</strong> <span id="featured-scope-label">featured kernels verified</span></p><p>These are selected successful case studies. The denominator counts the two examples featured here; it is not a complete held-out, benchmark or model success rate.</p></div></section><div class="wrap"><section class="report-case" id="fused_bias_gelu_4096" data-case="fused_bias_gelu_4096"><p class="eyebrow">Selected case · fused_bias_gelu_4096</p><h2>Bias + GELU</h2><p class="muted">Y = GELU_tanh(X + bias)</p><div class="receipt-grid"><div class="receipt-panel"><h3>Verification receipt</h3><dl class="facts"><div><dt>Compilation</dt><dd>Passed</dd></div><div><dt>Numerical result</dt><dd class="pass">PASS</dd></div><div><dt>Precision</dt><dd>FP16</dd></div><div><dt>Maximum absolute error</dt><dd class="mono">0.00195341139</dd></div><div><dt>Input seed</dt><dd class="mono">50243</dd></div><div><dt>Independent seed</dt><dd class="mono">60243</dd></div></dl><p class="audit-note">FP16 worker acceptance uses atol=0.01 plus rtol=0.01 × reference magnitude; maximum absolute error alone is not the acceptance threshold. Source-policy checks accepted this saved program.</p></div><div class="receipt-panel"><h3>Recorded comparison</h3><div class="table-scroll" tabindex="0" aria-label="Recorded latency table"><table><caption>Saved per-invocation device timings</caption><thead><tr><th scope="col">Implementation</th><th scope="col">Milliseconds</th></tr></thead><tbody><tr><th scope="row">Generated Triton</th><td>0.011603</td></tr><tr><th scope="row">PyTorch eager</th><td>0.252377</td></tr><tr><th scope="row">PyTorch compiled</th><td>0.012287</td></tr></tbody></table></div><p class="audit-note">21.75× versus eager · 1.06× versus compiled. Both reference timings belong to this candidate’s own evaluation.</p></div></div><dl class="facts"><div class="wide"><dt>Candidate source SHA-256</dt><dd><code>8ea66d01f681a374139bfa9fa5941571f24a9cf7d70f1aebec8ccd030db77d08</code></dd></div></dl><div class="actions"><a class="button" href="kernels/fused_bias_gelu_4096.py">Download kernel source</a><a class="button" href="evidence/fused_bias_gelu_4096.json">Open receipt JSON</a></div><details class="source-details"><summary>Inspect and copy the generated source</summary><div class="copy-block"><div class="copy-head"><span>fused_bias_gelu_4096.py</span><button type="button" data-copy="source-fused_bias_gelu_4096" aria-label="Copy fused_bias_gelu_4096.py">Copy</button></div><pre tabindex="0" aria-label="fused_bias_gelu_4096.py"><code id="source-fused_bias_gelu_4096" class="language-python">import torch
+import triton
+import triton.language as tl
+
+
+@triton.jit
+def _bias_gelu_kernel(X_ptr, B_ptr, Y_ptr, stride_x, N, BLOCK_SIZE: tl.constexpr):
+    row = tl.program_id(0)
+    cols = tl.arange(0, BLOCK_SIZE)
+    mask = cols &lt; N
+    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)
+    b = tl.load(B_ptr + cols, mask=mask, other=0.0).to(tl.float32)
+    z = x + b
+    k_coef = 0.7978845608028654
+    inner = k_coef * (z + 0.044715 * z * z * z)
+    t = 2.0 * tl.sigmoid(2.0 * inner) - 1.0
+    out = 0.5 * z * (1.0 + t)
+    tl.store(Y_ptr + row * stride_x + cols, out.to(Y_ptr.dtype.element_ty), mask=mask)
+
+
+def kernel_forward(x: torch.Tensor, bias: torch.Tensor) -&gt; torch.Tensor:
+    orig_shape = x.shape
+    x_2d = x.contiguous().reshape(-1, orig_shape[-1])
+    b_c = bias.contiguous()
+    y = torch.empty_like(x_2d)
+    M, N = x_2d.shape
+    BLOCK_SIZE = triton.next_power_of_2(N)
+    if BLOCK_SIZE &gt; 65536:
+        raise ValueError(f&quot;Bias size N={N} &gt; 65536 for single-block GeLU&quot;)
+    _bias_gelu_kernel[(M,)](x_2d, b_c, y, x_2d.stride(0), N, BLOCK_SIZE=BLOCK_SIZE)
+    return y.reshape(orig_shape)</code></pre></div></details><details class="source-details"><summary>Inspect and copy the full selected receipt</summary><div class="copy-block"><div class="copy-head"><span>Selected evaluation JSON</span><button type="button" data-copy="receipt-fused_bias_gelu_4096" aria-label="Copy Selected evaluation JSON">Copy</button></div><pre tabindex="0" aria-label="Selected evaluation JSON"><code id="receipt-fused_bias_gelu_4096" class="language-json">{
+  &quot;schema_version&quot;: &quot;kernelbench_selected_case_receipt_v1&quot;,
+  &quot;selection_scope&quot;: &quot;One selected successful case; not an aggregate model-success estimate.&quot;,
+  &quot;case_id&quot;: &quot;fused_bias_gelu_4096&quot;,
+  &quot;provenance&quot;: {
+    &quot;candidate_sha256&quot;: &quot;8ea66d01f681a374139bfa9fa5941571f24a9cf7d70f1aebec8ccd030db77d08&quot;,
+    &quot;code_path&quot;: &quot;kernels/fused_bias_gelu_4096.py&quot;,
+    &quot;receipt_path&quot;: &quot;evidence/fused_bias_gelu_4096.json&quot;,
+    &quot;original_record_path&quot;: &quot;experiments/retry_v3/laptop_7b/heldout.jsonl&quot;,
+    &quot;jsonl_line&quot;: 35,
+    &quot;raw_file_sha256&quot;: &quot;5b91eb9d2b7b1cf203c99f440af1b2bc0aefa5e4417292b98061be2c8a2c893f&quot;,
+    &quot;record_canonical_sha256&quot;: &quot;29f2036b904ac3ba3f9472c5f50506170f329b93878c01e0a0e32ef7aedd5a53&quot;,
+    &quot;canonical_record_encoding&quot;: &quot;json_sorted_keys_utf8_compact_v1&quot;
+  },
+  &quot;study_source_commit&quot;: &quot;2c174abe268495159c10d538c92d071e7733828d&quot;,
+  &quot;record&quot;: {
+    &quot;run_id&quot;: &quot;trained_checkpoint-fused_bias_gelu_4096-k0&quot;,
+    &quot;op_name&quot;: &quot;fused_bias_gelu_4096&quot;,
+    &quot;level&quot;: 1,
+    &quot;backend&quot;: &quot;triton&quot;,
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;compiled&quot;: true,
+    &quot;correct&quot;: true,
+    &quot;cheat_detected&quot;: false,
+    &quot;max_abs_err&quot;: 0.001953411386166337,
+    &quot;eager_ms&quot;: 0.252376988530159,
+    &quot;compile_ms&quot;: 0.012287000194191933,
+    &quot;candidate_ms&quot;: 0.011603000108152628,
+    &quot;speedup_vs_eager&quot;: 21.751011477870374,
+    &quot;speedup_vs_compile&quot;: 1.0589502783472962,
+    &quot;reward&quot;: 4.0,
+    &quot;achieved_tflops&quot;: 1.6266799813901824,
+    &quot;arithmetic_intensity&quot;: 1.1239024390243904,
+    &quot;error_message&quot;: &quot;&quot;,
+    &quot;seed&quot;: 50243,
+    &quot;dtype&quot;: &quot;fp16&quot;,
+    &quot;method&quot;: &quot;trained_checkpoint&quot;,
+    &quot;gpu_model&quot;: &quot;NVIDIA GeForce RTX 5060 Laptop GPU&quot;,
+    &quot;timing_mode&quot;: &quot;cuda_graph&quot;,
+    &quot;independent_seed&quot;: 60243,
+    &quot;isolation_boundary&quot;: &quot;sanitized_child_process_trusted_only&quot;,
+    &quot;candidate_source&quot;: &quot;import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _bias_gelu_kernel(X_ptr, B_ptr, Y_ptr, stride_x, N, BLOCK_SIZE: tl.constexpr):\n    row = tl.program_id(0)\n    cols = tl.arange(0, BLOCK_SIZE)\n    mask = cols &lt; N\n    x = tl.load(X_ptr + row * stride_x + cols, mask=mask, other=0.0).to(tl.float32)\n    b = tl.load(B_ptr + cols, mask=mask, other=0.0).to(tl.float32)\n    z = x + b\n    k_coef = 0.7978845608028654\n    inner = k_coef * (z + 0.044715 * z * z * z)\n    t = 2.0 * tl.sigmoid(2.0 * inner) - 1.0\n    out = 0.5 * z * (1.0 + t)\n    tl.store(Y_ptr + row * stride_x + cols, out.to(Y_ptr.dtype.element_ty), mask=mask)\n\n\ndef kernel_forward(x: torch.Tensor, bias: torch.Tensor) -&gt; torch.Tensor:\n    orig_shape = x.shape\n    x_2d = x.contiguous().reshape(-1, orig_shape[-1])\n    b_c = bias.contiguous()\n    y = torch.empty_like(x_2d)\n    M, N = x_2d.shape\n    BLOCK_SIZE = triton.next_power_of_2(N)\n    if BLOCK_SIZE &gt; 65536:\n        raise ValueError(f\&quot;Bias size N={N} &gt; 65536 for single-block GeLU\&quot;)\n    _bias_gelu_kernel[(M,)](x_2d, b_c, y, x_2d.stride(0), N, BLOCK_SIZE=BLOCK_SIZE)\n    return y.reshape(orig_shape)&quot;,
+    &quot;candidate_sha256&quot;: &quot;8ea66d01f681a374139bfa9fa5941571f24a9cf7d70f1aebec8ccd030db77d08&quot;,
+    &quot;source_policy_sha256&quot;: &quot;6712c40af7ce3ec3bcd8ac90e5f98bd1aa3998bd1ebeeafe31605cf4ec5851a1&quot;,
+    &quot;chat_template_applied&quot;: true,
+    &quot;prompt_sha256&quot;: &quot;ca166cd2516ba8aaeddd119423ed4447217fa7e8e32aa1f0619d11801d32ed5e&quot;,
+    &quot;policy_updated&quot;: false,
+    &quot;split&quot;: &quot;heldout&quot;,
+    &quot;heldout&quot;: true,
+    &quot;eval_phase&quot;: &quot;heldout_test&quot;,
+    &quot;evaluation_cohort&quot;: &quot;fresh_heldout&quot;,
+    &quot;selection_method&quot;: &quot;single_sample&quot;,
+    &quot;sample_k&quot;: 0,
+    &quot;budget_k&quot;: 1,
+    &quot;model_name_or_path&quot;: &quot;../../work/models/Qwen2.5-Coder-7B-Instruct&quot;,
+    &quot;model_revision&quot;: &quot;c03e6d358207e414f1eca0bb1891e29f1db0e242&quot;,
+    &quot;training_mode&quot;: &quot;qlora_7b_nf4&quot;,
+    &quot;sampling_config&quot;: {
+      &quot;do_sample&quot;: true,
+      &quot;temperature&quot;: 1.0,
+      &quot;top_p&quot;: 1.0,
+      &quot;top_k&quot;: 0,
+      &quot;max_new_tokens&quot;: 1536
+    },
+    &quot;config_hash&quot;: &quot;0dfb0a14abad3067&quot;,
+    &quot;fixture&quot;: false,
+    &quot;generation_engine&quot;: &quot;hf_eager&quot;,
+    &quot;checkpoint_identity&quot;: &quot;checkpoint:16:592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2&quot;
+  }
+}
+</code></pre></div></details><p class="audit-note">Audit origin: repository file <code>experiments/retry_v3/laptop_7b/heldout.jsonl</code>, JSONL line 35. Its exact-file hash and the canonical selected-record hash are preserved in the individual receipt. No new GPU evaluation was performed to construct this page.</p></section><section class="report-case" id="matmul_bias_silu_512" data-case="matmul_bias_silu_512"><p class="eyebrow">Selected case · matmul_bias_silu_512</p><h2>Matrix multiply + bias + SiLU</h2><p class="muted">Y = SiLU(A @ B + bias)</p><div class="receipt-grid"><div class="receipt-panel"><h3>Verification receipt</h3><dl class="facts"><div><dt>Compilation</dt><dd>Passed</dd></div><div><dt>Numerical result</dt><dd class="pass">PASS</dd></div><div><dt>Precision</dt><dd>FP16</dd></div><div><dt>Maximum absolute error</dt><dd class="mono">0.0625</dd></div><div><dt>Input seed</dt><dd class="mono">50244</dd></div><div><dt>Independent seed</dt><dd class="mono">60244</dd></div></dl><p class="audit-note">FP16 worker acceptance uses atol=0.01 plus rtol=0.01 × reference magnitude; maximum absolute error alone is not the acceptance threshold. Source-policy checks accepted this saved program.</p></div><div class="receipt-panel"><h3>Recorded comparison</h3><div class="table-scroll" tabindex="0" aria-label="Recorded latency table"><table><caption>Saved per-invocation device timings</caption><thead><tr><th scope="col">Implementation</th><th scope="col">Milliseconds</th></tr></thead><tbody><tr><th scope="row">Generated Triton</th><td>0.027583</td></tr><tr><th scope="row">PyTorch eager</th><td>0.040861</td></tr><tr><th scope="row">PyTorch compiled</th><td>0.031917</td></tr></tbody></table></div><p class="audit-note">1.48× versus eager · 1.16× versus compiled. Both reference timings belong to this candidate’s own evaluation.</p></div></div><dl class="facts"><div class="wide"><dt>Candidate source SHA-256</dt><dd><code>cc7ab627c4ece5852e7d321a11ebdc46d7dae141530684d8f28897c3dcd8aa3f</code></dd></div></dl><div class="actions"><a class="button" href="kernels/matmul_bias_silu_512.py">Download kernel source</a><a class="button" href="evidence/matmul_bias_silu_512.json">Open receipt JSON</a></div><details class="source-details"><summary>Inspect and copy the generated source</summary><div class="copy-block"><div class="copy-head"><span>matmul_bias_silu_512.py</span><button type="button" data-copy="source-matmul_bias_silu_512" aria-label="Copy matmul_bias_silu_512.py">Copy</button></div><pre tabindex="0" aria-label="matmul_bias_silu_512.py"><code id="source-matmul_bias_silu_512" class="language-python">import torch
+import triton
+import triton.language as tl
+
+
+@triton.jit
+def _matmul_bias_silu_kernel(
+    A_ptr, B_ptr, Bias_ptr, C_ptr,
+    M, N, K,
+    stride_am, stride_ak, stride_bk, stride_bn, stride_cm, stride_cn,
+    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,
+):
+    pid_m = tl.program_id(0)
+    pid_n = tl.program_id(1)
+    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)
+    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)
+    rk = tl.arange(0, BLOCK_K)
+    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
+    for k0 in range(0, K, BLOCK_K):
+        k_offs = k0 + rk
+        a = tl.load(A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak, mask=(rm[:, None] &lt; M) &amp; (k_offs[None, :] &lt; K), other=0.0).to(tl.float32)
+        b = tl.load(B_ptr + k_offs[:, None] * stride_bk + rn[None, :] * stride_bn, mask=(k_offs[:, None] &lt; K) &amp; (rn[None, :] &lt; N), other=0.0).to(tl.float32)
+        acc += tl.dot(a, b, input_precision=&quot;ieee&quot;)
+    bias = tl.load(Bias_ptr + rn, mask=rn &lt; N, other=0.0).to(tl.float32)
+    z = acc + bias[None, :]
+    out = z * tl.sigmoid(z)
+    tl.store(C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn, out.to(C_ptr.dtype.element_ty), mask=(rm[:, None] &lt; M) &amp; (rn[None, :] &lt; N))
+
+
+def kernel_forward(a: torch.Tensor, b: torch.Tensor, bias: torch.Tensor) -&gt; torch.Tensor:
+    a_c = a.contiguous()
+    b_c = b.contiguous()
+    bias_c = bias.contiguous()
+    M, K = a_c.shape
+    _, N = b_c.shape
+    c = torch.empty((M, N), device=a_c.device, dtype=a_c.dtype)
+    grid = (triton.cdiv(M, 64), triton.cdiv(N, 64))
+    _matmul_bias_silu_kernel[grid](a_c, b_c, bias_c, c, M, N, K,
+                                    a_c.stride(0), a_c.stride(1), b_c.stride(0), b_c.stride(1), c.stride(0), c.stride(1),
+                                    BLOCK_M=64, BLOCK_N=64, BLOCK_K=32)
+    return c</code></pre></div></details><details class="source-details"><summary>Inspect and copy the full selected receipt</summary><div class="copy-block"><div class="copy-head"><span>Selected evaluation JSON</span><button type="button" data-copy="receipt-matmul_bias_silu_512" aria-label="Copy Selected evaluation JSON">Copy</button></div><pre tabindex="0" aria-label="Selected evaluation JSON"><code id="receipt-matmul_bias_silu_512" class="language-json">{
+  &quot;schema_version&quot;: &quot;kernelbench_selected_case_receipt_v1&quot;,
+  &quot;selection_scope&quot;: &quot;One selected successful case; not an aggregate model-success estimate.&quot;,
+  &quot;case_id&quot;: &quot;matmul_bias_silu_512&quot;,
+  &quot;provenance&quot;: {
+    &quot;candidate_sha256&quot;: &quot;cc7ab627c4ece5852e7d321a11ebdc46d7dae141530684d8f28897c3dcd8aa3f&quot;,
+    &quot;code_path&quot;: &quot;kernels/matmul_bias_silu_512.py&quot;,
+    &quot;receipt_path&quot;: &quot;evidence/matmul_bias_silu_512.json&quot;,
+    &quot;original_record_path&quot;: &quot;experiments/retry_v3/laptop_7b/heldout.jsonl&quot;,
+    &quot;jsonl_line&quot;: 36,
+    &quot;raw_file_sha256&quot;: &quot;5b91eb9d2b7b1cf203c99f440af1b2bc0aefa5e4417292b98061be2c8a2c893f&quot;,
+    &quot;record_canonical_sha256&quot;: &quot;5649c890a9b7059c00a0f5832300f7ef102373687f5b45a1a12c5e32126a99d3&quot;,
+    &quot;canonical_record_encoding&quot;: &quot;json_sorted_keys_utf8_compact_v1&quot;
+  },
+  &quot;study_source_commit&quot;: &quot;2c174abe268495159c10d538c92d071e7733828d&quot;,
+  &quot;record&quot;: {
+    &quot;run_id&quot;: &quot;trained_checkpoint-matmul_bias_silu_512-k0&quot;,
+    &quot;op_name&quot;: &quot;matmul_bias_silu_512&quot;,
+    &quot;level&quot;: 2,
+    &quot;backend&quot;: &quot;triton&quot;,
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;compiled&quot;: true,
+    &quot;correct&quot;: true,
+    &quot;cheat_detected&quot;: false,
+    &quot;max_abs_err&quot;: 0.0625,
+    &quot;eager_ms&quot;: 0.04086099937558174,
+    &quot;compile_ms&quot;: 0.03191699832677841,
+    &quot;candidate_ms&quot;: 0.02758299931883812,
+    &quot;speedup_vs_eager&quot;: 1.4813834747722763,
+    &quot;speedup_vs_compile&quot;: 1.1571257337841552,
+    &quot;reward&quot;: 1.6722179671723116,
+    &quot;achieved_tflops&quot;: 4.889717990453884,
+    &quot;arithmetic_intensity&quot;: 64.24975609756098,
+    &quot;error_message&quot;: &quot;&quot;,
+    &quot;seed&quot;: 50244,
+    &quot;dtype&quot;: &quot;fp16&quot;,
+    &quot;method&quot;: &quot;trained_checkpoint&quot;,
+    &quot;gpu_model&quot;: &quot;NVIDIA GeForce RTX 5060 Laptop GPU&quot;,
+    &quot;timing_mode&quot;: &quot;cuda_graph&quot;,
+    &quot;independent_seed&quot;: 60244,
+    &quot;isolation_boundary&quot;: &quot;sanitized_child_process_trusted_only&quot;,
+    &quot;candidate_source&quot;: &quot;import torch\nimport triton\nimport triton.language as tl\n\n\n@triton.jit\ndef _matmul_bias_silu_kernel(\n    A_ptr, B_ptr, Bias_ptr, C_ptr,\n    M, N, K,\n    stride_am, stride_ak, stride_bk, stride_bn, stride_cm, stride_cn,\n    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,\n):\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    rm = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)\n    rn = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)\n    rk = tl.arange(0, BLOCK_K)\n    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)\n    for k0 in range(0, K, BLOCK_K):\n        k_offs = k0 + rk\n        a = tl.load(A_ptr + rm[:, None] * stride_am + k_offs[None, :] * stride_ak, mask=(rm[:, None] &lt; M) &amp; (k_offs[None, :] &lt; K), other=0.0).to(tl.float32)\n        b = tl.load(B_ptr + k_offs[:, None] * stride_bk + rn[None, :] * stride_bn, mask=(k_offs[:, None] &lt; K) &amp; (rn[None, :] &lt; N), other=0.0).to(tl.float32)\n        acc += tl.dot(a, b, input_precision=\&quot;ieee\&quot;)\n    bias = tl.load(Bias_ptr + rn, mask=rn &lt; N, other=0.0).to(tl.float32)\n    z = acc + bias[None, :]\n    out = z * tl.sigmoid(z)\n    tl.store(C_ptr + rm[:, None] * stride_cm + rn[None, :] * stride_cn, out.to(C_ptr.dtype.element_ty), mask=(rm[:, None] &lt; M) &amp; (rn[None, :] &lt; N))\n\n\ndef kernel_forward(a: torch.Tensor, b: torch.Tensor, bias: torch.Tensor) -&gt; torch.Tensor:\n    a_c = a.contiguous()\n    b_c = b.contiguous()\n    bias_c = bias.contiguous()\n    M, K = a_c.shape\n    _, N = b_c.shape\n    c = torch.empty((M, N), device=a_c.device, dtype=a_c.dtype)\n    grid = (triton.cdiv(M, 64), triton.cdiv(N, 64))\n    _matmul_bias_silu_kernel[grid](a_c, b_c, bias_c, c, M, N, K,\n                                    a_c.stride(0), a_c.stride(1), b_c.stride(0), b_c.stride(1), c.stride(0), c.stride(1),\n                                    BLOCK_M=64, BLOCK_N=64, BLOCK_K=32)\n    return c&quot;,
+    &quot;candidate_sha256&quot;: &quot;cc7ab627c4ece5852e7d321a11ebdc46d7dae141530684d8f28897c3dcd8aa3f&quot;,
+    &quot;source_policy_sha256&quot;: &quot;6712c40af7ce3ec3bcd8ac90e5f98bd1aa3998bd1ebeeafe31605cf4ec5851a1&quot;,
+    &quot;chat_template_applied&quot;: true,
+    &quot;prompt_sha256&quot;: &quot;67ade72274ca1b13a7a7a83aeb1c471e0645bc543ae15032821a1d8529568ddd&quot;,
+    &quot;policy_updated&quot;: false,
+    &quot;split&quot;: &quot;heldout&quot;,
+    &quot;heldout&quot;: true,
+    &quot;eval_phase&quot;: &quot;heldout_test&quot;,
+    &quot;evaluation_cohort&quot;: &quot;fresh_heldout&quot;,
+    &quot;selection_method&quot;: &quot;single_sample&quot;,
+    &quot;sample_k&quot;: 0,
+    &quot;budget_k&quot;: 1,
+    &quot;model_name_or_path&quot;: &quot;../../work/models/Qwen2.5-Coder-7B-Instruct&quot;,
+    &quot;model_revision&quot;: &quot;c03e6d358207e414f1eca0bb1891e29f1db0e242&quot;,
+    &quot;training_mode&quot;: &quot;qlora_7b_nf4&quot;,
+    &quot;sampling_config&quot;: {
+      &quot;do_sample&quot;: true,
+      &quot;temperature&quot;: 1.0,
+      &quot;top_p&quot;: 1.0,
+      &quot;top_k&quot;: 0,
+      &quot;max_new_tokens&quot;: 1536
+    },
+    &quot;config_hash&quot;: &quot;0dfb0a14abad3067&quot;,
+    &quot;fixture&quot;: false,
+    &quot;generation_engine&quot;: &quot;hf_eager&quot;,
+    &quot;checkpoint_identity&quot;: &quot;checkpoint:16:592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2&quot;
+  }
+}
+</code></pre></div></details><p class="audit-note">Audit origin: repository file <code>experiments/retry_v3/laptop_7b/heldout.jsonl</code>, JSONL line 36. Its exact-file hash and the canonical selected-record hash are preserved in the individual receipt. No new GPU evaluation was performed to construct this page.</p></section><section class="report-environment" id="source-integrity"><h2>Verify the source snapshots</h2><p>Compare the downloaded kernel bytes with the SHA-256 in each saved record. This browser check verifies file integrity and does not execute Python or use your GPU.</p><div class="actions"><button class="button primary" id="verify-sources" type="button">Check both source hashes</button><a href="case-studies.json">Download case-study data</a></div><p id="integrity-status" class="integrity-status" role="status" aria-live="polite">Ready to check the two source files.</p></section><section class="report-case" id="local-check"><p class="eyebrow">A local verification path</p><h2>Recheck a source file.</h2><p class="muted">In a checkout of the project with its tested CUDA/Triton environment installed, save the downloaded GELU source beside the following script. Run from the repository root. This performs a new local GPU check; it does not reproduce a recorded timing by definition.</p><div style="margin-top:1.5rem"><div class="copy-block"><div class="copy-head"><span>Python verification example</span><button type="button" data-copy="local-check-code" aria-label="Copy Python verification example">Copy</button></div><pre tabindex="0" aria-label="Python verification example"><code id="local-check-code" class="language-python">from pathlib import Path
+import json
+from sandbox_runner.gpu_verifier import grade_candidate
+
+result = grade_candidate(
+    &quot;fused_bias_gelu_4096&quot;,
+    Path(&quot;fused_bias_gelu_4096.py&quot;).read_text(encoding=&quot;utf-8&quot;),
+    backend=&quot;triton&quot;, float_dtype=&quot;fp16&quot;,
+    seed=50243, independent_seed=60243,
+    timeout_secs=180, stress_test=True,
+    method=&quot;local_case_recheck&quot;,
+)
+print(json.dumps(result, indent=2, allow_nan=False))</code></pre></div></div><p class="audit-note">For the matrix-product example, use <code>matmul_bias_silu_512</code>, its matching downloaded source, seed <code>50244</code> and independent seed <code>60244</code>. Candidate execution is intended for trusted local research code; the worker is not an operating-system security sandbox.</p></section><section class="report-environment"><h2>Measurement and provenance</h2><dl class="facts"><div><dt>GPU</dt><dd>NVIDIA GeForce RTX 5060 Laptop GPU</dd></div><div><dt>Recorded software</dt><dd>Windows 11 · PyTorch 2.11.0+cu128<br>Triton Windows 3.6.0 · CUDA 12.8</dd></div><div class="wide"><dt>Timing boundary</dt><dd>Steady-state per-invocation device latency from CUDA Graph replay; compilation, ordinary Python dispatch and end-to-end application latency are excluded.</dd></div><div><dt>Configuration</dt><dd><code>0dfb0a14abad3067</code></dd></div><div><dt>Generation method</dt><dd>Single saved completion from the final adapter checkpoint</dd></div><div class="wide"><dt>Executed study source</dt><dd><code>2c174abe268495159c10d538c92d071e7733828d</code></dd></div><div class="wide"><dt>Checkpoint identity</dt><dd><code>checkpoint:16:592e6c37c97d170b87d50fd966ea99d610a9f2ba93739d1cc919f442080bb6c2</code></dd></div></dl><p class="audit-note">The two examples were selected after verification. They are an engineering demonstration, not a model success-rate estimate, an RL-only comparison or an application-level speed claim. Their PyTorch references are from the same candidate grades and are not the separate curated-baseline campaign.</p></section></div></main><footer class="footer wrap"><div><strong>KernelBench-RL</strong>Two selected GPU-kernel engineering examples.<br>By Eljo Mustafaj · 27 November 2026</div><div class="footer-links"><a href="paper.html">Technical paper</a><a href="case-studies.json">Case-study data</a><a href="https://github.com/Eljo-M/kernelbench-rl">GitHub repository</a></div></footer><div id="interaction-status" class="sr-only" role="status" aria-live="polite"></div><script src="assets/app.js?v=0.3.0" defer></script></body></html>

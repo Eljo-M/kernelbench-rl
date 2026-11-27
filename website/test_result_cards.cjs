@@ -19,7 +19,8 @@ const text = (tag, value, className) => { const element = document.createElement
 // Development copies keep assets beside this helper in dist/. The committed
 // repository serves the same files from docs/, alongside the website/ tools.
 const localDist = path.join(__dirname, 'dist');
-const siteRoot = fs.existsSync(localDist) ? localDist : path.resolve(__dirname, '../docs');
+const archive = path.join(__dirname, 'archive-v0.2');
+const siteRoot = fs.existsSync(localDist) ? localDist : (fs.existsSync(archive) ? archive : path.resolve(__dirname, '../docs'));
 const source = fs.readFileSync(path.join(siteRoot, 'assets/app.js'), 'utf8');
 const start = source.indexOf('  function renderRetry(');
 const end = source.indexOf('  function explorer(', start);

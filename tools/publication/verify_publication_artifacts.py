@@ -40,6 +40,17 @@ def read(path):
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
 
 
+def publication_site(root):
+    """Route full-study checks to the preserved v0.2 site when it is present.
+
+    The selected-case presentation has its own independent validator. All
+    existing full-study metric, byte and PDF checks below remain unchanged.
+    CI separately requires the mirror to match every original source-E blob.
+    """
+    archive=root/'website/archive-v0.2'
+    return archive if archive.is_dir() else root/'docs'
+
+
 def sha(path):
     digest=hashlib.sha256()
     with path.open('rb') as stream:
@@ -376,6 +387,7 @@ def verify_published_metrics(root,studies,strict_reports=None):
         from eval.compare_retry import load_retry_run
         strict_reports={study['study_key']:load_retry_run(study['run_dir'],protocol_path=study['run_dir'].parent/'protocol.json')
                         for study in studies}
+    docs=publication_site(root)
     manuscript_path=root/'paper/manuscript.json';manuscript=read(manuscript_path)
     require(str(manuscript.get('status','')).startswith('FINAL')
             and manuscript.get('pending_results',{}).get('required') is False,'Publication manuscript remains pending')
@@ -405,7 +417,7 @@ def verify_published_metrics(root,studies,strict_reports=None):
                 record=metric.get(field,{})
                 require(record.get('path')==path.relative_to(root).as_posix() and record.get('sha256')==sha(path)
                         and record.get('record')==read(path),'Manuscript evidence binding differs: '+field)
-    site=read(root/'docs/results.json').get('retry',{})
+    site=read(docs/'results.json').get('retry',{})
     require(site.get('status')=='completed' and site.get('published_results') is True,'Website retry evidence remains pending')
     runs=site.get('runs',[]);site_keys=[run.get('study_key') for run in runs]
     require(len(site_keys)==len(set(site_keys)) and set(site_keys)==set(keys),'Website/manuscript study inventory differs')
@@ -459,19 +471,19 @@ def verify_published_metrics(root,studies,strict_reports=None):
                 row[column]=statuses[found[0]['status']]
             paired.append(row)
     require(tables.get('paired_fresh_status',{}).get('rows')==paired,'Paired manuscript status table differs')
-    paper=PublishedHTML((root/'docs/paper.html').read_text(encoding='utf-8'))
+    paper=PublishedHTML((docs/'paper.html').read_text(encoding='utf-8'))
     require(paper.meta.get('citation_title')==manuscript['title'] and paper.h1==[plain(manuscript['title'])]
             and paper.meta.get('citation_author')==manuscript.get('author',{}).get('display_name')=='Eljo Mustafaj'
             and paper.meta.get('citation_publication_date')==manuscript['publication_date'].replace('-','/'),
             'Paper landing title/author/date differs from manuscript')
     require(plain(' '.join(paper.abstract))==plain(manuscript['abstract']),'Paper landing abstract differs from manuscript')
-    index=PublishedHTML((root/'docs/index.html').read_text(encoding='utf-8'))
+    index=PublishedHTML((docs/'index.html').read_text(encoding='utf-8'))
     latest='v3/laptop_7b' if 'v3/laptop_7b' in by_key else 'v2/laptop_7b'
     score=strict_reports[latest]['fresh_heldout']['methods']['trained_checkpoint']
     require(index.ids.get('latest-hybrid-score')==f"{score['pass_count']} / {score['total_ops']}"
             and index.ids.get('latest-hybrid-label')==latest.split('/')[0]+' 7B hybrid fresh held-out passes · one attempt',
             'Website latest-study headline differs from actual latest strict metrics')
-    report=PublishedHTML((root/'docs/report.html').read_text(encoding='utf-8'))
+    report=PublishedHTML((docs/'report.html').read_text(encoding='utf-8'))
     expected_tables=[dict(caption=plain(spec['caption']),headers=[[plain(column['label']) for column in spec['columns']]],
                          rows=[[plain(row[column['key']]) for column in spec['columns']] for row in spec['rows']])
                      for spec in manuscript['tables']]
@@ -480,7 +492,7 @@ def verify_published_metrics(root,studies,strict_reports=None):
                          ('source_commit','config_hash','trainable_weights_sha256')]) for key in expected]
     require(report.sections==expected_sections,'HTML report study/source/checkpoint identities differ')
     return dict(verified=True,studies=expected,manuscript_sha256=sha(manuscript_path),
-                website_results_sha256=sha(root/'docs/results.json'),report_sha256=sha(root/'docs/report.html'),
+                website_results_sha256=sha(docs/'results.json'),report_sha256=sha(docs/'report.html'),
                 scope='Fresh strict metrics matched manuscript/site structured data, report tables/identities and landing metadata/headline; no free-prose equivalence claim')
 
 
@@ -628,7 +640,7 @@ def verify_saved_bytes(root,paper_pdf=None,plot_metadata=None,require_v3=False):
         check_digest(directory/'sft.jsonl',track.get('sft_log_sha256'),'SFT figure source log')
         check_digest(directory/'config.json',track.get('config_file_sha256'),'SFT figure source configuration')
     paper=choose_file(root,paper_pdf,'paper/KernelBench-RL-Paper.pdf','*.pdf','--paper-pdf')
-    docs=root/'docs'; config=read(docs/'project-config.json')
+    docs=publication_site(root); config=read(docs/'project-config.json')
     require(config.get('draft') is False,'Publication website is still a draft')
     docs_pdf=within(docs,config.get('paper_pdf_path'))
     paper_sha=sha(paper); check_digest(docs_pdf,paper_sha,'Published website/Paper PDF identity')

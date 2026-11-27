@@ -103,7 +103,9 @@ def fixture(v3_updates=5,v3_equal_weights=False):
         save(paper/'manuscript_draft.json',dict(title='TEST ONLY publication rendering fixture',abstract='TEST ONLY',sections=sections))
         save(site/'results.json',dict(fixture_notice='TEST ONLY',retry={'runs':[]},provenance=[]))
         for filename in ('index.html','paper.html'):
-            (site/filename).write_text((REPO_ROOT/'docs'/filename).read_text(encoding='utf-8'),encoding='utf-8')
+            archive=REPO_ROOT/'website/archive-v0.2'
+            original_site=archive if archive.is_dir() else REPO_ROOT/'docs'
+            (site/filename).write_text((original_site/filename).read_text(encoding='utf-8'),encoding='utf-8')
         compare_module=ModuleType('eval.compare_retry');compare_module.load_retry_run=lambda *args,**kwargs:None
         def no_regenerate(*args,**kwargs):raise AssertionError('Preserved fixture comparison was regenerated')
         compare_module.compare_retry_runs=no_regenerate

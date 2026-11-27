@@ -1,11 +1,7 @@
 {
   "draft": false,
   "public_base_url": "https://eljo-m.github.io/kernelbench-rl",
-  "paper_pdf_path": "assets/kernelbench-rl-paper.pdf",
-  "downloads": [
-    {
-      "label": "Download source, evidence, and checkpoints",
-      "url": "https://github.com/Eljo-M/kernelbench-rl/releases"
-    }
-  ]
+  "paper_pdf_path": "assets/kernelbench-rl-case-studies.pdf",
+  "case_studies_path": "case-studies.json",
+  "selected_case_count": 2
 }

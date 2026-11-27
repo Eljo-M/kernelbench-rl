@@ -34,12 +34,19 @@ jobs:
             --protocol experiments/retry_v3/protocol.json \
             --run-dir experiments/retry_v3/laptop_7b \
             --out /tmp/kb_retry_v3_comparison
-      - name: Validate the public static website and evidence
-        run: python3 website/validate_static.py docs
+      - name: Verify the complete original website mirror against source E blobs
+        run: python3 website/validate_archive.py --repo .
+      - name: Validate the preserved full-study static website and evidence
+        run: python3 website/validate_static.py website/archive-v0.2
+      - name: Validate the selected successful case-study presentation independently
+        run: python3 website/validate_showcase.py --repo . --site docs
       - name: Compile publication sources without executing model code
         run: python3 -m compileall -q paper website tools/publication
       - name: Check website JavaScript syntax
-        run: node --check docs/assets/app.js
+        run: |
+          node --check docs/assets/app.js
+          node --check website/archive-v0.2/assets/app.js
+          node website/test_result_cards.cjs
       - name: Verify saved artifact bytes and recorded upstream provenance
         run: python3 tools/publication/verify_publication_artifacts.py --repo . --require-v3 --expected-commit "$GITHUB_SHA" --output /tmp/kb_publication_artifact_verification.json
 

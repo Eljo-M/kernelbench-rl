@@ -28,7 +28,10 @@ if(-not $paperText.Contains('name="citation_author" content="Eljo Mustafaj"') -o
 foreach($html in @($paperText,[IO.File]::ReadAllText((Join-Path $RepoRoot 'docs/index.html')))){
     if($html -match '(?is)<meta\b[^>]*\bcontent="[^"]*noindex[^"]*"'){throw 'Source HTML still contains a noindex directive'}
 }
-$manuscriptText=git -C $RepoRoot show ($SourceCommit+':paper/manuscript.json')
+$selectedFiles=@(git -C $RepoRoot ls-tree --name-only $SourceCommit -- docs/case-studies.json)
+if($LASTEXITCODE -ne 0){throw 'Committed presentation inventory unavailable'}
+$manuscriptPath=if($selectedFiles.Count -eq 1 -and $selectedFiles[0] -ceq 'docs/case-studies.json'){'paper/case-studies/manuscript.json'}else{'paper/manuscript.json'}
+$manuscriptText=git -C $RepoRoot show ($SourceCommit+':'+$manuscriptPath)
 if($LASTEXITCODE -ne 0){throw 'Committed manuscript metadata missing'}
 $manuscript=($manuscriptText -join [char]10) | ConvertFrom-Json
 foreach($field in @(@('citation_title',[string]$manuscript.title),@('citation_publication_date',([string]$manuscript.publication_date).Replace('-','/')))){

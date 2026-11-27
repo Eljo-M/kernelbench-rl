@@ -1,0 +1,57 @@
+{
+  "completed_utc": "2026-11-27T06:04:43.265882+00:00",
+  "verified": true,
+  "pages": 5,
+  "pdf_path": "outputs\\KernelBench-RL-Case-Studies.pdf",
+  "pdf_sha256": "1892bf14a026b424820bcd9b78c9924914238e40dc7b2ae26bbb0e3e58925843",
+  "pdf_bytes": 104860,
+  "manuscript_sha256": "8c658a9b97576633825d17a80e0f87c23d4b9e755763c6077426fe4fb0dbf850",
+  "pdf_manuscript_binding": {
+    "verified": true,
+    "input_manuscript_sha256": "8c658a9b97576633825d17a80e0f87c23d4b9e755763c6077426fe4fb0dbf850",
+    "scope": "Unique trusted-renderer input digest equals exact saved manuscript bytes; no cryptographic signature claim"
+  },
+  "selected_evidence_only": true,
+  "featured_cases": 2,
+  "verified_featured_cases": 2,
+  "original_record_file_unchanged": true,
+  "no_new_generation_or_grading": true,
+  "all_pages_rendered_with": "Poppler pdftoppm at135dpi",
+  "rendered_page_sha256": {
+    "page-1.png": "ccf79affd86e148301a21b12429a62517ddb422d505dd1c88b3eb372cb72006e",
+    "page-2.png": "4d0d7a40dc715939e2fbf081cd15a744759971c44ec156160690aa3a89187d2f",
+    "page-3.png": "3474a903039a2fb8ae22512c05600b2f81b2fa0d97c178230778848186ef9b01",
+    "page-4.png": "271cc704919baedcb513f63baf66d135468b7c6395051a33f7a85b890ab0864d",
+    "page-5.png": "62eee28c1642cba5105d58baf09aadfa138e261d8c77fb5c5a2886f077fd1c79"
+  },
+  "visual_review": {
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "status": "pass",
+    "checked": [
+      "text legibility",
+      "headers and footers",
+      "three native vector figures",
+      "tables",
+      "full source hashes",
+      "no clipping or overlaps",
+      "no missing glyphs"
+    ]
+  },
+  "latest_pages_pixel_identical_after_portable_font_detection": true,
+  "layout_block_overlap_count": 0,
+  "off_page_character_count": 0,
+  "text_extraction": "pass",
+  "page_character_counts": [
+    1862,
+    2146,
+    2206,
+    2471,
+    2758
+  ]
+}
